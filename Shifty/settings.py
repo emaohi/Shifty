@@ -51,10 +51,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Shifty.urls'
 
+STATICFILES_DIRS = [
+os.path.join(BASE_DIR, "static"),
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
+        'DIRS': ["templates"]
         ,
         'APP_DIRS': True,
         'OPTIONS': {
@@ -100,6 +104,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+LOGIN_REDIRECT_URL = '/' # It means home view
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
