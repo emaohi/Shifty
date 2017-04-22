@@ -17,10 +17,16 @@ class Business(models.Model):
         default='CA',
     )
 
+    def __str__(self):
+        return self.business_name
 
-class Profile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    def get_type(self):
+        return self.get_business_type_display()
 
+
+class EmployeeProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)
     phone_num = models.CharField(max_length=30, blank=True)
     home_address = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
@@ -34,13 +40,14 @@ class Profile(models.Model):
         choices=ROLE_CHOICES,
         default='WA',
     )
-    
+
     def __str__(self):
         return self.user.username
 
 
 @receiver(post_save, sender=User)
-def update_user_profile(sender, instance, created, **kwargs):
+def update_employee(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.create(user=instance)
+        b, craeted = Business.objects.update_or_create(business_name='dummy')
+        EmployeeProfile.objects.create(user=instance, business=b)
     instance.profile.save()

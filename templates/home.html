@@ -4,6 +4,10 @@
 <title>Shifty Bitch</title>
 {% endblock %}
 
+{% block comp_name %}
+    {{ user.profile.business.business_name }} - {{ user.profile.business.get_type  }}
+{% endblock %}
+
 {% block content %}
 
 <div class="container">
