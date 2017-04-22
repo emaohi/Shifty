@@ -1,7 +1,6 @@
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
-
-# If you don't do this you cannot use Bootstrap CSS
+from django.contrib.auth.models import User
 
 
 class LoginForm(AuthenticationForm):
@@ -9,3 +8,11 @@ class LoginForm(AuthenticationForm):
                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'username'}))
     password = forms.CharField(label="Password", max_length=30,
                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'password'}))
+
+
+class SignUpForm(UserCreationForm):
+    birth_date = forms.DateField(help_text='Required. Format: YYYY-MM-DD')
+
+    class Meta:
+        model = User
+        fields = ('username', 'birth_date', 'password1', 'password2', )

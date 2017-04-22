@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'log'
 ]
 
 MIDDLEWARE = [
@@ -104,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = '/' # It means home view
+LOGIN_REDIRECT_URL = '/'  # It means home view
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
