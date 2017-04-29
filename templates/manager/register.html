@@ -14,7 +14,7 @@
                     <a href="/login" style="float: right">Already registered?</a>
                 </div>
                 <div class="panel-body" >
-                    <form action="../" method="post">
+                    <form action="." method="post">
                         {% csrf_token %}
                     {{ manager_form.as_p }}
                     <hr>

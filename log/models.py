@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -17,6 +19,9 @@ class Business(models.Model):
         default='CA',
     )
 
+    def get_curr_arrangement(self):
+        return self.shiftsArrangement_set.order_by('-id')[0]
+
     def __str__(self):
         return self.business_name
 
@@ -32,9 +37,17 @@ class EmployeeProfile(models.Model):
     birth_date = models.DateField(null=True, blank=True)
     started_work_date = models.DateField(null=True, blank=True)
 
+    GENDER_CHOICES = (
+        ('M', 'Male'), ('F', 'Female')
+    )
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, default='M')
+
     ROLE_CHOICES = (
         ('MA', 'Manager'), ('WA', 'Waiter'), ('BT', 'Bartender'), ('CO', 'Cook')
     )
+
+    avg_rate = models.FloatField(default=2.5, validators=[MaxValueValidator(5.0), MinValueValidator(0.0)])
+
     role = models.CharField(
         max_length=2,
         choices=ROLE_CHOICES,

@@ -9,8 +9,9 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.home, name='home'),
-    url(r'^login/$', django_views.login, {'template_name': 'login.html', 'authentication_form': LoginForm},
+    url(r'^login/$', django_views.login, {'template_name': 'manager/login.html', 'authentication_form': LoginForm},
         name='login'),
-    url(r'^logout/$', django_views.logout, {'next_page': '/login'}),
+    url(r'^logout/$', django_views.logout, {'next_page': 'login'}),
     url(r'^register/$', log_views.register, name='register'),
+    url(r'add_users/$', views.add_users, name='add_users')
 ]
