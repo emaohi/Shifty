@@ -7,7 +7,7 @@ import forms
 
 @login_required(login_url="login/")
 def home(request):
-    return render(request, "home.html")
+    return render(request, "manager/home.html")
 
 
 def register(request):
@@ -32,5 +32,5 @@ def register(request):
         manager_form = forms.ManagerSignUpForm()
         business_form = forms.BusinessRegistrationForm()
 
-    return render(request, 'register.html', {'manager_form': manager_form, 'business_form': business_form})
+    return render(request, 'manager/register.html', {'manager_form': manager_form, 'business_form': business_form})
 

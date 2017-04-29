@@ -48,6 +48,6 @@ class EmployeeProfile(models.Model):
 @receiver(post_save, sender=User)
 def update_employee(sender, instance, created, **kwargs):
     if created:
-        b, craeted = Business.objects.update_or_create(business_name='dummy')
+        b, created2 = Business.objects.update_or_create(business_name='dummy')
         EmployeeProfile.objects.create(user=instance, business=b)
     instance.profile.save()
