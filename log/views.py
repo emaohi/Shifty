@@ -33,7 +33,7 @@ def register(request):
 
             user = authenticate(username=manager.username, password=manager_form.cleaned_data.get('password1'))
             login(request, user)
-            return HttpResponseRedirect('/add_users')
+            return HttpResponseRedirect('/success')
         else:
             print manager_form.error_messages
             print business_form.errors
@@ -44,5 +44,5 @@ def register(request):
     return render(request, 'manager/register.html', {'manager_form': manager_form, 'business_form': business_form})
 
 
-def add_users(request):
-    return render(request, 'manager/addEmployees.html')
+def success(request):
+    return render(request, 'manager/register_success.html')
