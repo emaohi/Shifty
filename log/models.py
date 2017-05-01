@@ -10,6 +10,8 @@ from django.dispatch import receiver
 class Business(models.Model):
     business_name = models.CharField(primary_key=True, max_length=30)
 
+    manager = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+
     BUSINESS_TYPE_CHOICES = (
         ('RE', 'Restaurant'), ('CA', 'Cafe'), ('PU', 'Pub')
     )
@@ -17,6 +19,14 @@ class Business(models.Model):
         max_length=2,
         choices=BUSINESS_TYPE_CHOICES,
         default='CA',
+    )
+
+    TIP_METHOD_CHOICES = (
+        ('P', 'Personal'), ('G', 'Group')
+    )
+
+    tip_method = models.CharField(
+        max_length=1, choices=TIP_METHOD_CHOICES, default='G'
     )
 
     def get_curr_arrangement(self):

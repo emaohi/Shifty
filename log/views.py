@@ -21,6 +21,9 @@ def register(request):
             manager = manager_form.save()
 
             business = business_form.save()
+            business.manager = manager
+            business.save()
+            
             manager.profile.business = business
             manager.profile.role = 'MA'
 

@@ -15,7 +15,7 @@ class LoginForm(AuthenticationForm):
 class BusinessRegistrationForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = '__all__'
+        fields = ('business_name', 'business_type', 'tip_method')
 
 
 class ManagerSignUpForm(UserCreationForm):
