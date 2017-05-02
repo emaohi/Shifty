@@ -15,6 +15,13 @@
             .panel{
                 border-width: 3px;
             }
+            .btn-success{
+                background-color: #1c699d;
+                border-color: #1c699d;
+            }
+            a{
+                color: #1c699d;
+            }
             input[type=submit] {width: 15em;}
             hr {border-width: 8px}
         </style>
@@ -29,7 +36,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">{% block comp_name %}Shifty{% endblock %}</a>
+                <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
@@ -44,7 +51,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="#">Edit Business</a>
+                                <a href="{% url 'edit_business' %}">Edit Business</a>
                             </li>
                             <li class="divider"></li>
                             <li>

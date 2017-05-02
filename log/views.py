@@ -23,7 +23,7 @@ def register(request):
             business = business_form.save()
             business.manager = manager
             business.save()
-            
+
             manager.profile.business = business
             manager.profile.role = 'MA'
 
@@ -49,3 +49,21 @@ def register(request):
 
 def success(request):
     return render(request, 'manager/register_success.html')
+
+
+def edit_business(request):
+    if request.POST:
+        business_form = forms.BusinessEditForm(request.POST)
+        if business_form.is_valid():
+
+            business = business_form.save()
+            business.manager = request.user
+            business.save()
+
+            return HttpResponseRedirect('/home')
+        else:
+            print business_form.errors
+    else:
+        business_form = forms.BusinessEditForm()
+
+    return render(request, 'manager/edit_business.html', {'business_form': business_form})

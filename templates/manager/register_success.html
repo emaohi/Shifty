@@ -16,9 +16,10 @@
         <br><br> <h2 style="color:#0fad00">Success</h2>
         <img src="http://osmhotels.com//assets/check-true.jpg">
         <h3>Dear {{ user.username }}</h3>
-        <p style="font-size:20px;color:#5C5C5C;">Thank you for registering <i>{{ user.profile.business }}</i> to Shifty.
-        It's time to add your employees :)</p>
-        <a href="" class="btn btn-success">     Add employees      </a>
+        <p style="font-size:20px;color:#5C5C5C;">Thank you for registering <i>{{ user.profile.business }}</i> to Shifty.<br>
+        It's time to add your employees =)</p><br>
+        <a href="" class="btn btn-success">     Add employees      </a><br><br>
+        <a href="{% url 'home' %}">     Skip to dashboard      </a>
     <br><br>
         </div>
 

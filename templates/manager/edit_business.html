@@ -1,0 +1,43 @@
+{% extends "manager/base.html" %}
+
+{% block title %}
+<title>Edit business</title>
+{% endblock %}
+
+{% block comp_name %}
+{{ user.profile.business }}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="login-panel panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="display: inline">Edit {{ user.profile.business }} details</h3>
+                </div>
+                <div class="panel-body" >
+                    <form action="." method="post">
+                    {{ business_form.as_p }}
+                    <hr>
+                    <div class="text-center">
+                    <input type="submit" class="btn btn-info" value="Submit">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascript %}
+
+
+<script>
+{% if not user.is_authenticated %}
+$("ul.nav.navbar-nav.navbar-right").css("display","none");
+{% endif %}
+</script>
+
+{% endblock %}

@@ -18,6 +18,12 @@ class BusinessRegistrationForm(forms.ModelForm):
         fields = ('business_name', 'business_type', 'tip_method')
 
 
+class BusinessEditForm(forms.ModelForm):
+    class Meta:
+        model = Business
+        fields = ('business_type', 'tip_method')
+
+
 class ManagerSignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
         super(UserCreationForm, self).__init__(*args, **kwargs)
