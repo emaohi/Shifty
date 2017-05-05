@@ -47,20 +47,23 @@ def register(request):
     return render(request, 'manager/register.html', {'manager_form': manager_form, 'business_form': business_form})
 
 
+@login_required
 def success(request):
     return render(request, 'manager/register_success.html')
 
 
+@login_required(login_url="/login")
 def edit_business(request):
     if request.POST:
-        business_form = forms.BusinessEditForm(request.POST)
+        curr_business = request.user.profile.business
+        business_form = forms.BusinessEditForm(request.POST, instance=curr_business)
         if business_form.is_valid():
 
             business = business_form.save()
             business.manager = request.user
             business.save()
 
-            return HttpResponseRedirect('/home')
+            return HttpResponseRedirect('/')
         else:
             print business_form.errors
     else:

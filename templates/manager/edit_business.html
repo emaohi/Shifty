@@ -15,9 +15,11 @@
             <div class="login-panel panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title" style="display: inline">Edit {{ user.profile.business }} details</h3>
+                    <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
                 </div>
                 <div class="panel-body" >
                     <form action="." method="post">
+                        {% csrf_token %}
                     {{ business_form.as_p }}
                     <hr>
                     <div class="text-center">
