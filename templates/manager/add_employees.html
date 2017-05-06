@@ -10,9 +10,6 @@
 
 {% block content %}
 
-    {% if form.errors %}
-        <p>Your username and password didn't match. Please try again.</p>
-    {% endif %}
 
     {% if next %}
         {% if user.is_authenticated %}
@@ -36,8 +33,9 @@
             </div>
         </div>
         <div class="row">
-            <form id="bookForm" method="post" class="form-horizontal">
-                <div class="form-group">
+            <form action="." id="bookForm" method="post" class="form-horizontal">
+                {% csrf_token %}
+                <div class="form-group static-group">
                     <div class="col-xs-1">
                         <span>1</span>
                     </div>
@@ -48,7 +46,7 @@
                         <input type="text" class="form-control" name="employee_0_lastName" placeholder="Last Name" />
                     </div>
                     <div class="col-xs-4">
-                        <input type="text" class="form-control" name="employee_0_email" placeholder="Email" />
+                        <input type="email" class="form-control" name="employee_0_email" placeholder="Email" />
                     </div>
                     <div class="col-xs-1">
                         <button type="button" class="btn btn-info addButton"><span class="glyphicon glyphicon-plus"></span>
@@ -57,7 +55,15 @@
                 </div>
 
                 <!-- The template for adding new field -->
-                <div class="form-group hide" id="bookTemplate">
+
+
+                <div class="form-group submit-group" style="margin-top: 30px">
+                    <div class="col-xs-5 col-xs-offset-5">
+                        <button type="submit" class="btn btn-lg btn-success">Submit</button>
+                    </div>
+                </div>
+            </form>
+                 <div class="form-group hide" id="bookTemplate">
                     <div class="col-xs-1">
                         <span class="counter">2</span>
                     </div>
@@ -68,20 +74,13 @@
                         <input type="text" class="form-control" name="lastName" placeholder="Last Name" />
                     </div>
                     <div class="col-xs-4">
-                        <input type="text" class="form-control" name="email" placeholder="Email" />
+                        <input type="email" class="form-control" name="email" placeholder="Email" />
                     </div>
                     <div class="col-xs-1">
                         <button type="button" class="btn btn-danger removeButton"><span class="glyphicon glyphicon-minus"></span>
                         </button>
                     </div>
                 </div>
-
-                <div class="form-group" style="margin-top: 30px">
-                    <div class="col-xs-5 col-xs-offset-5">
-                        <button type="submit" class="btn btn-lg btn-success">Submit</button>
-                    </div>
-                </div>
-            </form>
         </div>
     </div>
 
@@ -102,7 +101,7 @@ $(document).ready(function() {
                                 .removeClass('hide')
                                 .removeAttr('id')
                                 .attr('data-book-index', employeeIndex)
-                                .insertBefore($template);
+                                .insertBefore($(".submit-group"));
 
             // Update the name attributes
             $clone

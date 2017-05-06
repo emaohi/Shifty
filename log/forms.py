@@ -45,9 +45,9 @@ class AddEmployeesForm(forms.Form):
 
         for index in range(int(extra_fields)):
             # generate extra fields in the number specified via extra_fields
-            self.fields['employee_{index}_first_name'.format(index=index)] = \
+            self.fields['employee_{index}_firstName'.format(index=index)] = \
                 forms.CharField()
-            self.fields['employee_{index}_last_name'.format(index=index)] = \
+            self.fields['employee_{index}_lastName'.format(index=index)] = \
                 forms.CharField()
             self.fields['employee_{index}_email'.format(index=index)] = \
                 forms.EmailField()
