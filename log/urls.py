@@ -14,5 +14,6 @@ urlpatterns = [
     url(r'^logout/$', django_views.logout, {'next_page': 'login'}),
     url(r'^register/$', log_views.register, name='register'),
     url(r'success/$', views.success, name='success'),
-    url(r'edit_business/$', views.edit_business, name='edit_business')
+    url(r'edit_business/$', views.edit_business, name='edit_business'),
+    url(r'add_employees/$', views.add_employees, name='add_employees'),
 ]

@@ -34,3 +34,20 @@ class ManagerSignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'password1', 'password2', 'email')
+
+
+class AddEmployeesForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        extra_fields = kwargs.pop('extra', 0)
+
+        super(AddEmployeesForm, self).__init__(*args, **kwargs)
+
+        for index in range(int(extra_fields)):
+            # generate extra fields in the number specified via extra_fields
+            self.fields['employee_{index}_first_name'.format(index=index)] = \
+                forms.CharField()
+            self.fields['employee_{index}_last_name'.format(index=index)] = \
+                forms.CharField()
+            self.fields['employee_{index}_email'.format(index=index)] = \
+                forms.EmailField()
