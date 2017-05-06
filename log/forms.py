@@ -9,13 +9,19 @@ class LoginForm(AuthenticationForm):
     username = forms.CharField(label="Username", max_length=30,
                                widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'username'}))
     password = forms.CharField(label="Password", max_length=30,
-                               widget=forms.TextInput(attrs={'class': 'form-control', 'name': 'password'}))
+                               widget=forms.PasswordInput(attrs={'class': 'form-control', 'name': 'password'}))
 
 
 class BusinessRegistrationForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = '__all__'
+        fields = ('business_name', 'business_type', 'tip_method')
+
+
+class BusinessEditForm(forms.ModelForm):
+    class Meta:
+        model = Business
+        fields = ('business_type', 'tip_method')
 
 
 class ManagerSignUpForm(UserCreationForm):
@@ -28,3 +34,20 @@ class ManagerSignUpForm(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'password1', 'password2', 'email')
+
+
+class AddEmployeesForm(forms.Form):
+
+    def __init__(self, *args, **kwargs):
+        extra_fields = kwargs.pop('extra', 0)
+
+        super(AddEmployeesForm, self).__init__(*args, **kwargs)
+
+        for index in range(int(extra_fields)):
+            # generate extra fields in the number specified via extra_fields
+            self.fields['employee_{index}_first_name'.format(index=index)] = \
+                forms.CharField()
+            self.fields['employee_{index}_last_name'.format(index=index)] = \
+                forms.CharField()
+            self.fields['employee_{index}_email'.format(index=index)] = \
+                forms.EmailField()

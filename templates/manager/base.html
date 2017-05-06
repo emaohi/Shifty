@@ -5,15 +5,33 @@
 <html>
     <head>
         <meta charset="utf-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                {% block title %}
-                {% endblock %}
-                <!-- Core CSS - Include with every page -->
-                <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        {% block title %}
+        {% endblock %}
+
+        <!-- Core CSS - Include with every page -->
+        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+{#        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">#}
+
+        <!-- Core Scripts - Include with every page -->
+{#        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
+        <script src = "{% static 'js/jquery.min.js' %}"></script>
+{#        <script src = "{% static 'js/bootstrap.min.js' %}"></script>#}
+        <script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        {% block javascript %}
+        {% endblock %}
+
 
         <style>
             .panel{
                 border-width: 3px;
+            }
+            .btn-success{
+                background-color: #1c699d;
+                border-color: #1c699d;
+            }
+            a{
+                color: #1c699d;
             }
             input[type=submit] {width: 15em;}
             hr {border-width: 8px}
@@ -29,7 +47,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">{% block comp_name %}Shifty{% endblock %}</a>
+                <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
             </div>
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav navbar-right">
@@ -44,7 +62,7 @@
                             </li>
                             <li class="divider"></li>
                             <li>
-                                <a href="#">Edit Business</a>
+                                <a href="{% url 'edit_business' %}">Edit Business</a>
                             </li>
                             <li class="divider"></li>
                             <li>
@@ -61,11 +79,7 @@
     {% endblock %}
 
 
-    <!-- Core Scripts - Include with every page -->
-    <script src = "{% static 'js/jquery.min.js' %}"></script>
-    <script src = "{% static 'js/bootstrap.min.js' %}"></script>
-    {% block javascript %}
-    {% endblock %}
+
 
 
     </body>
