@@ -75,10 +75,13 @@ def edit_business(request):
 @login_required(login_url='/login')
 def add_employees(request):
     if request.method == 'POST':
-        extra = len(request.POST)
+        extra = (len(request.POST) - 1) / 3
         form = AddEmployeesForm(request.POST, extra=extra)
+
         if form.is_valid():
             print "valid!"
+        else:
+            print 'invalid'
     else:
         form = AddEmployeesForm()
     return render(request, "manager/add_employees.html", {'form': form})

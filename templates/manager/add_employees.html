@@ -4,77 +4,120 @@
     <title>Add Employees</title>
 {% endblock %}
 
+{% block comp_name%}
+{{ user.profile.business }}
+{% endblock %}
+
 {% block content %}
 
-{% if form.errors %}
-    <p>Your username and password didn't match. Please try again.</p>
-{% endif %}
 
-{% if next %}
-    {% if user.is_authenticated %}
-        <p>Your account doesn't have access to this page. To proceed,
-        please login with an account that has access.</p>
-    {% else %}
-        <p>Please login to see this page.</p>
+    {% if next %}
+        {% if user.is_authenticated %}
+            <p>Your account doesn't have access to this page. To proceed,
+                please login with an account that has access.</p>
+        {% else %}
+            <p>Please login to see this page.</p>
+        {% endif %}
     {% endif %}
-{% endif %}
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-4 col-md-offset-4">
-            <div class="login-panel panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title" style="display: inline">Add new employees</h3>
-                </div>
-                <div class="panel-body">
-                 <form>
-                <div id="forms">
-                    {{ form.as_p }}
-                </div>
-                <button type="button" class="btn btn-default" id="add-another">Add another</button>
-                <input type="submit" class="btn btn-info" value="Submit">
-                </form>
-                </div>
+    <div class="container">
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-xs-6 col-xs-offset-4">
+                <h2>Add Employees to {{ user.profile.business }}</h2>
             </div>
         </div>
+        <div class="row" style="margin-bottom: 30px">
+            <div class="col-xs-12 col-xs-offset-2">
+                <small>First, Users will be created in the system for your employees.
+                Second, emails will be sent to them with their credentials so they will be able to login.</small>
+            </div>
+        </div>
+        <div class="row">
+            <form action="." id="bookForm" method="post" class="form-horizontal">
+                {% csrf_token %}
+                <div class="form-group static-group">
+                    <div class="col-xs-1">
+                        <span>1</span>
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" name="employee_0_firstName" placeholder="First Name" />
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" name="employee_0_lastName" placeholder="Last Name" />
+                    </div>
+                    <div class="col-xs-4">
+                        <input type="email" class="form-control" name="employee_0_email" placeholder="Email" />
+                    </div>
+                    <div class="col-xs-1">
+                        <button type="button" class="btn btn-info addButton"><span class="glyphicon glyphicon-plus"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- The template for adding new field -->
+
+
+                <div class="form-group submit-group" style="margin-top: 30px">
+                    <div class="col-xs-5 col-xs-offset-5">
+                        <button type="submit" class="btn btn-lg btn-success">Submit</button>
+                    </div>
+                </div>
+            </form>
+                 <div class="form-group hide" id="bookTemplate">
+                    <div class="col-xs-1">
+                        <span class="counter">2</span>
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" name="firstName" placeholder="First Name" />
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="text" class="form-control" name="lastName" placeholder="Last Name" />
+                    </div>
+                    <div class="col-xs-4">
+                        <input type="email" class="form-control" name="email" placeholder="Email" />
+                    </div>
+                    <div class="col-xs-1">
+                        <button type="button" class="btn btn-danger removeButton"><span class="glyphicon glyphicon-minus"></span>
+                        </button>
+                    </div>
+                </div>
+        </div>
     </div>
-</div>
 
 {% endblock %}
 
 {% block javascript %}
     <script>
+$(document).ready(function() {
 
-    String.prototype.format = function() {
-      var str = this;
-      for (var i = 0; i < arguments.length; i++) {
-        var reg = new RegExp("\\{" + i + "\\}", "gm");
-        str = str.replace(reg, arguments[i]);
-      }
-      return str;
-    };
-    $(document).ready(function () {
+    var employeeIndex = 0;
 
-        var curr_employee = 0;
+        // Add button click handler
+        $('.addButton').click(function() {
+            employeeIndex++;
+            var $template = $('#bookTemplate'),
+                $clone    = $template
+                                .clone()
+                                .removeClass('hide')
+                                .removeAttr('id')
+                                .attr('data-book-index', employeeIndex)
+                                .insertBefore($(".submit-group"));
 
-        // get extra form count so we know what index to use for the next item.
-        $("#add-another").click(function() {
+            // Update the name attributes
+            $clone
+                .find('[class="counter"]').text(employeeIndex+1).end()
+                .find('[name="firstName"]').attr('name', 'employee_' + employeeIndex + '_firstName').end()
+                .find('[name="lastName"]').attr('name', 'employee_' + employeeIndex + '_lastName').end()
+                .find('[name="email"]').attr('name', 'employee_' + employeeIndex + '_email').end();
+        })
 
-             $("<input type='text' id='toto' label='yossi' />")
-                 .attr("id", "id_employee_{0}_first_name".format(curr_employee))
-                 .attr("name", "employee_{0}_first_name".format(curr_employee))
-                 .appendTo("#forms");
-                         $("<input type='text' value='' />")
-                 .attr("id", "id_employee_{0}_first_name".format(curr_employee))
-                 .attr("name", "employee_{0}_first_name".format(curr_employee))
-                 .appendTo("#forms");
-                         $("<input type='text' value='' />")
-                 .attr("id", "id_employee_{0}_first_name".format(curr_employee))
-                 .attr("name", "employee_{0}_first_name".format(curr_employee))
-                 .appendTo("#forms");
+        // Remove button click handler
+        $('.container').on('click', '.removeButton', function() {
+            var $row  = $(this).parents('.form-group');
 
-            curr_employee ++;
+            // Remove element containing the fields
+            $row.remove();
         });
-    });
+});
     </script>
 {% endblock %}
