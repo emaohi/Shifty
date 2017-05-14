@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 
 from forms import *
+from utils import *
 
 
 @login_required(login_url="login/")
@@ -75,11 +76,22 @@ def edit_business(request):
 @login_required(login_url='/login')
 def add_employees(request):
     if request.method == 'POST':
-        extra = (len(request.POST) - 1) / 3
-        form = AddEmployeesForm(request.POST, extra=extra)
+        num_of_employees = (len(request.POST) - 1) / 3
+        form = AddEmployeesForm(request.POST, extra=num_of_employees)
 
         if form.is_valid():
-            print "valid!"
+
+            data = form.cleaned_data
+
+            for i in range(num_of_employees):
+                new_employee_handler = NewEmployeeHandler(data['employee_%s_firstName' % str(i)],
+                                                          data['employee_%s_lastName' % str(i)],
+                                                          data['employee_%s_email' % str(i)])
+                new_employee_handler.create_employee()
+                try:
+                    new_employee_handler.send_invitation_mail()
+                except Exception as e:
+                    print e.message
         else:
             print 'invalid'
     else:
