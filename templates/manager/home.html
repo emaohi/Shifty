@@ -8,7 +8,26 @@
     <i>{{ user.profile.business.business_name }}</i> dashboard
 {% endblock %}
 
+{% block style %}
+<style>
+    .employee_button{
+        margin-top: 30px;
+    }
+    .employee_button_row{
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-success">
+            <strong>{{ msg| escape }}</strong>
+        </div>
+        {% endfor %}
+    {% endif %}
+
 
 <div class="container">
   <ul class="nav nav-tabs">
@@ -20,11 +39,33 @@
   <div class="tab-content">
     <div id="home" class="tab-pane fade in active">
       <h3>Current shifts</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      <p>Lorem ipsum dolor sit amet, consectetur.</p>
     </div>
     <div id="menu1" class="tab-pane fade">
-      <h3>Manage your Employees</h3>
-      <p></p>
+        <div class="row" style="margin-top: 30px">
+            <div class="col-md-4 col-md-offset-3">
+                <div class="panel panel-default">
+                    <div class="panel-heading" style="text-align: center">
+                        <h3>Manage your employees </h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row employee_button_row">
+                            <a href="{% url 'add_employees' %}" class="btn btn-success btn-lg employee_button"
+                               role="button">Add Employees</a>
+                        </div>
+                        <div class="row employee_button_row">
+                            <a href="#" class="btn btn-info btn-lg employee_button" role="button">Edit Employees</a>
+                        </div>
+                        <div class="row employee_button_row" style="margin-bottom: 20px">
+                        <a href="#" class="btn btn-danger btn-lg employee_button" role="button">Delete Employees</a>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
     </div>
     <div id="menu2" class="tab-pane fade">
       <h3>Menu 2</h3>
@@ -36,4 +77,14 @@
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block javascript %}
+
+    <script>
+        setTimeout(function(){
+          $('.alert-success').hide()
+        }, 3500);
+    </script>
+    
 {% endblock %}

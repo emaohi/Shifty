@@ -16,6 +16,7 @@
         <!-- Core Scripts - Include with every page -->
 {#        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
         <script src = "{% static 'js/jquery.min.js' %}"></script>
+        <script src="https://code.jquery.com/ui/1.12.0-rc.2/jquery-ui.min.js"></script>
 {#        <script src = "{% static 'js/bootstrap.min.js' %}"></script>#}
         <script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         {% block javascript %}
@@ -29,20 +30,18 @@
             .head-custom{
                 background-color: lightblue !important;
             }
-            .btn-success{
-                background-color: #1c699d;
-                border-color: #1c699d;
-            }
             a{
                 color: #1c699d;
             }
             .navbar-default{
                     background-color: lightblue;
-    border-color: lightblue;
+                    border-color: lightblue;
             }
             input[type=submit] {width: 15em;}
             hr {border-width: 4px}
         </style>
+        {% block style %}
+        {% endblock %}
     </head>
     <body>
     <nav class="navbar navbar-default">

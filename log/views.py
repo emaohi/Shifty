@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -76,24 +77,28 @@ def edit_business(request):
 @login_required(login_url='/login')
 def add_employees(request):
     if request.method == 'POST':
+        # get the number of fields (minus the csrf token) and divide by 3 as every user has 3 fields
         num_of_employees = (len(request.POST) - 1) / 3
         form = AddEmployeesForm(request.POST, extra=num_of_employees)
 
         if form.is_valid():
 
             data = form.cleaned_data
+            curr_business = request.user.profile.business
 
             for i in range(num_of_employees):
                 new_employee_handler = NewEmployeeHandler(data['employee_%s_firstName' % str(i)],
                                                           data['employee_%s_lastName' % str(i)],
-                                                          data['employee_%s_email' % str(i)])
-                new_employee_handler.create_employee()
+                                                          data['employee_%s_email' % str(i)],
+                                                          curr_business)
                 try:
                     new_employee_handler.send_invitation_mail()
                 except Exception as e:
                     print e.message
-        else:
-            print 'invalid'
+
+            messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
+                                                                                 curr_business))
+            return HttpResponseRedirect('/')
     else:
         form = AddEmployeesForm()
     return render(request, "manager/add_employees.html", {'form': form})
