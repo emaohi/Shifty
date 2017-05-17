@@ -77,8 +77,8 @@ def edit_business(request):
 @login_required(login_url='/login')
 def add_employees(request):
     if request.method == 'POST':
-        # get the number of fields (minus the csrf token) and divide by 3 as every user has 3 fields
-        num_of_employees = (len(request.POST) - 1) / 3
+        # get the number of fields (minus the csrf token) and divide by 4 as every user has 3 fields
+        num_of_employees = (len(request.POST) - 1) / 4
         form = AddEmployeesForm(request.POST, extra=num_of_employees)
 
         if form.is_valid():
@@ -90,7 +90,13 @@ def add_employees(request):
                 new_employee_handler = NewEmployeeHandler(data['employee_%s_firstName' % str(i)],
                                                           data['employee_%s_lastName' % str(i)],
                                                           data['employee_%s_email' % str(i)],
-                                                          curr_business)
+                                                          data['employee_%s_role' % str(i)],
+                                                          request.user)
+                new_employee = new_employee_handler.create_employee()
+
+                # add employee to employees group
+                Group.objects.get(name='Employees').user_set.add(new_employee)
+
                 try:
                     new_employee_handler.send_invitation_mail()
                 except Exception as e:

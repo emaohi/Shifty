@@ -23,6 +23,17 @@ class BusinessEditForm(forms.ModelForm):
         model = Business
         fields = ('business_type', 'tip_method')
 
+    def __init__(self, *args, **kwargs):
+        super(BusinessEditForm, self).__init__(*args, **kwargs)
+        self.fields['business_type'].widget.attrs \
+            .update({
+            'class': 'form-control'
+        })
+        self.fields['tip_method'].widget.attrs \
+            .update({
+            'class': 'form-control'
+        })
+
 
 class ManagerSignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
@@ -51,3 +62,5 @@ class AddEmployeesForm(forms.Form):
                 forms.CharField()
             self.fields['employee_{index}_email'.format(index=index)] = \
                 forms.EmailField()
+            self.fields['employee_{index}_role'.format(index=index)] = \
+                forms.ChoiceField(choices=(('MA', 'manager'), ('WA', 'waiter'), ('BT', 'bartender'), ('CO', 'cook')))
