@@ -1,3 +1,5 @@
+import traceback
+
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
@@ -77,7 +79,7 @@ def edit_business(request):
 @login_required(login_url='/login')
 def add_employees(request):
     if request.method == 'POST':
-        # get the number of fields (minus the csrf token) and divide by 4 as every user has 3 fields
+        # get the number of fields (minus the csrf token) and divide by 4 as every user has 4 fields
         num_of_employees = (len(request.POST) - 1) / 4
         form = AddEmployeesForm(request.POST, extra=num_of_employees)
 
@@ -100,7 +102,7 @@ def add_employees(request):
                 try:
                     new_employee_handler.send_invitation_mail()
                 except Exception as e:
-                    print e.message
+                    print e.message + traceback.format_exc()
 
             messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                  curr_business))

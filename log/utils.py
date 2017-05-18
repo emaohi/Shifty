@@ -4,6 +4,8 @@ import string
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.template import Context
+from django.template.loader import get_template
 
 
 class NewEmployeeHandler:
@@ -32,14 +34,25 @@ class NewEmployeeHandler:
         return self.user_created
 
     def send_invitation_mail(self):
+
+        context = {'manager': self.manager.username, 'role': self.user_created.profile.get_role_display(),
+                   'business': self.manager.profile.business.business_name, 'username': self.user_created.username,
+                   'password': self.password_created, 'first_name': self.firs_name}
+
+        htmly = get_template('manager/new_employee_email_msg.html')
+        # html_context = Context(context)
+        html_content = htmly.render(context)
+
         send_mail(
             'Sent from Shifty App',
             '%s add you as a %s to the businnes %s in Shifty app. username: %s, password: %s' %
-            (self.manager.username, self.role, self.manager.profile.business.business_name,
-             self.user_created.username, self.password_created),
+            (context.get('manager'), context.get('role'),
+             context.get('business'),
+             context.get('username'), context.get('password')),
             'shifty.moti@gmail.com',
             [self.user_created.email],
             fail_silently=False,
+            html_message=html_content
         )
 
     def _generate_username(self):
