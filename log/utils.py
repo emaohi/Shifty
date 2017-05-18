@@ -65,8 +65,8 @@ class NewEmployeeHandler:
         if len(existing_users) == 0:
             return suggested_username
 
-        last_added = existing_users[-1]
-        split_name = last_added.user_name.split('_')
+        last_added = existing_users.last()
+        split_name = last_added.username.split('_')
 
         if len(split_name) == 1:
             return last_added.username + '_1'

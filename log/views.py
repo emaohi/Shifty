@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 
 from forms import *
@@ -77,6 +77,7 @@ def edit_business(request):
 
 
 @login_required(login_url='/login')
+@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def add_employees(request):
     if request.method == 'POST':
         # get the number of fields (minus the csrf token) and divide by 4 as every user has 4 fields
