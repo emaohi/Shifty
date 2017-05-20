@@ -3,7 +3,8 @@ import string
 
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives
+from django.core.mail import send_mail, get_connection
 from django.template import Context
 from django.template.loader import get_template
 
@@ -54,6 +55,46 @@ class NewEmployeeHandler:
             fail_silently=False,
             html_message=html_content
         )
+
+    def get_invitation_mail_details(self):
+        return {'manager': self.manager.username, 'role': self.user_created.profile.get_role_display(),
+                   'business': self.manager.profile.business.business_name, 'username': self.user_created.username,
+                   'password': self.password_created, 'first_name': self.firs_name, 'to_email': self.user_created.email}
+
+    @staticmethod
+    def mass_html(mail_dicts=None):
+        connection = get_connection()  # uses SMTP server specified in settings.py
+        connection.open()
+        for dicti in mail_dicts:
+            to_email = dicti['to_email']
+            del dicti['to_email']
+
+            htmly = get_template('manager/new_employee_email_msg.html')
+            # html_context = Context(context)
+            html_content = htmly.render(dicti)
+            text_content = "..."
+            msg = EmailMultiAlternatives("subject", text_content, "from@bla", ["to@bla", "to2@bla", "to3@bla"],
+                                         connection=connection)
+            msg.attach_alternative(html_content, "text/html")
+            message = EmailMultiAlternatives('Sent from Shifty App', '%s add you as a %s to the businnes %s in Shifty app. username: %s, password: %s' %
+                (dicti.get('manager'), dicti.get('role'),
+                 dicti.get('business'),
+                 dicti.get('username'), dicti.get('password')), 'shifty.moti@gmail.com', [to_email])
+            message.attach_alternative(html_content, 'text/html')
+            message.send()
+            # send_mail(
+            #     'Sent from Shifty App',
+            #     '%s add you as a %s to the businnes %s in Shifty app. username: %s, password: %s' %
+            #     (dicti.get('manager'), dicti.get('role'),
+            #      dicti.get('business'),
+            #      dicti.get('username'), dicti.get('password')),
+            #     'shifty.moti@gmail.com',
+            #     [to_email],
+            #     fail_silently=False,
+            #     html_message=html_content
+            # )
+
+        connection.close()  # Cleanup
 
     def _generate_username(self):
         # first name and last letter of last name

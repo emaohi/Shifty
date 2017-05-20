@@ -88,6 +88,8 @@ def add_employees(request):
 
             data = form.cleaned_data
             curr_business = request.user.profile.business
+            mail_dics = []
+            new_employee_handler = None
 
             for i in range(num_of_employees):
                 new_employee_handler = NewEmployeeHandler(data['employee_%s_firstName' % str(i)],
@@ -96,14 +98,15 @@ def add_employees(request):
                                                           data['employee_%s_role' % str(i)],
                                                           request.user)
                 new_employee = new_employee_handler.create_employee()
-
                 # add employee to employees group
                 Group.objects.get(name='Employees').user_set.add(new_employee)
 
-                try:
-                    new_employee_handler.send_invitation_mail()
-                except Exception as e:
-                    print e.message + traceback.format_exc()
+                mail_dics.append(new_employee_handler.get_invitation_mail_details())
+
+            try:
+                new_employee_handler.mass_html(mail_dics)
+            except Exception as e:
+                print e.message + traceback.format_exc()
 
             messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                  curr_business))
