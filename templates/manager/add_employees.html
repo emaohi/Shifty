@@ -42,8 +42,8 @@
         </div>
         <div class="row" style="margin-bottom: 30px">
             <div class="col-xs-12 col-xs-offset-2">
-                <small>First, Users will be created in the system for your employees.
-                Second, emails will be sent to them with their credentials so they will be able to login.</small>
+                <p>First, Users will be created in the system for your employees.
+                Second, emails will be sent to them with their credentials so they will be able to login.</p>
             </div>
         </div>
         <div class="row">
@@ -81,6 +81,13 @@
                                 data-loading-text="<i class='fa fa-spinner fa-spin '></i> Processing Request">
                             Submit</button>
                     </div>
+                </div>
+                <div class="progress">
+                  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuemin="0"
+                       aria-valuemax="100" style="width: 0%;">
+                    <span class="sr-only"></span>
+                      Sending Mails...
+                  </div>
                 </div>
             </form>
                  <div class="form-group hide" id="bookTemplate">
@@ -146,13 +153,21 @@ $(document).ready(function() {
     });
 
     $('.btn-submit').on('click', function() {
-        var $this = $(this);
-        $this.button('loading');
-        setTimeout(function() {
-            $this.button('reset');
-        }, 8000);
-});
+        setTimeout(doProgress, 200);
+    });
+    function doProgress() {
+        var i = 0;
+        var counterBack = setInterval(function(){
+          i++;
+          if (i <= 100){
+            $('.progress-bar').css('width', i+'%');
+          } else {
+            clearInterval(counterBack);
+          }
 
+        }, (employeeIndex+1) * 30);
+
+    }
 });
     </script>
 {% endblock %}
