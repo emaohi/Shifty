@@ -106,7 +106,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = '/'  # It means home view
+LOGIN_REDIRECT_URL = '/login_success'  # It means home view
 LOGIN_URL = '/login/'
 
 # Internationalization

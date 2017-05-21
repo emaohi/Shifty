@@ -3,7 +3,7 @@ import traceback
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 
@@ -11,9 +11,14 @@ from forms import *
 from utils import *
 
 
-@login_required(login_url="login/")
+@login_required(login_url="/login")
 def home(request):
     return render(request, "manager/home.html")
+
+
+@login_required(login_url="/login")
+def emp_home(request):
+    return render(request, "employee/home.html")
 
 
 def register(request):
@@ -111,3 +116,25 @@ def add_employees(request):
     else:
         form = AddEmployeesForm()
     return render(request, "manager/add_employees.html", {'form': form})
+
+
+def login_success(request):
+    """
+    Redirects users based on whether they are in the admins group
+    """
+    if request.user.groups.filter(name="Managers").exists():
+        # user is a manager
+        return redirect("home")
+    else:
+        return redirect("emp_home")
+
+
+def home_or_login(request):
+    """
+    Redirects users based on whether they are in the admins group
+    """
+    if request.user.is_authenticated():
+        # user is a manager
+        return redirect("login_success")
+    else:
+        return redirect("login")
