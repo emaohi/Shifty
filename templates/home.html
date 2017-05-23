@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Homepage</title>
-</head>
-<body>
-Homepage
-</body>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+        <title>Shifty Bitch</title>
+{% endblock %}
+
+{% block style %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container">
+	<div class="row buttons">
+        <div class="col-md-5 col-md-offset-1">
+            <a href="{% url 'manager_home' %}" class="btn btn-primary btn-lg btn-block btn-huge">Shifty for managers</a>
+        </div>
+        <div class="col-md-5">
+            <a href="{% url 'emp_home' %}" class="btn btn-success btn-lg btn-block btn-huge">Shifty for employees</a>
+        </div>
+	</div>
+</div>
+
+{% endblock %}
 </html>

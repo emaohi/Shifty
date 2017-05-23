@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 @login_required(login_url="/login")
-def home(request):
+@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+def manager_home(request):
     return render(request, "manager/home.html")
 
 
 @login_required(login_url="/login")
+@user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
 def emp_home(request):
     return render(request, "employee/home.html")
 
@@ -132,7 +134,7 @@ def login_success(request):
     """
     if request.user.groups.filter(name="Managers").exists():
         # user is a manager
-        return redirect("home")
+        return redirect("manager_home")
     else:
         return redirect("emp_home")
 
@@ -146,3 +148,7 @@ def home_or_login(request):
         return redirect("login_success")
     else:
         return redirect("login")
+
+
+def home(request):
+    return render(request, 'home.html')
