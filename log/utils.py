@@ -1,6 +1,7 @@
 import random
 import string
 
+import logging
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMultiAlternatives
@@ -20,6 +21,7 @@ class NewEmployeeHandler:
         self.password_created = None
 
     def create_employee(self):
+
         username = self._generate_username()
         self.password_created = self._generate_password(6)
 

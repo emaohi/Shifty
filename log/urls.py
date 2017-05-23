@@ -12,13 +12,13 @@ urlpatterns = [
     url(r'^login_success$', views.login_success, name='login_success'),
     url(r'^login/$', django_views.login, {'template_name': 'login.html',
                                           'authentication_form': LoginForm}, name='login'),
+    url(r'^register/$', log_views.register, name='register'),
+    url(r'^success/$', views.success, name='success'),
     url(r'^logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),
     # -------------- Manager section ------------------------ #
 
     url(r'^manager/$', views.home, name='home'),
     url(r'^manager/logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),
-    url(r'^manager/register/$', log_views.register, name='register'),
-    url(r'^manager/success/$', views.success, name='success'),
     url(r'^manager/edit_business/$', views.edit_business, name='edit_business'),
     url(r'^manager/add_employees/$', views.add_employees, name='add_employees'),
 

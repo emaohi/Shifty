@@ -18,21 +18,23 @@
 {% endblock %}
 
 {% block content %}
-    {% if form.errors %}
-
-<p>Your username and password didn't match. Please try again.</p>
+{% if form.errors %}
+    <div class="alert alert-danger">
+            <strong>Your username and password didn't match. Please try again.</strong>
+    </div>
 {% endif %}
 
-{% if next %}
-    {% if user.is_authenticated %}
-
-<p>Your account doesn't have access to this page. To proceed,
-    please login with an account that has access.</p>
-    {% else %}
-
-<p>Please login to see this page.</p>
-    {% endif %}
-{% endif %}
+{#{% if next %}#}
+{#    <p>{{ next }}</p>#}
+{#    {% if user.is_authenticated %}#}
+{##}
+{#        <p>Your account doesn't have access to this page. To proceed,#}
+{#            please login with an account that has access.</p>#}
+{#    {% else %}#}
+{##}
+{#        <p>Please login to see this page.</p>#}
+{#        {% endif %}#}
+{#{% endif %}#}
 
 <div class="container">
     <div class="row">

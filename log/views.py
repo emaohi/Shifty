@@ -10,6 +10,9 @@ from django.contrib.auth.models import Group
 from forms import *
 from utils import *
 
+logging.basicConfig(format='%(levelname)s %(asctime)s %(module)s %(message)s', level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 @login_required(login_url="/login")
 def home(request):
@@ -117,6 +120,8 @@ def add_employees(request):
                                                                                  curr_business))
             return HttpResponseRedirect('/')
     else:
+        logger.info("inside create_employee")
+        logger.warning("inside create_employee")
         form = AddEmployeesForm()
     return render(request, "manager/add_employees.html", {'form': form})
 
@@ -134,7 +139,7 @@ def login_success(request):
 
 def home_or_login(request):
     """
-    Redirects users based on whether they are in the admins group
+    Redirects users based on whether they are authenticated
     """
     if request.user.is_authenticated():
         # user is a manager
