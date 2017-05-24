@@ -8,13 +8,14 @@ from . import views
 
 urlpatterns = [
 
-    url(r'^$', views.home, name='home'),
+    # url(r'^home/$', views.home, name='real_home'),
+    url(r'^$', views.home_or_login, name='home'),
     url(r'^login_success$', views.login_success, name='login_success'),
     url(r'^login/$', django_views.login, {'template_name': 'login.html',
                                           'authentication_form': LoginForm}, name='login'),
     url(r'^register/$', log_views.register, name='register'),
     url(r'^success/$', views.success, name='success'),
-    url(r'^logout/$', django_views.logout, {'next_page': 'home'}, name='logout'),
+    url(r'^logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),
     # -------------- Manager section ------------------------ #
 
     url(r'^manager/$', views.manager_home, name='manager_home'),

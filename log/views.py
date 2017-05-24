@@ -150,5 +150,5 @@ def home_or_login(request):
         return redirect("login")
 
 
-def home(request):
-    return render(request, 'home.html')
+# def home(request):
+#     return render(request, 'home.html')
