@@ -11,11 +11,12 @@ from django.template.loader import get_template
 
 
 class NewEmployeeHandler:
-    def __init__(self, first_name, last_name, email, role, manager_user):
+    def __init__(self, first_name, last_name, email, role, date_joined, manager_user):
         self.firs_name = first_name
         self.last_name = last_name
         self.email = email
         self.role = role
+        self.date_joined = date_joined
         self.manager = manager_user
         self.user_created = None
         self.password_created = None
@@ -32,6 +33,7 @@ class NewEmployeeHandler:
         new_profile = self.user_created.profile
         new_profile.business = self.manager.profile.business
         new_profile.role = self.role
+        new_profile.started_work_date = self.date_joined
         new_profile.save()
 
         return self.user_created

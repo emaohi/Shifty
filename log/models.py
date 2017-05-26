@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
+
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.contrib.auth.models import User
@@ -66,6 +68,14 @@ class EmployeeProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    # noinspection PyTypeChecker
+    def get_employment_time(self):
+        if self.started_work_date:
+            today = datetime.now().date()
+            delta = today - self.started_work_date
+            return delta.days
+        return None
 
 
 @receiver(post_save, sender=User)

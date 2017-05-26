@@ -64,3 +64,5 @@ class AddEmployeesForm(forms.Form):
                 forms.EmailField()
             self.fields['employee_{index}_role'.format(index=index)] = \
                 forms.ChoiceField(choices=(('WA', 'waiter'), ('BT', 'bartender'), ('CO', 'cook')))
+            self.fields['employee_{index}_dateJoined'.format(index=index)] = \
+                forms.DateField()

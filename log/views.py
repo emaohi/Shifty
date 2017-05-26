@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 
 from forms import *
+from log.models import EmployeeProfile
 from utils import *
 
 logging.basicConfig(format='%(levelname)s %(asctime)s %(module)s %(message)s', level=logging.INFO)
@@ -91,7 +92,7 @@ def edit_business(request):
 def add_employees(request):
     if request.method == 'POST':
         # get the number of fields (minus the csrf token) and divide by 4 as every user has 4 fields
-        num_of_employees = (len(request.POST) - 1) / 4
+        num_of_employees = (len(request.POST) - 1) / 5
         form = AddEmployeesForm(request.POST, extra=num_of_employees)
 
         if form.is_valid():
@@ -106,6 +107,7 @@ def add_employees(request):
                                                           data['employee_%s_lastName' % str(i)],
                                                           data['employee_%s_email' % str(i)],
                                                           data['employee_%s_role' % str(i)],
+                                                          data['employee_%s_dateJoined' % str(i)],
                                                           request.user)
                 new_employee = new_employee_handler.create_employee()
                 # add employee to employees group
@@ -126,6 +128,18 @@ def add_employees(request):
         logger.warning("inside create_employee")
         form = AddEmployeesForm()
     return render(request, "manager/add_employees.html", {'form': form})
+
+
+def manage_employees(request):
+    curr_business = request.user.profile.business
+    all_employees = EmployeeProfile.objects.filter(business=curr_business)
+
+    return render(request, 'manager/manage_employees.html',
+                  {'employees': all_employees, 'curr_business': curr_business})
+
+
+def edit_profile(request):
+    return render(request, 'edit_profile.html', {})
 
 
 def login_success(request):

@@ -16,12 +16,14 @@ urlpatterns = [
     url(r'^register/$', log_views.register, name='register'),
     url(r'^success/$', views.success, name='success'),
     url(r'^logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),
+    url(r'^edit_profile/$', django_views.logout, {'next_page': 'login'}, name='logout'),
     # -------------- Manager section ------------------------ #
 
     url(r'^manager/$', views.manager_home, name='manager_home'),
     url(r'^manager/logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),
     url(r'^manager/edit_business/$', views.edit_business, name='edit_business'),
     url(r'^manager/add_employees/$', views.add_employees, name='add_employees'),
+    url(r'^manager/manage_employees/$', views.manage_employees, name='manage_employees'),
 
     # -------------- Employee section ------------------------ #
 

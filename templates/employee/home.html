@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block comp_name %}
-    <i>{{ user.profile.business.business_name }} - Employee</i> dashboard
+    <b>{{ user.profile.business.business_name }}</b>
 {% endblock %}
 
 {% block style %}
@@ -26,10 +26,10 @@
 
 <div class="container">
   <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
-    <li><a data-toggle="tab" href="#menu1">You are employee</a></li>
-    <li><a data-toggle="tab" href="#menu2">Menu 2</a></li>
-    <li><a data-toggle="tab" href="#menu3">Menu 3</a></li>
+    <li class="active"><a data-toggle="tab" href="#home">Notifications</a></li>
+    <li><a data-toggle="tab" href="#menu1">Shift request</a></li>
+    <li><a data-toggle="tab" href="#menu2">Previous shifts</a></li>
+    <li><a data-toggle="tab" href="#menu3">Messages</a></li>
   </ul>
   <div class="tab-content">
     <div id="home" class="tab-pane fade in active">
