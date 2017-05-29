@@ -2,7 +2,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.contrib.auth.models import User
 
-from log.models import Business
+from log.models import Business, EmployeeProfile
 
 
 class LoginForm(AuthenticationForm):
@@ -66,3 +66,24 @@ class AddEmployeesForm(forms.Form):
                 forms.ChoiceField(choices=(('WA', 'waiter'), ('BT', 'bartender'), ('CO', 'cook')))
             self.fields['employee_{index}_dateJoined'.format(index=index)] = \
                 forms.DateField()
+
+
+class EditProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = EmployeeProfile
+        fields = ['user', 'phone_num', 'birth_date', 'started_work_date', 'role', 'home_address', 'avg_rate']
+
+    def __init__(self, *args, **kwargs):
+        is_manager = kwargs.pop('is_manager', None)
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        fields_to_delete = ()
+        fields_to_disable = ()
+        if not is_manager:
+            fields_to_delete = ('avg_rate', )
+            fields_to_disable = ('role', 'started_work_date')
+        for field in fields_to_delete:
+            del self.fields[field]
+        for field in fields_to_disable:
+            self.fields[field].disabled = True
+        # self.fields['user'].hidden = True

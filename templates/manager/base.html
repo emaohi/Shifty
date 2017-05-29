@@ -51,11 +51,15 @@
             }
             input[type=submit] {width: 15em;}
             hr {border-width: 4px}
+            .modal-header{
+                background-color: lightcoral;
+            }
         </style>
         {% block style %}
         {% endblock %}
     </head>
     <body>
+
     <nav class="navbar navbar-default">
         <div class="container-fluid">
             <div class="navbar-header">
@@ -77,7 +81,7 @@
                         </a>
                         <ul class="dropdown-menu" role="menu">
                             <li>
-                                <a href="#">Edit Profile</a>
+                                <a href="{% url 'edit_profile' %}">Edit Profile</a>
                             </li>
                             <li class="divider"></li>
                             <li>
@@ -93,6 +97,20 @@
             </div>
         </div>
     </nav>
+
+    {% if messages %}
+        {% for msg in messages%}
+            {% if msg.tags == 'error' %}
+        <div class="alert alert-danger">
+            <strong>{{ msg| escape }}</strong>
+        </div>
+                {% else %}
+                <div class="alert alert-success">
+            <strong>{{ msg| escape }}</strong>
+        </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     {% block content %}
     {% endblock %}

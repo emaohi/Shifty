@@ -6,6 +6,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
+from django.urls import reverse
 
 from forms import *
 from log.models import EmployeeProfile
@@ -130,6 +131,7 @@ def add_employees(request):
     return render(request, "manager/add_employees.html", {'form': form})
 
 
+@login_required(login_url='/login')
 def manage_employees(request):
     curr_business = request.user.profile.business
     all_employees = EmployeeProfile.objects.filter(business=curr_business)
@@ -138,6 +140,37 @@ def manage_employees(request):
                   {'employees': all_employees, 'curr_business': curr_business})
 
 
+@login_required(login_url='/login')
+def edit_profile_form(request):
+    if request.method == 'GET':
+        employee_username = request.GET.get('username', None)
+        is_manager = request.user.groups.filter(name='Managers').exists()
+        if not is_manager:
+            initial_form = EditProfileForm(instance=request.user.profile, is_manager=False)
+        else:
+            initial_form = EditProfileForm(instance=EmployeeProfile.objects.get(user__username=employee_username if
+                                                                                employee_username else
+                                                                                request.user.username),
+                                           is_manager=True)
+        return render(request, 'edit_profile_form.html', {'form': initial_form})
+    else:
+        logger.info('******** %s', str(request.POST))
+        profile = EmployeeProfile.objects.get(user=request.POST.get('user'))
+        logger.info('**** %s', profile.avg_rate)
+        is_manager = request.user.groups.filter(name='Managers').exists()
+        form = EditProfileForm(request.POST, instance=profile, is_manager=is_manager)
+        if form.is_valid():
+            edited_profile = form.save()
+            messages.success(request, message='successfully edited %s' % edited_profile.user.username)
+            return redirect('manage_employees' if (is_manager and request.user.profile != edited_profile) else
+                            'edit_profile')
+        else:
+            logger.error(str(form.errors))
+            messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors))
+            return redirect('manage_employees')
+
+
+@login_required(login_url='/login')
 def edit_profile(request):
     return render(request, 'edit_profile.html', {})
 
@@ -162,7 +195,3 @@ def home_or_login(request):
         return redirect("login_success")
     else:
         return redirect("login")
-
-
-# def home(request):
-#     return render(request, 'home.html')

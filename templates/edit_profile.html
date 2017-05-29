@@ -9,10 +9,47 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container">
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 col-md-offset-2">
+            <div class="login-panel panel panel-default">
+                <div class="panel-heading head-custom">
+                    <h3 class="panel-title" style="display: inline">Edit your profile</h3>
+                    <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
+                </div>
+                <div class="panel-body" >
+                    <form action="{% url 'edit_profile_form' %}" method="post">
+                        {% csrf_token %}
+                        <div id="form_here"></div>
+{#                    {{ form.as_p }}#}
+                    <hr>
+                    <div class="text-center">
+                    <input type="submit" class="btn btn-info" value="Submit">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
 {% endblock %}
 
+{% block javascript %}
+<script>
+       $(document).ready(function () {
+          $.ajax({
+              url: "{% url 'edit_profile_form' %}",
+              type: "get", //send it through get method,
+              success: function(response) {
+                            $('#form_here').html(response);
+              },
+              error: function(xhr) {
+                //Do Something to handle error
+              }
+          });
+       })
+</script>
+{% endblock %}
 
 

@@ -36,6 +36,9 @@
             .form-control{
                 width: 100%;
             }
+            .jumbotron{
+                padding-bottom: 1px;
+            }
          {% block style %}
         {% endblock %}
         </style>
@@ -46,6 +49,19 @@
       <img src="{% static 'imgs/Logomakr_1AJcXR.png' %}">
       <p style="text-align: center">The best shift arrangements app !</p>
     </div>
+            {% if messages %}
+        {% for msg in messages%}
+            {% if msg.tags == 'error' %}
+        <div class="alert alert-danger">
+            <strong>{{ msg| escape }}</strong>
+        </div>
+                {% else %}
+                <div class="alert alert-success">
+            <strong>{{ msg| escape }}</strong>
+        </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 {% block content %}
 {% endblock %}
 </body>

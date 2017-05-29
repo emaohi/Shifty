@@ -1,0 +1,10 @@
+
+{% if form.errors %}
+    {% for err in form.errors %}
+                <div class="alert alert-danger">
+            <strong>{{ err }}</strong>
+        </div>
+    {% endfor %}
+{% endif %}
+{{ form.as_p }}
+{% csrf_token %}
