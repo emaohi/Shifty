@@ -68,11 +68,10 @@
       </div>
       <form action="{% url 'edit_profile_form' %}" method="post">
       <div class="modal-body">
-{#          {% csrf_token %}#}
               <div id="form_here"></div>
       </div>
       <div class="modal-footer ">
-        <input type="submit" class="btn btn-warning btn-lg" value="OK" style="width: 100%;"></input>
+        <input type="submit" class="btn btn-warning btn-lg" value="Edit Profile" style="width: 100%;">
       </div>
       </form>
     </div>
@@ -85,7 +84,7 @@
 
 
     <div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-      <div class="modal-dialog">
+    <div class="modal-dialog">
     <div class="modal-content">
           <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
@@ -97,10 +96,10 @@
 
       </div>
         <div class="modal-footer ">
-        <button type="button" class="btn btn-success" ><span class="glyphicon glyphicon-ok-sign"></span> Yes</button>
+        <button type="button" class="btn btn-success" id="del_btn"><span class="glyphicon glyphicon-ok-sign"></span> Yes</button>
         <button type="button" class="btn btn-default" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span> No</button>
       </div>
-        </div>
+    </div>
     <!-- /.modal-content -->
   </div>
       <!-- /.modal-dialog -->
@@ -113,13 +112,22 @@
 
         $(document).ready(function () {
 
+            var curr_modal_username = "";
+
             handle_manager_row();
 
             $('.btn-danger').click(function () {
-                show_delete_modal($(this).parents('td').siblings(":first").text());
+                curr_modal_username = $(this).parents('td').siblings(":first").text();
+                show_delete_modal(curr_modal_username);
             });
             $('.btn-primary').click(function () {
-                show_edit_modal($(this).parents('td').siblings(":first").text());
+                curr_modal_username = $(this).parents('td').siblings(":first").text();
+                show_edit_modal(curr_modal_username);
+            });
+
+            $('#del_btn').click(function () {
+{#                alert(curr_modal_username);#}
+                del_user(curr_modal_username);
             });
         });
 
@@ -128,7 +136,7 @@
             $manager_row.css('background-color', 'lightgreen');
             $manager_row.find('.btn-xs').hide();
         }
-        
+
         function show_edit_modal(username) {
             $.ajax({
               url: "{% url 'edit_profile_form' %}",
@@ -150,6 +158,22 @@
         function show_delete_modal(username){
             $('#delete').find('h4').text("Delete " + username + " from your business");
             $('#delete').modal('show');
+        }
+
+        function del_user(username) {
+            $.ajax({
+              url: "{% url 'delete_user' %}",
+              type: "post", //send it through get method
+              data: {
+                username: username
+              },
+              headers: {
+                  'X-CSRFToken': '{{ csrf_token }}'
+              },
+              success: function(response){
+                        window.location.reload();
+                    }
+            });
         }
     </script>
 

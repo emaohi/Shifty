@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^manager/edit_business/$', views.edit_business, name='edit_business'),
     url(r'^manager/add_employees/$', views.add_employees, name='add_employees'),
     url(r'^manager/manage_employees/$', views.manage_employees, name='manage_employees'),
+    url(r'^manager/delete_user/$', views.delete_user, name='delete_user'),
 
     # -------------- Employee section ------------------------ #
 

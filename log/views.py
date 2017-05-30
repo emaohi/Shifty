@@ -2,7 +2,7 @@ import traceback
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
@@ -132,6 +132,7 @@ def add_employees(request):
 
 
 @login_required(login_url='/login')
+@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manage_employees(request):
     curr_business = request.user.profile.business
     all_employees = EmployeeProfile.objects.filter(business=curr_business)
@@ -161,9 +162,10 @@ def edit_profile_form(request):
         form = EditProfileForm(request.POST, instance=profile, is_manager=is_manager)
         if form.is_valid():
             edited_profile = form.save()
-            messages.success(request, message='successfully edited %s' % edited_profile.user.username)
-            return redirect('manage_employees' if (is_manager and request.user.profile != edited_profile) else
-                            'edit_profile')
+            is_edited_other = is_manager and request.user.profile != edited_profile
+            messages.success(request, message='successfully edited %s' %
+                                              (edited_profile.user.username if is_edited_other else 'yourself   '))
+            return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))
             messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors))
@@ -173,6 +175,18 @@ def edit_profile_form(request):
 @login_required(login_url='/login')
 def edit_profile(request):
     return render(request, 'edit_profile.html', {})
+
+
+@login_required(login_url='/login')
+@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+def delete_user(request):
+    username = request.POST.get('username')
+    user_to_delete = User.objects.get(username=username)
+
+    user_to_delete.delete()
+
+    messages.success(request, message='successfully deleted %s' % username)
+    return HttpResponse('manage_employees')
 
 
 def login_success(request):
