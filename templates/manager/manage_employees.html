@@ -19,6 +19,8 @@
             <th>First name</th>
             <th>Last name</th>
             <th>Role</th>
+            <th>Birthday</th>
+            <th>Address</th>
             <th>Contact</th>
             <th># of days at {{ curr_business }}</th>
             <th>Edit</th>
@@ -36,6 +38,16 @@
                     <td class="manager-cell">{{ employee.get_role_display }}</td>
                 {% else %}
                     <td>{{ employee.get_role_display }}</td>
+                {% endif %}
+                {% if employee.birth_date %}
+                    <td>{{ employee.birth_date }} ({{ employee.get_age }} y/o)</td>
+                {% else %}
+                    <td>No data</td>
+                {% endif %}
+                 {% if employee.home_address %}
+                    <td>{{ employee.home_address }}</td>
+                {% else %}
+                    <td>No data</td>
                 {% endif %}
                 {% if employee.phone_num %}
                     <td>{{ employee.phone_num }}</td>

@@ -19,12 +19,10 @@
                 </div>
                 <div class="panel-body" >
                     <form action="{% url 'edit_profile_form' %}" method="post">
-                        {% csrf_token %}
                         <div id="form_here"></div>
-{#                    {{ form.as_p }}#}
                     <hr>
                     <div class="text-center">
-                    <input type="submit" class="btn btn-info" value="Submit">
+                    <input type="submit" class="btn btn-info btn-lg" value="Submit">
                         </div>
                     </form>
                 </div>
@@ -43,6 +41,10 @@
               type: "get", //send it through get method,
               success: function(response) {
                             $('#form_here').html(response);
+                            $('input:disabled').after('<button type="button" class="btn btn-warning btn-xs report-btn">' +
+                                'Incorrect?</button>');
+                            $('select:disabled').after('<button type="button" class="btn btn-warning btn-xs report-btn">' +
+                                'Incorrect?</button> <hr>');
               },
               error: function(xhr) {
                 //Do Something to handle error

@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 
 from datetime import datetime
 
@@ -41,6 +41,7 @@ class Business(models.Model):
         return self.get_business_type_display()
 
 
+# noinspection PyTypeChecker
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
@@ -75,6 +76,13 @@ class EmployeeProfile(models.Model):
             today = datetime.now().date()
             delta = today - self.started_work_date
             return delta.days
+        return None
+
+    def get_age(self):
+        if self.birth_date:
+            today = datetime.now().date()
+            delta = today - self.birth_date
+            return round(delta.days / 365, 2)
         return None
 
 

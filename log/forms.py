@@ -72,7 +72,7 @@ class EditProfileForm(forms.ModelForm):
 
     class Meta:
         model = EmployeeProfile
-        fields = ['user', 'phone_num', 'birth_date', 'started_work_date', 'role', 'home_address', 'avg_rate']
+        fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address', 'avg_rate']
 
     def __init__(self, *args, **kwargs):
         is_manager = kwargs.pop('is_manager', None)
@@ -86,4 +86,5 @@ class EditProfileForm(forms.ModelForm):
             del self.fields[field]
         for field in fields_to_disable:
             self.fields[field].disabled = True
-        # self.fields['user'].hidden = True
+        self.fields['user'].widget = forms.HiddenInput()
+

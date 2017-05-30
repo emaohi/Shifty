@@ -186,7 +186,7 @@ def delete_user(request):
     user_to_delete.delete()
 
     messages.success(request, message='successfully deleted %s' % username)
-    return HttpResponse('manage_employees')
+    return HttpResponse('ok')
 
 
 def login_success(request):
