@@ -85,6 +85,13 @@ class EmployeeProfile(models.Model):
             return round(delta.days / 365, 2)
         return None
 
+    def get_manager(self):
+        profile_business = self.business
+        for profile in profile_business.employeeprofile_set.all():
+            if profile.role == 'MA':
+                return profile
+        return None
+
 
 @receiver(post_save, sender=User)
 def update_employee(sender, instance, created, **kwargs):

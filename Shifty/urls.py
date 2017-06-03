@@ -21,5 +21,6 @@ from log.forms import LoginForm
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^core/', include('core.urls')),
     url(r'', include('log.urls')),
 ]
