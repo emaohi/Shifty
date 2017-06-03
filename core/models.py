@@ -23,3 +23,4 @@ class Message(models.Model):
     def get_recipients(self):
         return ",".join([str(r) for r in self.recipients.all()])
 
+

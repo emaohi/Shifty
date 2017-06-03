@@ -70,7 +70,7 @@
               show_text_and_send_btn($(this));
           });
           $('#form_here').on('click', '.btn-info', function() {
-              var field_name = $(this).siblings('input:disabled').attr('name');
+              var field_name = $(this).prev().prev().attr('name');
               var fix_text = $(this).siblings('input[class="new_text"]').val();
               report_incorrect($(this), field_name, fix_text);
           });
