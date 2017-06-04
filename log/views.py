@@ -16,6 +16,18 @@ logging.basicConfig(format='%(levelname)s %(asctime)s %(module)s %(message)s', l
 logger = logging.getLogger(__name__)
 
 
+@login_required(login_url="/login")
+@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+def manager_home(request):
+    return render(request, "manager/home.html")
+
+
+@login_required(login_url="/login")
+@user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
+def emp_home(request):
+    return render(request, "employee/home.html")
+
+
 def register(request):
     if request.POST:
         manager_form = ManagerSignUpForm(request.POST)
