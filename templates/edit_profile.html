@@ -72,7 +72,16 @@
           $('#form_here').on('click', '.btn-info', function() {
               var field_name = $(this).prev().prev().attr('name');
               var fix_text = $(this).siblings('input[class="new_text"]').val();
-              report_incorrect($(this), field_name, fix_text);
+
+              var curr_val = "";
+              var $prevprev = $(this).prev().prev();
+
+              if ($prevprev.is('input')){
+                  curr_val = $prevprev.attr('value');
+              }else if ($prevprev.is('select')){
+                  curr_val = $prevprev.find(":selected").text();;
+              }
+              report_incorrect($(this), field_name, fix_text, curr_val);
           });
        });
 
@@ -90,13 +99,14 @@
                             'Incorrect?</button><hr>');
           }
 
-      function report_incorrect($btn, field, fix) {
+      function report_incorrect($btn, field, fix, curr_val) {
             $.ajax({
               url: "{% url 'report_incorrect' %}",
               type: "post", //send it through get method
               data: {
                 incorrect_field: field,
-                fix_suggestion: fix
+                fix_suggestion: fix,
+                curr_val: curr_val
               },
               headers: {
                   'X-CSRFToken': '{{ csrf_token }}'
