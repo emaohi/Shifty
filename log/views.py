@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
+from core.models import Message, EmployeeRequest
 from forms import *
 from log.models import EmployeeProfile
 from utils import *
@@ -19,7 +20,10 @@ logger = logging.getLogger(__name__)
 @login_required(login_url="/login")
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manager_home(request):
-    return render(request, "manager/home.html")
+    curr_business = request.user.profile.business
+    all_employees = curr_business.get_employees()
+    emp_requests = EmployeeRequest.objects.filter(issuers__in=all_employees).distinct().order_by('-sent_time')
+    return render(request, "manager/home.html", {'employee_requests': emp_requests})
 
 
 @login_required(login_url="/login")

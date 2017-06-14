@@ -40,6 +40,9 @@ class Business(models.Model):
     def get_type(self):
         return self.get_business_type_display()
 
+    def get_employees(self):
+        return self.employeeprofile_set.all()
+
 
 # noinspection PyTypeChecker
 class EmployeeProfile(models.Model):

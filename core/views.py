@@ -1,7 +1,7 @@
 from django.utils import timezone
 from django.http import HttpResponse
 
-from core.models import Message
+from core.models import Message, EmployeeRequest
 
 
 def report_incorrect_detail(request):
@@ -11,12 +11,13 @@ def report_incorrect_detail(request):
         fix_suggestion = request.POST.get('fix_suggestion')
         curr_val = request.POST.get('curr_val')
 
-        new_msg = Message(sender=reporting_profile, sent_time=timezone.now(), subject='Incorrect Employee Data',
-                          text='%s have mentioned that his %s field is incorrect.'
-                               ' Current field value is %s; His suggestion is %s' %
-                               (reporting_profile.user.username, incorrect_field, curr_val, fix_suggestion))
-        new_msg.save()
+        new_request = EmployeeRequest(sent_time=timezone.now(),
+                                      subject='Employee Data Change Request',
+                                      text='%s have mentioned that his %s field is incorrect.'
+                                           ' Current field value is %s; His suggestion is %s' %
+                                      (reporting_profile.user.username, incorrect_field, curr_val, fix_suggestion))
+        new_request.save()
         # add the employee's manager to the recipients list
-        new_msg.recipients.add(reporting_profile.get_manager())
+        new_request.issuers.add(reporting_profile)
 
         return HttpResponse('Report was sent successfully')
