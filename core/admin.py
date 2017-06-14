@@ -1,11 +1,11 @@
 from django.contrib import admin
-from .models import ShiftsArrangement, Message, EmployeeRequest, BroadcastMessage, ShiftSwapMessage
+from .models import ShiftsArrangement, Message, EmployeeRequest, ShiftSwapMessage, ManagerMessage
 
 # Register your models here.
 admin.site.register(ShiftsArrangement)
 
 admin.site.register(EmployeeRequest)
-admin.site.register(BroadcastMessage)
+admin.site.register(ManagerMessage)
 admin.site.register(ShiftSwapMessage)
 
 

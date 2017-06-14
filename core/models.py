@@ -39,8 +39,9 @@ class EmployeeRequest(models.Model):
         return ', '.join(str(emp) for emp in self.issuers.all())
 
 
-class BroadcastMessage(models.Model):
+class ManagerMessage(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
+    recipients = models.ManyToManyField(EmployeeProfile, related_name='manager_msg')
     sent_time = models.DateTimeField()
     subject = models.TextField(max_length=50)
     text = models.TextField(max_length=200)

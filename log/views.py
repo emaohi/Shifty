@@ -2,13 +2,14 @@ import traceback
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
-from core.models import Message, EmployeeRequest
+from core.models import Message, EmployeeRequest, ManagerMessage
 from forms import *
 from log.models import EmployeeProfile
 from utils import *
@@ -21,15 +22,24 @@ logger = logging.getLogger(__name__)
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manager_home(request):
     curr_business = request.user.profile.business
-    all_employees = curr_business.get_employees()
-    emp_requests = EmployeeRequest.objects.filter(issuers__in=all_employees).distinct().order_by('-sent_time')
-    return render(request, "manager/home.html", {'employee_requests': emp_requests})
+    business_employees = curr_business.get_employees()
+
+    pending_emp_requests = EmployeeRequest.objects.filter(issuers__in=business_employees, status='P'). \
+        distinct().order_by('-sent_time')
+
+    done_emp_requests = EmployeeRequest.objects.filter(Q(issuers__in=business_employees, status='A') |
+                                                       Q(issuers__in=business_employees, status='R')).\
+        distinct().order_by('-sent_time')
+
+    context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests}
+    return render(request, "manager/home.html", context)
 
 
 @login_required(login_url="/login")
 @user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
 def emp_home(request):
-    return render(request, "employee/home.html")
+    manager_messages = ManagerMessage.objects.filter(recipients__in=[request.user.profile]).order_by('-sent_time')
+    return render(request, "employee/home.html", {'manager_msgs': manager_messages})
 
 
 def register(request):
