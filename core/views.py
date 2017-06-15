@@ -17,9 +17,9 @@ def report_incorrect_detail(request):
 
         new_request = EmployeeRequest(sent_time=timezone.now(),
                                       subject='Employee Change Request',
-                                      text='%s have mentioned that his %s field is incorrect.'
-                                           ' Current field value is %s; His suggestion is %s' %
-                                      (reporting_profile.user.username, incorrect_field, curr_val, fix_suggestion))
+                                      text='Field claimed to be incorrect: %s.'
+                                           ' Current field value is %s; Suggestion is %s' %
+                                      (incorrect_field, curr_val, fix_suggestion))
         new_request.save()
         # add the employee's manager to the recipients list
         new_request.issuers.add(reporting_profile)
@@ -40,5 +40,5 @@ def handle_employee_request(request):
 
         send_manager_msg(emp_request)
 
-        messages.success(request, message='request approved')
+        messages.success(request, message='request approved' if new_status is 'A' else 'request rejected')
         return HttpResponse('ok')
