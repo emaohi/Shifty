@@ -1,0 +1,1 @@
+web: gunicorn Shifty.wsgi --log-file -
