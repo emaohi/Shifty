@@ -14,19 +14,21 @@ from forms import *
 from log.models import EmployeeProfile
 from utils import *
 
-logging.basicConfig(format='%(levelname)s %(asctime)s %(module)s %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('cool')
 
 
 @login_required(login_url="/login")
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manager_home(request):
+
     curr_business = request.user.profile.business
     business_employees = curr_business.get_employees()
 
+    logger.info('generating pending employee requests')
     pending_emp_requests = EmployeeRequest.objects.filter(issuers__in=business_employees, status='P'). \
         distinct().order_by('-sent_time')
 
+    logger.info('generating done employee requests')
     done_emp_requests = EmployeeRequest.objects.filter(Q(issuers__in=business_employees, status='A') |
                                                        Q(issuers__in=business_employees, status='R')).\
         distinct().order_by('-sent_time')
@@ -38,6 +40,7 @@ def manager_home(request):
 @login_required(login_url="/login")
 @user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
 def emp_home(request):
+    logger.info('generating manager messages for %s' % request.user.username)
     manager_messages = ManagerMessage.objects.filter(recipients__in=[request.user.profile]).order_by('-sent_time')
     return render(request, "employee/home.html", {'manager_msgs': manager_messages})
 
@@ -50,6 +53,7 @@ def register(request):
 
             manager = manager_form.save()
 
+            logger.info('creating business')
             business = business_form.save()
             business.manager = manager
             business.save()
@@ -57,9 +61,11 @@ def register(request):
             manager.profile.business = business
             manager.profile.role = 'MA'
 
+            logger.info('creating manager profile')
             manager.profile.save()
 
             # add manager to managers group
+            logger.info('adding new manager to the manager group')
             Group.objects.get(name='Managers').user_set.add(manager)
 
             manager.save()
@@ -68,6 +74,7 @@ def register(request):
             login(request, user)
             return HttpResponseRedirect('/success')
         else:
+            logger.error('manager form or business form are not valid')
             print manager_form.error_messages
             print business_form.errors
     else:
@@ -85,6 +92,9 @@ def success(request):
 @login_required(login_url="/login")
 def edit_business(request):
     if request.POST:
+
+        logger.info('editing business')
+
         curr_business = request.user.profile.business
         business_form = BusinessEditForm(request.POST, instance=curr_business)
         if business_form.is_valid():
@@ -95,6 +105,7 @@ def edit_business(request):
 
             return HttpResponseRedirect('/')
         else:
+            logger.error('edit business form invalid')
             print business_form.errors
     else:
         business_form = BusinessEditForm()
@@ -117,6 +128,7 @@ def add_employees(request):
             mail_dics = []
             new_employee_handler = None
 
+            logger.info('Going to create %d employees' % num_of_employees)
             for i in range(num_of_employees):
                 new_employee_handler = NewEmployeeHandler(data['employee_%s_firstName' % str(i)],
                                                           data['employee_%s_lastName' % str(i)],
@@ -124,23 +136,24 @@ def add_employees(request):
                                                           data['employee_%s_role' % str(i)],
                                                           data['employee_%s_dateJoined' % str(i)],
                                                           request.user)
+                logger.info('creating employee')
                 new_employee = new_employee_handler.create_employee()
                 # add employee to employees group
+                logger.info('adding employee to Employee group')
                 Group.objects.get(name='Employees').user_set.add(new_employee)
 
                 mail_dics.append(new_employee_handler.get_invitation_mail_details())
 
             try:
+                logger.info('sending mails to new emplyees')
                 new_employee_handler.mass_html(mail_dics)
             except Exception as e:
-                print e.message + traceback.format_exc()
+                logger.error('sending emails failed ' + e.message + traceback.format_exc())
 
             messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                  curr_business))
             return HttpResponseRedirect('/')
     else:
-        logger.info("inside create_employee")
-        logger.warning("inside create_employee")
         form = AddEmployeesForm()
     return render(request, "manager/add_employees.html", {'form': form})
 
@@ -149,6 +162,8 @@ def add_employees(request):
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manage_employees(request):
     curr_business = request.user.profile.business
+
+    logger.info('getting business employees')
     all_employees = EmployeeProfile.objects.filter(business=curr_business)
 
     return render(request, 'manager/manage_employees.html',
@@ -161,17 +176,17 @@ def edit_profile_form(request):
         employee_username = request.GET.get('username', None)
         is_manager = request.user.groups.filter(name='Managers').exists()
         if not is_manager:
+            logger.info('employee profile - creating employee edit profile form')
             initial_form = EditProfileForm(instance=request.user.profile, is_manager=False)
         else:
+            logger.info('manager profile - creating manager edit profile form')
             initial_form = EditProfileForm(instance=EmployeeProfile.objects.get(user__username=employee_username if
                                                                                 employee_username else
                                                                                 request.user.username),
                                            is_manager=True)
         return render(request, 'edit_profile_form.html', {'form': initial_form})
     else:
-        logger.info('******** %s', str(request.POST))
         profile = EmployeeProfile.objects.get(user=request.POST.get('user'))
-        logger.info('**** %s', profile.avg_rate)
         is_manager = request.user.groups.filter(name='Managers').exists()
         form = EditProfileForm(request.POST, instance=profile, is_manager=is_manager)
         if form.is_valid():
@@ -198,7 +213,7 @@ def delete_user(request):
     user_to_delete = User.objects.get(username=username)
 
     user_to_delete.delete()
-
+    logger.info('successfully deleted user')
     messages.success(request, message='successfully deleted %s' % username)
     return HttpResponse('ok')
 
@@ -209,8 +224,10 @@ def login_success(request):
     """
     if request.user.groups.filter(name="Managers").exists():
         # user is a manager
+        logger.info('login succeeded - redirecting to manager homepage')
         return redirect("manager_home")
     else:
+        logger.info('login succeeded - redirecting to employee homepage')
         return redirect("emp_home")
 
 

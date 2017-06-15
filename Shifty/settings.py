@@ -164,7 +164,7 @@ LOGGING = {
             'formatter': 'regular'
         },
         'console2': {
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         }
