@@ -44,7 +44,7 @@
             <h3>Pending requests</h3>
             {% for request in pending_requests %}
                 <div class="row" style="margin-top: 20px">
-                    <div class="col-xs-8 col-xs-offset-1">
+                    <div class="col-xs-8">
                         <div class="panel panel-default">
                           <div class="panel-heading">
                               <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
@@ -70,7 +70,7 @@
             <h3>Done requests</h3>
             {% for request in done_requests %}
                 <div class="row" style="margin-top: 20px">
-                    <div class="col-xs-8 col-xs-offset-1">
+                    <div class="col-xs-8">
                         <div class="panel panel-default">
                             <div class="panel-heading">
                               <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
@@ -116,6 +116,7 @@
     </div>
 
   </div>
+</div>
 </div>
 {% endblock %}
 
@@ -167,5 +168,5 @@
             });
         }
     </script>
-    
+
 {% endblock %}

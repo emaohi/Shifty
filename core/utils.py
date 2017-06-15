@@ -10,7 +10,7 @@ def send_manager_msg(emp_request):
 
     manager_msg = ManagerMessage(business=curr_business, sent_time=timezone.now(),
                                  subject='Request status changed',
-                                 text='Your following request has been %s by your manager: %s' %
+                                 text='Your following request has been %s by your manager:\n%s' %
                                       (new_status, emp_request.text))
     manager_msg.save()
 
