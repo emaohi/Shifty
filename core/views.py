@@ -5,7 +5,7 @@ from django.utils import timezone
 from django.http import HttpResponse
 
 from core.models import EmployeeRequest
-from core.utils import send_manager_msg
+from core.utils import create_manager_msg
 
 logger = logging.getLogger('cool')
 
@@ -43,7 +43,9 @@ def handle_employee_request(request):
         emp_request.save()
 
         logger.info('creating manager msg in response to the employee request')
-        send_manager_msg(emp_request)
+        create_manager_msg(recipients=emp_request.issuers.all(), subject='Message from manager',
+                           text='Your following request has been %s by your manager:\n %s' %
+                           (emp_request.get_status_display(), emp_request.text))
 
-        messages.success(request, message='request approved' if new_status is 'A' else 'request rejected')
+        messages.success(request, message='request approved' if new_status == 'A' else 'request rejected')
         return HttpResponse('ok')

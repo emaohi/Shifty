@@ -10,6 +10,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from core.models import Message, EmployeeRequest, ManagerMessage
+from core.utils import *
 from forms import *
 from log.models import EmployeeProfile
 from utils import *
@@ -21,17 +22,14 @@ logger = logging.getLogger('cool')
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manager_home(request):
 
-    curr_business = request.user.profile.business
-    business_employees = curr_business.get_employees()
+    curr_manager = request.user.profile
 
-    logger.info('generating pending employee requests')
-    pending_emp_requests = EmployeeRequest.objects.filter(issuers__in=business_employees, status='P'). \
-        distinct().order_by('-sent_time')
+    pending_emp_requests = get_employee_requests_with_status(curr_manager, 'P')
 
-    logger.info('generating done employee requests')
-    done_emp_requests = EmployeeRequest.objects.filter(Q(issuers__in=business_employees, status='A') |
-                                                       Q(issuers__in=business_employees, status='R')).\
-        distinct().order_by('-sent_time')
+    approved_emp_requests = get_employee_requests_with_status(curr_manager, 'A')
+    rejected_emp_requests = get_employee_requests_with_status(curr_manager, 'R')
+
+    done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests}
     return render(request, "manager/home.html", context)
@@ -40,8 +38,7 @@ def manager_home(request):
 @login_required(login_url="/login")
 @user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
 def emp_home(request):
-    logger.info('generating manager messages for %s' % request.user.username)
-    manager_messages = ManagerMessage.objects.filter(recipients__in=[request.user.profile]).order_by('-sent_time')
+    manager_messages = get_manger_msgs_of_employee(request.user.profile)
     return render(request, "employee/home.html", {'manager_msgs': manager_messages})
 
 
@@ -113,8 +110,15 @@ def edit_business(request):
     return render(request, 'manager/edit_business.html', {'business_form': business_form})
 
 
+def must_be_manager_callback(user):
+    if user.groups.filter(name='Managers').exists():
+        return True
+    logger.error('cant proceed - not manager')
+    return False
+
+
 @login_required(login_url='/login')
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def add_employees(request):
     if request.method == 'POST':
         # get the number of fields (minus the csrf token) and divide by 4 as every user has 4 fields
@@ -159,7 +163,7 @@ def add_employees(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def manage_employees(request):
     curr_business = request.user.profile.business
 
@@ -207,7 +211,7 @@ def edit_profile(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def delete_user(request):
     username = request.POST.get('username')
     user_to_delete = User.objects.get(username=username)
@@ -224,10 +228,8 @@ def login_success(request):
     """
     if request.user.groups.filter(name="Managers").exists():
         # user is a manager
-        logger.info('login succeeded - redirecting to manager homepage')
         return redirect("manager_home")
     else:
-        logger.info('login succeeded - redirecting to employee homepage')
         return redirect("emp_home")
 
 
