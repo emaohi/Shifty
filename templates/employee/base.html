@@ -1,5 +1,5 @@
 
-{% load static %}
+{% load staticfiles %}
 
 <!DOCTYPE html>
 <html>
@@ -26,7 +26,7 @@
 
         <style>
             .panel{
-                border-width: 2px;
+                border-width: 1px;
             }
             .head-custom{
                 background-color: lightblue !important;
@@ -35,70 +35,22 @@
                 color: #1c699d;
             }
             .navbar-default, .navbar-brand, .dropdown-toggle{
-                    background-color: lightblue;
-                    border-color: lightblue;
+                    background-color: coral;
+                    border-color: coral;
                     color: black !important;
             }
-            .dateclass.placeholderclass::before{
-                width: 100%;
-                content:attr(placeholder);
-                background-color:#FFFFFF;
+            input[type=submit] {
+                width: 15em;
             }
-
-            .dateclass.placeholderclass:hover::before{
-                width:0%;
-                content:"";
-            }
-            input[type=submit] {width: 15em;}
-            hr {border-width: 4px}
-            .modal-header{
-                background-color: lightcoral;
+            hr {
+                border-width: 4px
             }
         </style>
         {% block style %}
         {% endblock %}
     </head>
     <body>
-
-    <nav class="navbar navbar-default">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                        data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
-                        <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            {{ user.username }}
-                            <span class="caret"></span>
-                        </a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <a href="{% url 'edit_profile' %}">Edit Profile</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
-                                <a href="{% url 'edit_business' %}">Edit Business</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
-                                <a href="{% url 'logout' %}">Logout</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    {% if messages %}
+            {% if messages %}
         {% for msg in messages%}
             {% if msg.tags == 'error' %}
         <div class="alert alert-danger">
@@ -111,9 +63,44 @@
             {% endif %}
         {% endfor %}
     {% endif %}
+    <nav class="navbar navbar-default">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
+            </div>
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            {{ user.username }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li>
+                                <a href="{% url 'edit_profile' %}">Edit Profile</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="/logout">Logout</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
 
     {% block content %}
     {% endblock %}
+
+
+
 
 
     </body>

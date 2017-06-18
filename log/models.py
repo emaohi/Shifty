@@ -1,4 +1,6 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
+
+from datetime import datetime
 
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -38,7 +40,11 @@ class Business(models.Model):
     def get_type(self):
         return self.get_business_type_display()
 
+    def get_employees(self):
+        return self.employeeprofile_set.all()
 
+
+# noinspection PyTypeChecker
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
@@ -66,6 +72,28 @@ class EmployeeProfile(models.Model):
 
     def __str__(self):
         return self.user.username
+
+    # noinspection PyTypeChecker
+    def get_employment_time(self):
+        if self.started_work_date:
+            today = datetime.now().date()
+            delta = today - self.started_work_date
+            return delta.days
+        return None
+
+    def get_age(self):
+        if self.birth_date:
+            today = datetime.now().date()
+            delta = today - self.birth_date
+            return round(delta.days / 365, 2)
+        return None
+
+    def get_manager(self):
+        profile_business = self.business
+        for profile in profile_business.employeeprofile_set.all():
+            if profile.role == 'MA':
+                return profile
+        return None
 
 
 @receiver(post_save, sender=User)

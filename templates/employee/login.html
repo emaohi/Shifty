@@ -1,4 +1,4 @@
-{% extends 'manager/base.html' %}
+{% extends 'employee/base.html' %}
 
 {% block javascript %}
 
@@ -40,7 +40,7 @@
             <div class="login-panel panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title" style="display: inline">Please Sign In</h3>
-                    <a href="/register" style="float: right">New Business?</a>
+                    <a href="#" style="float: right">Do not have account yet?</a>
                 </div>
                 <div class="panel-body">
                     <form method="post" action="{% url 'login' %}">

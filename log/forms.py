@@ -2,7 +2,7 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.contrib.auth.models import User
 
-from log.models import Business
+from log.models import Business, EmployeeProfile
 
 
 class LoginForm(AuthenticationForm):
@@ -22,6 +22,17 @@ class BusinessEditForm(forms.ModelForm):
     class Meta:
         model = Business
         fields = ('business_type', 'tip_method')
+
+    def __init__(self, *args, **kwargs):
+        super(BusinessEditForm, self).__init__(*args, **kwargs)
+        self.fields['business_type'].widget.attrs \
+            .update({
+            'class': 'form-control'
+        })
+        self.fields['tip_method'].widget.attrs \
+            .update({
+            'class': 'form-control'
+        })
 
 
 class ManagerSignUpForm(UserCreationForm):
@@ -51,3 +62,29 @@ class AddEmployeesForm(forms.Form):
                 forms.CharField()
             self.fields['employee_{index}_email'.format(index=index)] = \
                 forms.EmailField()
+            self.fields['employee_{index}_role'.format(index=index)] = \
+                forms.ChoiceField(choices=(('WA', 'waiter'), ('BT', 'bartender'), ('CO', 'cook')))
+            self.fields['employee_{index}_dateJoined'.format(index=index)] = \
+                forms.DateField()
+
+
+class EditProfileForm(forms.ModelForm):
+
+    class Meta:
+        model = EmployeeProfile
+        fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address', 'avg_rate']
+
+    def __init__(self, *args, **kwargs):
+        is_manager = kwargs.pop('is_manager', None)
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        fields_to_delete = ()
+        fields_to_disable = ()
+        if not is_manager:
+            fields_to_delete = ('avg_rate', )
+            fields_to_disable = ('role', 'started_work_date')
+        for field in fields_to_delete:
+            del self.fields[field]
+        for field in fields_to_disable:
+            self.fields[field].disabled = True
+        self.fields['user'].widget = forms.HiddenInput()
+

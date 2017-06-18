@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 'widget_tweaks',
     'log',
     'core'
 ]
@@ -106,7 +107,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-LOGIN_REDIRECT_URL = '/'  # It means home view
+LOGIN_REDIRECT_URL = '/login_success'  # It means home view
 LOGIN_URL = '/login/'
 
 # Internationalization
@@ -114,7 +115,7 @@ LOGIN_URL = '/login/'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Jerusalem'
 
 USE_I18N = True
 
@@ -127,3 +128,58 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Email settings
+
+EMAIL_HOST = 'smtp.gmail.com'
+
+EMAIL_HOST_USER = 'shifty.moti'
+
+EMAIL_HOST_PASSWORD = 'lucky12345'
+
+EMAIL_PORT = 587
+
+EMAIL_USE_TLS = True
+
+#Logging
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': 'Emaohi %(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+        'regular': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
+    },
+    'handlers': {
+        'console1': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'regular'
+        },
+        'console2': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console1'],
+            'propagate': True,
+            'level': 'INFO'
+        },
+        'cool': {
+            'handlers': ['console2'],
+            'propagate': True,
+            'level': 'INFO'
+        },
+
+    },
+}

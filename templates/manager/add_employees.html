@@ -19,6 +19,20 @@
             <p>Please login to see this page.</p>
         {% endif %}
     {% endif %}
+    {% if form.errors %}
+        {% for field in form %}
+            {% for error in field.errors %}
+                <div class="alert alert-danger">
+                    <strong>{{ error|escape }} (field name: {{ field.name }})</strong>
+                </div>
+            {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+            <div class="alert alert-danger">
+                <strong>{{ error|escape }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
 
     <div class="container">
         <div class="row" style="margin-bottom: 30px">
@@ -28,25 +42,39 @@
         </div>
         <div class="row" style="margin-bottom: 30px">
             <div class="col-xs-12 col-xs-offset-2">
-                <small>First, Users will be created in the system for your employees.
-                Second, emails will be sent to them with their credentials so they will be able to login.</small>
+                <ol>
+                    <li>First, Users will be created in the system for your employees.</li>
+                    <li>Second, emails will be sent to them with their credentials so they will be able to login.</li>
+                </ol>
+{#                <p>First, Users will be created in the system for your employees.#}
+{#                Second, emails will be sent to them with their credentials so they will be able to login.</p>#}
             </div>
         </div>
         <div class="row">
             <form action="." id="bookForm" method="post" class="form-horizontal">
                 {% csrf_token %}
                 <div class="form-group static-group">
-                    <div class="col-xs-1">
-                        <span>1</span>
-                    </div>
-                    <div class="col-xs-3">
+                    <div class="col-xs-2">
                         <input type="text" class="form-control" name="employee_0_firstName" placeholder="First Name" />
                     </div>
-                    <div class="col-xs-3">
+                    <div class="col-xs-2">
                         <input type="text" class="form-control" name="employee_0_lastName" placeholder="Last Name" />
                     </div>
-                    <div class="col-xs-4">
+                    <div class="col-xs-3">
                         <input type="email" class="form-control" name="employee_0_email" placeholder="Email" />
+                    </div>
+                    <div class="col-xs-2">
+                        <select name="employee_0_role" class="form-control">
+                              <option value="" disabled selected>Employee role</option>
+                              <option value="WA">Waiter</option>
+                              <option value="BT">Bartender</option>
+                              <option value="CO">Cook</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-2">
+                        <input type="date" name="employee_0_dateJoined" class="dateclass placeholderclass form-control"
+                               placeholder="Date started"
+                               onClick="$(this).removeClass('placeholderclass')">
                     </div>
                     <div class="col-xs-1">
                         <button type="button" class="btn btn-info addButton"><span class="glyphicon glyphicon-plus"></span>
@@ -54,30 +82,50 @@
                     </div>
                 </div>
 
-                <!-- The template for adding new field -->
-
-
                 <div class="form-group submit-group" style="margin-top: 30px">
                     <div class="col-xs-5 col-xs-offset-5">
-                        <button type="submit" class="btn btn-lg btn-success">Submit</button>
+                        <button type="submit" class="btn btn-lg btn-success btn-submit"
+                                data-loading-text="<i class='fa fa-spinner fa-spin '></i> Processing Request">
+                            Submit</button>
                     </div>
                 </div>
+                <div class="progress" style="display: none">
+                  <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuemin="0"
+                       aria-valuemax="100" style="width: 0%;">
+                    <span class="sr-only"></span>
+                      Sending <span id="percent"></span>
+                  </div>
+                </div>
+
             </form>
-                 <div class="form-group hide" id="bookTemplate">
-                    <div class="col-xs-1">
-                        <span class="counter">2</span>
-                    </div>
-                    <div class="col-xs-3">
+
+
+                <!-- The template for adding new field -->
+                 <div class="form-group hide" id="employeeTemplate">
+                    <div class="col-xs-2">
                         <input type="text" class="form-control" name="firstName" placeholder="First Name" />
                     </div>
-                    <div class="col-xs-3">
+                    <div class="col-xs-2">
                         <input type="text" class="form-control" name="lastName" placeholder="Last Name" />
                     </div>
-                    <div class="col-xs-4">
+                    <div class="col-xs-3">
                         <input type="email" class="form-control" name="email" placeholder="Email" />
                     </div>
+                     <div class="col-xs-2">
+                        <select name="role" class="form-control" id="role_select">
+                              <option value="WA">Waiter</option>
+                              <option value="BT">Bartender</option>
+                              <option value="CO">Cook</option>
+                        </select>
+                    </div>
+                    <div class="col-xs-2">
+                        <input type="date" name="date" class="dateclass placeholderclass form-control"
+                               placeholder="Date started"
+                               onClick="$(this).removeClass('placeholderclass')">
+                    </div>
                     <div class="col-xs-1">
-                        <button type="button" class="btn btn-danger removeButton"><span class="glyphicon glyphicon-minus"></span>
+                        <button type="button" class="btn btn-danger removeButton">
+                            <span class="glyphicon glyphicon-minus"></span>
                         </button>
                     </div>
                 </div>
@@ -92,32 +140,62 @@ $(document).ready(function() {
 
     var employeeIndex = 0;
 
-        // Add button click handler
-        $('.addButton').click(function() {
-            employeeIndex++;
-            var $template = $('#bookTemplate'),
-                $clone    = $template
-                                .clone()
-                                .removeClass('hide')
-                                .removeAttr('id')
-                                .attr('data-book-index', employeeIndex)
-                                .insertBefore($(".submit-group"));
+    // Add button click handler
+    $('.addButton').click(function() {
+        employeeIndex++;
+        var $template = $('#employeeTemplate'),
+            $clone    = $template
+                            .clone()
+                            .removeClass('hide')
+                            .removeAttr('id')
+                            .attr('data-book-index', employeeIndex)
+                            .insertBefore($(".submit-group"));
 
-            // Update the name attributes
-            $clone
-                .find('[class="counter"]').text(employeeIndex+1).end()
-                .find('[name="firstName"]').attr('name', 'employee_' + employeeIndex + '_firstName').end()
-                .find('[name="lastName"]').attr('name', 'employee_' + employeeIndex + '_lastName').end()
-                .find('[name="email"]').attr('name', 'employee_' + employeeIndex + '_email').end();
-        })
+        // Update the name attributes
+        $clone
+            .find('[class="counter"]').text(employeeIndex+1).end()
+            .find('[name="firstName"]').attr('name', 'employee_' + employeeIndex + '_firstName').end()
+            .find('[name="lastName"]').attr('name', 'employee_' + employeeIndex + '_lastName').end()
+            .find('[name="email"]').attr('name', 'employee_' + employeeIndex + '_email').end()
+            .find('[name="role"]').attr('name', 'employee_' + employeeIndex + '_role').end()
+            .find('[name="date"]').attr('name', 'employee_' + employeeIndex + '_dateJoined').end();
+    });
 
-        // Remove button click handler
-        $('.container').on('click', '.removeButton', function() {
-            var $row  = $(this).parents('.form-group');
+    // Remove button click handler
+    $('.container').on('click', '.removeButton', function() {
+        var $row  = $(this).parents('.form-group');
 
-            // Remove element containing the fields
-            $row.remove();
-        });
+        // Remove element containing the fields
+        $row.remove();
+
+        employeeIndex --;
+    });
+
+    $('.btn-submit').on('click', function() {
+        $('.progress').show();
+        setTimeout(doProgress, 200);
+    });
+    function doProgress() {
+        var i = 0;
+        var counterBack = setInterval(function(){
+          i++;
+          if (i <= 100){
+            $('.progress-bar').css('width', i+'%');
+          } else {
+            clearInterval(counterBack);
+          }
+          var is_plural_mail;
+          if (employeeIndex > 0){
+              is_plural_mail = "mails";
+          }else{
+              is_plural_mail = "mail";
+          }
+          $("#percent").text((employeeIndex+1) + " " + is_plural_mail);
+
+        }, (employeeIndex+1) * 30);
+
+    }
 });
+
     </script>
 {% endblock %}
