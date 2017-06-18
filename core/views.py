@@ -43,7 +43,7 @@ def handle_employee_request(request):
         emp_request.save()
 
         logger.info('creating manager msg in response to the employee request')
-        create_manager_msg(recipients=emp_request.issuers.all(), subject='Message from manager',
+        create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
                            text='Your following request has been %s by your manager:\n %s' %
                            (emp_request.get_status_display(), emp_request.text))
 
