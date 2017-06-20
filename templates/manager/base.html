@@ -101,13 +101,13 @@
     {% if messages %}
         {% for msg in messages%}
             {% if msg.tags == 'error' %}
-        <div class="alert alert-danger">
-            <strong>{{ msg| escape }}</strong>
-        </div>
-                {% else %}
+                <div class="alert alert-danger">
+                    <strong>{{ msg| escape }}</strong>
+                </div>
+            {% else %}
                 <div class="alert alert-success">
-            <strong>{{ msg| escape }}</strong>
-        </div>
+                    <strong>{{ msg| escape }}</strong>
+                </div>
             {% endif %}
         {% endfor %}
     {% endif %}
