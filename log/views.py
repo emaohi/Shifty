@@ -88,11 +88,12 @@ def success(request):
 
 @login_required(login_url="/login")
 def edit_business(request):
+
+    curr_business = request.user.profile.business
     if request.POST:
 
         logger.info('editing business')
 
-        curr_business = request.user.profile.business
         business_form = BusinessEditForm(request.POST, instance=curr_business)
         if business_form.is_valid():
 
@@ -100,12 +101,13 @@ def edit_business(request):
             business.manager = request.user
             business.save()
 
+            messages.success(request, 'Edited business successfully')
             return HttpResponseRedirect('/')
         else:
             logger.error('edit business form invalid')
             print business_form.errors
     else:
-        business_form = BusinessEditForm()
+        business_form = BusinessEditForm(instance=curr_business)
 
     return render(request, 'manager/edit_business.html', {'business_form': business_form})
 
