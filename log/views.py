@@ -15,12 +15,17 @@ from forms import *
 from log.models import EmployeeProfile
 from utils import *
 
+import tasks
+
 logger = logging.getLogger('cool')
 
 
 @login_required(login_url="/login")
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manager_home(request):
+
+    res = tasks.add.delay(2,3)
+    logger.info(res.get())
 
     curr_manager = request.user.profile
 
