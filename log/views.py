@@ -24,8 +24,8 @@ logger = logging.getLogger('cool')
 @user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
 def manager_home(request):
 
-    res = tasks.add.delay(2,3)
-    logger.info(res.get())
+    # res = tasks.add.delay(2, 3)
+    # logger.info(res.get())
 
     curr_manager = request.user.profile
 
@@ -156,13 +156,14 @@ def add_employees(request):
                 mail_dics.append(new_employee_handler.get_invitation_mail_details())
 
             try:
-                logger.info('sending mails to new emplyees')
+                logger.info('sending mails to new employees')
                 new_employee_handler.mass_html(mail_dics)
+                messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
+                                                                                     curr_business))
             except Exception as e:
-                logger.error('sending emails failed ' + e.message + traceback.format_exc())
+                logger.error('sending emails failed ' + str(e.message) + str(traceback.format_exc()))
+                messages.error(request, 'failed to send mails to employees')
 
-            messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
-                                                                                 curr_business))
             return HttpResponseRedirect('/')
     else:
         form = AddEmployeesForm()

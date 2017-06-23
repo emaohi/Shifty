@@ -2,12 +2,17 @@ import random
 import string
 
 import logging
+
+from time import time
 from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import EmailMultiAlternatives
 from django.core.mail import send_mail, get_connection
 from django.template import Context
 from django.template.loader import get_template
+from django.conf import settings
+
+import tasks
 
 
 class NewEmployeeHandler:
@@ -45,29 +50,24 @@ class NewEmployeeHandler:
 
     @staticmethod
     def mass_html(mail_dicts=None):
-        connection = get_connection()  # uses SMTP server specified in settings.py
-        connection.open()
-        for dicti in mail_dicts:
-            to_email = dicti['to_email']
-            del dicti['to_email']
 
-            htmly = get_template('manager/new_employee_email_msg.html')
-            html_content = htmly.render(dicti)
-            text_content = "..."
-            msg = EmailMultiAlternatives("subject", text_content, "from@bla", ["to@bla", "to2@bla", "to3@bla"],
-                                         connection=connection)
-            msg.attach_alternative(html_content, "text/html")
-            message = EmailMultiAlternatives('Sent from Shifty App',
-                                             '%s add you as a %s to the businnes %s in Shifty app.'
-                                             ' username: %s, password: %s' % (dicti.get('manager'), dicti.get('role'),
-                                                                              dicti.get('business'),
-                                                                              dicti.get('username'),
-                                                                              dicti.get('password')),
-                                             'shifty.moti@gmail.com', [to_email])
-            message.attach_alternative(html_content, 'text/html')
-            message.send()
+        def now_millis():
+            """returns current timestamp in millis"""
+            return int(round(time() * 1000))
 
-        connection.close()  # Cleanup
+        is_celery = settings.CELERY
+        task_results = []
+
+        for _dict in mail_dicts:
+            task_results.append(tasks.send_mail.delay(_dict) if is_celery else tasks.send_mail(_dict))
+
+        if is_celery:
+            timeout_millis = 10000
+            time_to_stop = now_millis() + timeout_millis
+            while time_to_stop > now_millis():
+                if all([result.status == 'SUCCESS' for result in task_results]):
+                    return True
+            raise Exception('Waited too much for mails to be sent')
 
     def _generate_username(self):
         # first name and last letter of last name
@@ -91,3 +91,4 @@ class NewEmployeeHandler:
     @staticmethod
     def _generate_password(length):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
+
