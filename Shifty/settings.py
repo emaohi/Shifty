@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    # 'widget_tweaks',
     'log',
     'core'
 ]
@@ -55,9 +54,6 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'Shifty.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
-# STATICFILES_DIRS = [
-#     os.path.join(BASE_DIR, "static"),
-# ]
 
 TEMPLATES = [
     {
