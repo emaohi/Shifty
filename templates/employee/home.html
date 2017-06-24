@@ -54,7 +54,7 @@
                               <h3 class="panel-title" style="display: inline">{{ msg.subject }}</h3>
                           </div>
                           <div class="panel-body">
-                              {{ msg.text }}
+                              {{ msg.get_split_msg.0 }}<br>{{ msg.get_split_msg.1 }}
                           </div>
                             <div class="panel-footer">
                                 <span class="hidden-id" style="visibility: hidden">{{ msg.id }}</span>

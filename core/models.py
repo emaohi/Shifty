@@ -46,6 +46,9 @@ class ManagerMessage(models.Model):
     subject = models.TextField(max_length=50)
     text = models.TextField(max_length=200)
 
+    def get_split_msg(self):
+        return self.text.split(':')
+
 
 class ShiftSwapMessage(models.Model):
     sender = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='shift_swap_send')

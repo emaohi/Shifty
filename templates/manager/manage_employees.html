@@ -4,6 +4,18 @@
     <title>Manage Employees</title>
 {% endblock %}
 
+{% block style %}
+<style>
+    .inline{
+        display: inline-block;
+    }
+    .header-row{
+        margin-bottom: 40px ;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
 {% block comp_name%}
 {{ user.profile.business }}
 {% endblock %}
@@ -11,7 +23,11 @@
 {% block content %}
 
     <div class="container">
-      <h2 style="margin-bottom: 40px; text-align: center">Manage Employees</h2>
+      <div class="row header-row">
+          <h2 class="inline">Manage Employees</h2>
+          <button type="button" id="broadcast_button" class="btn btn-group-sm btn-success"
+             style="float: right">Broadcast Message</button>
+      </div>
       <table class="table table-striped table-bordered table-hover">
         <thead>
           <tr>
@@ -73,25 +89,25 @@
 
     <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
       <div class="modal-dialog">
-    <div class="modal-content">
-          <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-        <h4 class="modal-title custom_align" id="Heading">Edit Your Detail</h4>
-      </div>
-      <form action="{% url 'edit_profile_form' %}" method="post">
-      <div class="modal-body">
-              <div id="form_here"></div>
-      </div>
-      <div class="modal-footer ">
-        <input type="submit" class="btn btn-warning btn-lg" value="Edit Profile" style="width: 100%;">
-      </div>
-      </form>
-    </div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                    <h4 class="modal-title custom_align" id="Heading">Edit Your Detail</h4>
+                </div>
+                <form action="{% url 'edit_profile_form' %}" method="post">
+                    <div class="modal-body">
+                        <div id="form_here"></div>
+                    </div>
+                    <div class="modal-footer ">
+                    <input type="submit" class="btn btn-warning btn-lg" value="Edit Profile" style="width: 100%;">
+                    </div>
+                </form>
+            </div>
         </div>
     <!-- /.modal-content -->
   </div>
       <!-- /.modal-dialog -->
-    </div>
+  </div>
 
 
 
@@ -116,6 +132,29 @@
   </div>
       <!-- /.modal-dialog -->
     </div>
+
+    <div class="modal fade" id="broadcast" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
+                    <h4 class="modal-title custom_align" id="Heading">Edit Your Detail</h4>
+                </div>
+                <form action="{% url 'broadcast_msg' %}" method="post">
+                    <div class="modal-body">
+                        <div id="form_here"></div>
+                    </div>
+                    <div class="modal-footer ">
+                    <input type="submit" class="btn btn-warning btn-lg" value="Send" style="width: 100%;">
+                    </div>
+                </form>
+            </div>
+        </div>
+    <!-- /.modal-content -->
+  </div>
+      <!-- /.modal-dialog -->
+  </div>
 {% endblock %}
 
 {% block javascript %}
@@ -138,8 +177,11 @@
             });
 
             $('#del_btn').click(function () {
-{#                alert(curr_modal_username);#}
                 del_user(curr_modal_username);
+            });
+
+            $('#broadcast_button').click(function () {
+                show_broadcast_modal();
             });
         });
 
@@ -170,6 +212,23 @@
         function show_delete_modal(username){
             $('#delete').find('h4').text("Delete " + username + " from your business");
             $('#delete').modal('show');
+        }
+
+        function show_broadcast_modal(username) {
+            $.ajax({
+              url: "{% url 'broadcast_msg' %}",
+              type: "get", //send it through get method
+              data: {
+              },
+              success: function(response) {
+                            $('#broadcast').find('.modal-body').html(response);
+                            $('#broadcast').find('#Heading').html('Broadcast message to all your employees');
+                            $('#broadcast').modal('show');
+              },
+              error: function(xhr) {
+                //Do Something to handle error
+              }
+            });
         }
 
         function del_user(username) {

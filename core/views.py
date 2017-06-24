@@ -1,11 +1,14 @@
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.shortcuts import render
 from django.utils import timezone
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from core.models import EmployeeRequest
 from core.utils import create_manager_msg
+
+from .forms import *
 
 logger = logging.getLogger('cool')
 
@@ -49,3 +52,28 @@ def handle_employee_request(request):
 
         messages.success(request, message='request approved' if new_status == 'A' else 'request rejected')
         return HttpResponse('ok')
+
+
+@login_required(login_url='/login')
+@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+def broadcast_message(request):
+    if request.method == 'POST':
+        broadcast_form = BroadcastMessageForm(request.POST)
+
+        if broadcast_form.is_valid():
+            recipients = request.user.profile.business.get_employees()
+
+            new_manager_msg = broadcast_form.save(commit=False)
+            create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text)
+
+            messages.success(request, message='Broadcast message created')
+            return HttpResponseRedirect('/')
+        else:
+            logger.error('broadcast form is not valid')
+            form = BroadcastMessageForm()
+            messages.error(request, message='couldn\'t send broadcast message' % str(form.errors))
+            return HttpResponseRedirect('/')
+    else:    # method is GET
+        form = BroadcastMessageForm()
+        return render(request, 'ajax_form.html', {'form': form})
+

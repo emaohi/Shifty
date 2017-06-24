@@ -196,7 +196,7 @@ def edit_profile_form(request):
                                                                                 employee_username else
                                                                                 request.user.username),
                                            is_manager=True)
-        return render(request, 'edit_profile_form.html', {'form': initial_form})
+        return render(request, 'ajax_form.html', {'form': initial_form})
     else:
         profile = EmployeeProfile.objects.get(user=request.POST.get('user'))
         is_manager = request.user.groups.filter(name='Managers').exists()

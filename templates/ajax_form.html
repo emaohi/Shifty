@@ -6,11 +6,12 @@
         </div>
     {% endfor %}
 {% endif %}
-{#{% for field in form %}#}
-{#    <div class="form-group">#}
-{#        {{ field.label }}#}
-{#        {{ field }}#}
-{#    </div>#}
-{#{% endfor %}#}
-{{ form.as_p }}
+
+{% for field in form %}
+    <div class="form-group">
+        {{ field.label }}
+        {{ field }}
+    </div>
+{% endfor %}
+{#{{ form.as_p }}#}
 {% csrf_token %}
