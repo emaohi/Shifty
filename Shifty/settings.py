@@ -26,7 +26,7 @@ SECRET_KEY = '=uk5_$pry_5=k(8g5&-$=(&^4=8320(n4&80!01xnbnb&*)1*7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', cast=bool)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', cast=lambda hosts: [host.strip() for host in hosts.split(',')])
 
 
 # Application definition
