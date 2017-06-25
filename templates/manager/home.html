@@ -31,8 +31,8 @@
 
 <div class="container">
   <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#menu2">New Shift</a></li>
-    <li><a data-toggle="tab" href="#menu2">Previous Shifts</a></li>
+    <li class="active"><a data-toggle="tab" href="#current">Current shifts</a></li>
+    <li><a data-toggle="tab" href="#menu2">Other Shifts</a></li>
     <li><a data-toggle="tab" href="#menu1">Employees</a></li>
     <li ><a data-toggle="tab" href="#home">Employee Requests</a></li>
   </ul>
@@ -110,9 +110,23 @@
         </div>
     </div>
 
-    <div id="menu2" class="tab-pane fade in active">
-      <h3>Menu 2</h3>
-      <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+    <div id="current" class="tab-pane fade in active">
+      <div class="row"  >
+            <h2>Current Week Shifts</h2>
+      </div>
+    </div>
+
+    <div id="menu2" class="tab-pane fade in">
+      <div class="row" style="margin-top: 130px">
+            <div class="col-md-6">
+                <a href="#" class="btn btn-success btn-xl"
+                               role="button">New Shift</a>
+            </div>
+            <div class="col-md-6">
+                <a href="#" class="btn btn-info btn-xl"
+                               role="button">Previous Shifts</a>
+            </div>
+        </div>
     </div>
 
   </div>

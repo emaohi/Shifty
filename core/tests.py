@@ -17,7 +17,10 @@ class ManagerMessageTest(TestCase):
 
         self.client.post('/login/', self.credentials, follow=True)
 
-    def test_msg_should_appear_for_every_employee(self):
+    def test_status_changed_appears_right_for_employee(self):
+        pass
+
+    def test_broadcast_msg_should_appear_for_every_employee(self):
         try:
             self.client.post('/manager/broadcast_msg/', 'broadcast_test', follow=True)
         except Exception as e:
@@ -30,7 +33,7 @@ class ManagerMessageTest(TestCase):
         self.assertGreater(num_results, 0)
 
 
-class BroadcastMessageTest(TestCase):
+class EmployeeRequestTest(TestCase):
     def setUp(self):
         self.credentials = {
             'username': 'testuser1',
