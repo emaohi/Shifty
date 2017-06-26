@@ -1,6 +1,8 @@
+import itertools
 from django.utils import timezone
 
 from core.models import ManagerMessage, EmployeeRequest
+from log.utils import send_multiple_mails_with_html
 
 
 def create_manager_msg(recipients, subject, text):
@@ -11,6 +13,17 @@ def create_manager_msg(recipients, subject, text):
 
     manager_msg.recipients = recipients
     manager_msg.save()
+
+    # # send emails
+    recipient_users = [r.user for r in recipients]
+    recipient_to_context_dict = dict(zip(recipient_users,
+                                         itertools.repeat({'manager': curr_business.manager.username})))
+    template = 'html_msgs/new_manager_message_email_msg.html'
+    subject = 'New message in Shifty app'
+    text = 'you\'ve got new message from your manger'
+
+    send_multiple_mails_with_html(subject=subject, text=text,
+                                  template=template, r_2_c_dict=recipient_to_context_dict)
 
 
 def get_manger_msgs_of_employee(employee):

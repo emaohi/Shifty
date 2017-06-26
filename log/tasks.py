@@ -5,18 +5,13 @@ from django.template.loader import get_template
 
 
 @shared_task
-def send_mail(_dict):
-    to_email = _dict['to_email']
-    del _dict['to_email']
+def send_mail(recipient, subject, text, html_to_render, context):
 
-    htmly = get_template('manager/new_employee_email_msg.html')
-    html_content = htmly.render(_dict)
-    message = EmailMultiAlternatives('Sent from Shifty App',
-                                     '%s add you as a %s to the businnes %s in Shifty app.'
-                                     ' username: %s, password: %s' % (_dict.get('manager'), _dict.get('role'),
-                                                                      _dict.get('business'),
-                                                                      _dict.get('username'),
-                                                                      _dict.get('password')),
-                                     'shifty.moti@gmail.com', [to_email])
+    template_to_render = get_template(html_to_render)
+    html_content = template_to_render.render(context)
+    message = EmailMultiAlternatives(subject,
+                                     text,
+                                     'shifty.moti@gmail.com', [recipient])
     message.attach_alternative(html_content, 'text/html')
     message.send()
+

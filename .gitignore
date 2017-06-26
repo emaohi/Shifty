@@ -1,4 +1,7 @@
 .idea/*
 *workspace.xml
 *.pyc
-*.sqlite3
+*ini
+.DS_Store
+.cache/
+.gitignore.orig

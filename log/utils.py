@@ -15,6 +15,28 @@ from django.conf import settings
 import tasks
 
 
+def send_multiple_mails_with_html(subject, text, template, r_2_c_dict):
+    def now_millis():
+        """returns current timestamp in millis"""
+        return int(round(time() * 1000))
+
+    is_celery = settings.CELERY
+    task_results = []
+
+    for recp, context in r_2_c_dict.iteritems():
+        send_mail_params = [recp.email, subject, text, template, context]
+        task_results.append(tasks.send_mail.delay(*send_mail_params) if is_celery else
+                            tasks.send_mail(*send_mail_params))
+
+    if is_celery:
+        timeout_millis = 10000
+        time_to_stop = now_millis() + timeout_millis
+        while time_to_stop > now_millis():
+            if all([result.status == 'SUCCESS' for result in task_results]):
+                return True
+        raise Exception('Waited too much for mails to be sent')
+
+
 class NewEmployeeHandler:
     def __init__(self, first_name, last_name, email, role, date_joined, manager_user):
         self.firs_name = first_name
@@ -46,28 +68,21 @@ class NewEmployeeHandler:
     def get_invitation_mail_details(self):
         return {'manager': self.manager.username, 'role': self.user_created.profile.get_role_display(),
                 'business': self.manager.profile.business.business_name, 'username': self.user_created.username,
-                'password': self.password_created, 'first_name': self.firs_name, 'to_email': self.user_created.email}
+                'password': self.password_created, 'first_name': self.firs_name, 'to_email': self.user_created}
 
     @staticmethod
-    def mass_html(mail_dicts=None):
+    def send_new_employees_mails(mail_dicts=None):
 
-        def now_millis():
-            """returns current timestamp in millis"""
-            return int(round(time() * 1000))
+        recipients = [_dict['to_email'] for _dict in mail_dicts]
+        _ = [_dict.pop('to_email') for _dict in mail_dicts]  # remove non-serializable form dicts
 
-        is_celery = settings.CELERY
-        task_results = []
+        recipient_to_context_dict = dict(zip(recipients, mail_dicts))
+        template = 'html_msgs/new_employee_email_msg.html'
+        subject = 'Sent from Shifty App'
+        text = 'you\'ve been added to shifty as an employee'
 
-        for _dict in mail_dicts:
-            task_results.append(tasks.send_mail.delay(_dict) if is_celery else tasks.send_mail(_dict))
-
-        if is_celery:
-            timeout_millis = 10000
-            time_to_stop = now_millis() + timeout_millis
-            while time_to_stop > now_millis():
-                if all([result.status == 'SUCCESS' for result in task_results]):
-                    return True
-            raise Exception('Waited too much for mails to be sent')
+        send_multiple_mails_with_html(subject=subject, text=text,
+                                      template=template, r_2_c_dict=recipient_to_context_dict)
 
     def _generate_username(self):
         # first name and last letter of last name

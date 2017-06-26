@@ -87,4 +87,7 @@ class EditProfileForm(forms.ModelForm):
         for field in fields_to_disable:
             self.fields[field].disabled = True
         self.fields['user'].widget = forms.HiddenInput()
+        self.fields['user'].label = ''
+        for _, v in self.fields.iteritems():
+            v.widget.attrs.update({'class': 'form-control'})
 

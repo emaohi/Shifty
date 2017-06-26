@@ -157,7 +157,7 @@ def add_employees(request):
 
             try:
                 logger.info('sending mails to new employees')
-                new_employee_handler.mass_html(mail_dics)
+                new_employee_handler.send_new_employees_mails(mail_dics)
                 messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                      curr_business))
             except Exception as e:
