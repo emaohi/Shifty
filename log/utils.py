@@ -29,7 +29,7 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict):
                             tasks.send_mail(*send_mail_params))
 
     if is_celery:
-        timeout_millis = 10000
+        timeout_millis = 25000
         time_to_stop = now_millis() + timeout_millis
         while time_to_stop > now_millis():
             if all([result.status == 'SUCCESS' for result in task_results]):

@@ -102,7 +102,8 @@
                         <div id="form_here"></div>
                     </div>
                     <div class="modal-footer ">
-                    <input type="submit" class="btn btn-warning btn-lg" value="Edit Profile" style="width: 100%;">
+                        <input type="submit" class="btn btn-warning btn-lg" value="Edit Profile" style="width: 100%;">
+
                     </div>
                 </form>
             </div>
@@ -149,7 +150,15 @@
                         <div id="form_here"></div>
                     </div>
                     <div class="modal-footer ">
-                    <input type="submit" class="btn btn-warning btn-lg" value="Send" style="width: 100%;">
+                    <button type="submit" class="btn btn-warning btn-lg btn-submit" style="width: 100%;">
+                        Send </button>
+                    <div class="progress" style="display: none">
+                        <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuemin="0"
+                               aria-valuemax="100" style="width: 0%;">
+                            <span class="sr-only"></span>
+                              Sending <span id="percent"></span>
+                        </div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -185,6 +194,12 @@
 
             $('#broadcast_button').click(function () {
                 show_broadcast_modal();
+            });
+
+            $('.btn-submit').on('click', function() {
+                $('.btn-submit').hide();
+                $('.progress').show();
+                setTimeout(doProgress, 200);
             });
         });
 
@@ -248,6 +263,27 @@
                         window.location.reload();
                     }
             });
+        }
+        function doProgress() {
+            var employeeIndex = {{ employees | length }};
+            var i = 0;
+            var counterBack = setInterval(function(){
+              i++;
+              if (i <= 100){
+                $('.progress-bar').css('width', i+'%');
+              } else {
+                clearInterval(counterBack);
+              }
+              var is_plural_mail;
+              if (employeeIndex > 0){
+                  is_plural_mail = "mails";
+              }else{
+                  is_plural_mail = "mail";
+              }
+              $("#percent").text((employeeIndex) + " " + is_plural_mail);
+
+            }, (employeeIndex+1) * 10);
+
         }
     </script>
 
