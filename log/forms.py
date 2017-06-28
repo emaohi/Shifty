@@ -89,5 +89,5 @@ class EditProfileForm(forms.ModelForm):
         self.fields['user'].widget = forms.HiddenInput()
         self.fields['user'].label = ''
         for _, v in self.fields.iteritems():
-            v.widget.attrs.update({'class': 'form-control'})
+            v.widget.attrs.update({'class': 'form-control', 'style': 'width: 450px'})
 
