@@ -5,14 +5,11 @@ import logging
 
 from time import time
 from django.contrib.auth.models import User
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import EmailMultiAlternatives
-from django.core.mail import send_mail, get_connection
-from django.template import Context
-from django.template.loader import get_template
 from django.conf import settings
 
 import tasks
+
+logger = logging.getLogger('cool')
 
 
 def send_multiple_mails_with_html(subject, text, template, r_2_c_dict):
@@ -34,7 +31,20 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict):
         while time_to_stop > now_millis():
             if all([result.status == 'SUCCESS' for result in task_results]):
                 return True
-        raise Exception('Waited too much for mails to be sent')
+        raise EmailWaitError('Waited too much for mails to be sent')
+
+
+class EmailWaitError(Exception):
+    def __init__(self, message):
+        super(EmailWaitError, self).__init__(message)
+        self.message = 'SERVER ERROR - EMAIL ERROR - %s' % self.message
+
+
+def must_be_manager_callback(user):
+    if user.groups.filter(name='Managers').exists():
+        return True
+    logger.error('cant proceed - not manager')
+    return False
 
 
 class NewEmployeeHandler:
@@ -74,7 +84,9 @@ class NewEmployeeHandler:
     def send_new_employees_mails(mail_dicts=None):
 
         recipients = [_dict['to_email'] for _dict in mail_dicts]
-        _ = [_dict.pop('to_email') for _dict in mail_dicts]  # remove non-serializable form dicts
+        # remove non-serializable form dicts
+        for _dict in mail_dicts:
+            _dict.pop('to_email')
 
         recipient_to_context_dict = dict(zip(recipients, mail_dicts))
         template = 'html_msgs/new_employee_email_msg.html'

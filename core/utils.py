@@ -34,3 +34,11 @@ def get_employee_requests_with_status(manager, status):
     business_employees = manager.business.get_employees()
     return EmployeeRequest.objects.filter(issuers__in=business_employees, status=status). \
         distinct()
+
+
+def send_mail_to_manager(emp_user):
+    send_multiple_mails_with_html(subject='New message in Shifty app',
+                                  text='you\'ve got new message from %s' % emp_user.username,
+                                  template='html_msgs/new_employee_change_request.html',
+                                  r_2_c_dict={emp_user: {'employee_first_name': emp_user.first_name,
+                                              'employee_last_name': emp_user.last_name}})

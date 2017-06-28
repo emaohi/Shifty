@@ -2,30 +2,22 @@ import traceback
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
-from django.urls import reverse
 
-from core.models import Message, EmployeeRequest, ManagerMessage
 from core.utils import *
 from forms import *
 from log.models import EmployeeProfile
 from utils import *
 
-import tasks
-
 logger = logging.getLogger('cool')
 
 
 @login_required(login_url="/login")
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def manager_home(request):
-
-    # res = tasks.add.delay(2, 3)
-    # logger.info(res.get())
 
     curr_manager = request.user.profile
 
@@ -115,13 +107,6 @@ def edit_business(request):
         business_form = BusinessEditForm(instance=curr_business)
 
     return render(request, 'manager/edit_business.html', {'business_form': business_form})
-
-
-def must_be_manager_callback(user):
-    if user.groups.filter(name='Managers').exists():
-        return True
-    logger.error('cant proceed - not manager')
-    return False
 
 
 @login_required(login_url='/login')
