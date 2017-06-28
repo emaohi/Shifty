@@ -190,7 +190,7 @@ def edit_profile_form(request):
             edited_profile = form.save()
             is_edited_other = is_manager and request.user.profile != edited_profile
             messages.success(request, message='successfully edited %s' %
-                                              (edited_profile.user.username if is_edited_other else 'yourself   '))
+                                              (edited_profile.user.username if is_edited_other else 'yourself'))
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))
@@ -200,7 +200,7 @@ def edit_profile_form(request):
 
 @login_required(login_url='/login')
 def edit_profile(request):
-    return render(request, 'edit_profile.html', {})
+    return render(request, 'edit_profile.html', {'employee': request.user.username})
 
 
 @login_required(login_url='/login')

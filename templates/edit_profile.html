@@ -19,7 +19,7 @@
         <div class="col-md-8 col-md-offset-2">
             <div class="login-panel panel panel-default">
                 <div class="panel-heading head-custom">
-                    <h3 class="panel-title" style="display: inline">Edit your profile</h3>
+                    <h3 class="panel-title" style="display: inline">Edit your profile - {{ employee }}</h3>
                     <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
                 </div>
                 <div class="panel-body" >
@@ -72,7 +72,7 @@
        function show_text_and_send_btn($elem) {
             $elem.before('<input type="text" class="new_text" style="margin-left: 30px" placeholder="submit your fix">');
             $elem.addClass('btn-info').removeClass('btn-warning').text('send');
-            $elem.after('<i class="fa fa-spinner fa-spin" style="font-size:18px; display: none"></i>')
+            $elem.after('<i class="fa fa-spinner fa-spin" style="font-size:18px; margin-left: 10px; display: none"></i>')
       }
 
       function form_success_callback(response) {
@@ -87,7 +87,7 @@
           }
 
       function report_incorrect($btn, field, fix, curr_val) {
-           $btn.siblings('input[class="new_text"]').remove();
+{#           $btn.siblings('input[class="new_text"]').remove();#}
            var $spinner = $btn.siblings('.fa-spinner');
            $spinner.show();
             $.ajax({
