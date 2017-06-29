@@ -1,3 +1,7 @@
+{% extends 'html_msgs/base.html' %}
+
+{% block content %}
+
 <h2>{{ first_name }}, welcome to Shifty !</h2>
 
 <p>You have been added by your manager, {{ manager }}, to the business {{ business }} as a {{ role }}</p>
@@ -10,3 +14,4 @@
 </ul>
 
 <p>go to <a href="http://emaohi.pythonanywhere.com">Shifty website</a> and enjoy !</p>
+{% endblock %}

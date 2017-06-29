@@ -93,7 +93,7 @@
                   <div class="progress-bar progress-bar-striped active" role="progressbar" aria-valuemin="0"
                        aria-valuemax="100" style="width: 0%;">
                     <span class="sr-only"></span>
-                      Sending <span id="percent"></span>
+                      Creating <span id="percent"></span>
                   </div>
                 </div>
 
@@ -186,9 +186,9 @@ $(document).ready(function() {
           }
           var is_plural_mail;
           if (employeeIndex > 0){
-              is_plural_mail = "mails";
+              is_plural_mail = "messages";
           }else{
-              is_plural_mail = "mail";
+              is_plural_mail = "message";
           }
           $("#percent").text((employeeIndex+1) + " " + is_plural_mail);
 

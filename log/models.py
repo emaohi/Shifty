@@ -69,6 +69,7 @@ class EmployeeProfile(models.Model):
         choices=ROLE_CHOICES,
         default='WA',
     )
+    enable_mailing = models.BooleanField(default=True)
 
     def __str__(self):
         return self.user.username
