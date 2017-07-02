@@ -4,6 +4,8 @@
 
 $(document).ready(function () {
 
+    $('.table-striped').paging({limit:5});
+
     var curr_modal_username = "";
 
     handle_manager_row();
