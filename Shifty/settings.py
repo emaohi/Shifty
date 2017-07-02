@@ -55,6 +55,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'Shifty.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+STATIC_URL = '/static/'
 
 TEMPLATES = [
     {
