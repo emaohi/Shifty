@@ -2,7 +2,7 @@ import itertools
 from django.utils import timezone
 
 from core.models import ManagerMessage, EmployeeRequest
-from log.utils import send_multiple_mails_with_html
+from Shifty.utils import send_multiple_mails_with_html
 
 
 def create_manager_msg(recipients, subject, text):

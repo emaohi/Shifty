@@ -8,7 +8,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from core.models import EmployeeRequest
 from core.utils import create_manager_msg, send_mail_to_manager
 
-from log.utils import must_be_manager_callback, EmailWaitError
+from Shifty.utils import must_be_manager_callback, EmailWaitError
 from .forms import *
 
 logger = logging.getLogger('cool')

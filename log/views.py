@@ -12,6 +12,8 @@ from forms import *
 from log.models import EmployeeProfile
 from utils import *
 
+from Shifty.utils import must_be_manager_callback
+
 logger = logging.getLogger('cool')
 
 

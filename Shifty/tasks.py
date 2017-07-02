@@ -14,4 +14,3 @@ def send_mail(recipient, subject, text, html_to_render, context):
                                      'shifty.moti@gmail.com', [recipient])
     message.attach_alternative(html_content, 'text/html')
     message.send()
-
