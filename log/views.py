@@ -194,7 +194,7 @@ def edit_profile_form(request):
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))
-            messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors))
+            messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors.as_text()))
             return redirect('manage_employees')
 
 
