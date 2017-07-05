@@ -31,8 +31,10 @@ def report_incorrect_detail(request):
         new_request.save()
         # add the employee's manager to the recipients list
         new_request.issuers.add(reporting_profile)
-
-        send_mail_to_manager(request.user)
+        try:
+            send_mail_to_manager(request.user)
+        except EmailWaitError as e:
+            return HttpResponseServerError(e.message)
 
         return HttpResponse('Report was sent successfully')
 
@@ -49,9 +51,12 @@ def handle_employee_request(request):
         emp_request.save()
 
         logger.info('creating manager msg in response to the employee request')
-        create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
-                           text='Your following request has been %s by your manager:\n %s' %
-                           (emp_request.get_status_display(), emp_request.text))
+        try:
+            create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
+                               text='Your following request has been %s by your manager:\n %s' %
+                               (emp_request.get_status_display(), emp_request.text))
+        except EmailWaitError as e:
+            return HttpResponseServerError(e.message)
 
         messages.success(request, message='request approved' if new_status == 'A' else 'request rejected')
         return HttpResponse('ok')
