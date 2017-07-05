@@ -146,7 +146,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': 'Emaohi %(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
+            'format': 'Shifty-log %(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
