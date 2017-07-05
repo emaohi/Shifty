@@ -16,10 +16,12 @@ $(document).ready(function() {
 
     $('.approve').click(function () {
         var request_id = $(this).parents('div').siblings("span:first").text();
+        spin_instead_of_btn($(this));
         handle_request("A", request_id);
     });
     $('.reject').click(function () {
         var request_id = $(this).parents('div').siblings("span:first").text();
+        spin_instead_of_btn($(this));
         handle_request("R", request_id);
     });
 });
@@ -27,6 +29,12 @@ $(window).on("popstate", function() {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
     $("a[href='" + anchor + "']").tab("show");
 });
+
+function spin_instead_of_btn($btn) {
+    $btn.hide();
+    $btn.siblings("button").hide();
+    $btn.siblings('.fa-spin').show();
+}
 
 function handle_request(new_status, request_id) {
     $.ajax({
