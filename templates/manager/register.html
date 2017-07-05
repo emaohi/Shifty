@@ -4,6 +4,15 @@
 <title>Register nw business</title>
 {% endblock %}
 
+{% block style %}
+    <style>
+        a.my-tool-tip, a.my-tool-tip:hover, a.my-tool-tip:visited {
+            color: black;
+            margin-left: 10px;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
 <div class="container">
     <div class="row">
@@ -21,7 +30,7 @@
                     {{ business_form.as_p }}
                     <hr>
                     <div class="text-center">
-                    <input type="submit" class="btn btn-info" value="Submit">
+                    <input type="submit" class="btn btn-info btn-lg" value="Submit">
                         </div>
                     </form>
                 </div>
@@ -32,5 +41,13 @@
 {% endblock %}
 
 {% block javascript %}
-
+    <script>
+        $(document).ready(function () {
+            var tooltip_desc = "How your employees get their tip? Whether individually or get a portion from grouped amount";
+            $("label[for='id_tip_method']").
+            after('<a class="my-tool-tip" data-toggle="tooltip" data-placement="right" title="' + tooltip_desc + '">' +
+                '<i class="glyphicon glyphicon-info-sign"></i> </a>');
+            $("a.my-tool-tip").tooltip();
+        })
+    </script>
 {% endblock %}

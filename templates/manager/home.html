@@ -24,6 +24,9 @@
     .rejected{
         background-color: lightcoral !important;
     }
+    .panel-body{
+        text-align: center;
+    }
 </style>
 {% endblock %}
 
@@ -61,6 +64,7 @@
                                 <div style="float: right">
                                     <button type="button" class="btn btn-xs btn-success approve"><span class="glyphicon glyphicon-ok-sign"></span> Approve</button>
                                     <button type="button" class="btn btn-xs btn-danger reject"><span class="glyphicon glyphicon-remove"></span> Reject</button>
+                                    <i class="fa fa-spinner fa-spin" style="font-size:18px; margin-left: 10px; display: none"></i>
                                 </div>
                             </div>
                         </div>
@@ -102,12 +106,18 @@
     <div id="menu1" class="tab-pane fade">
         <div class="row" style="margin-top: 130px">
             <div class="col-md-6">
-                <a href="{% url 'add_employees' %}" class="btn btn-success btn-xl"
-                               role="button">Add Employees</a>
+                  <div class="panel panel-default">
+                        <div class="panel-body"><img src="{% static 'imgs/download.jpeg' %}"></div>
+                        <div class="panel-footer"><a href="{% url 'add_employees' %}" class="btn btn-success btn-xl"
+                               role="button">Add Employees</a></div>
+                  </div>
             </div>
             <div class="col-md-6">
-                <a href="{% url 'manage_employees' %}" class="btn btn-info btn-xl"
-                               role="button">Manage Employees</a>
+                <div class="panel panel-default">
+                    <div class="panel-body"><img src="{% static 'imgs/bt.jpeg' %}"></div>
+                    <div class="panel-footer"><a href="{% url 'manage_employees' %}" class="btn btn-info btn-xl"
+                               role="button">Manage Employees</a></div>
+                </div>
             </div>
         </div>
     </div>
@@ -119,16 +129,7 @@
     </div>
 
     <div id="menu2" class="tab-pane fade in">
-      <div class="row" style="margin-top: 130px">
-            <div class="col-md-6">
-                <a href="#" class="btn btn-success btn-xl"
-                               role="button">New Shift</a>
-            </div>
-            <div class="col-md-6">
-                <a href="#" class="btn btn-info btn-xl"
-                               role="button">Previous Shifts</a>
-            </div>
-        </div>
+        <p>moti</p>
     </div>
 
   </div>

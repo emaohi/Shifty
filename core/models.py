@@ -5,14 +5,6 @@ from django.db import models
 from log.models import Business, EmployeeProfile
 
 
-class ShiftsArrangement(models.Model):
-    business = models.ForeignKey(Business, on_delete=models.CASCADE)
-    # Json in the structure of:
-    # {sunday:[{start:<>, end:<>}, {}, {}...]}, monday: [], ..., saturday:[]}
-    arrangement = models.TextField(max_length=200)
-    submit_deadline = models.DateTimeField()
-
-
 class EmployeeRequest(models.Model):
 
     issuers = models.ManyToManyField(EmployeeProfile, related_name='request_issued')
@@ -46,9 +38,3 @@ class ManagerMessage(models.Model):
                    ' and ' + str(num_of_recipients - 5) + ' more'
         return ', '.join(str(emp) for emp in self.recipients.all())
     get_recipients_string.short_description = 'recipients'
-
-
-class ShiftSwapMessage(models.Model):
-    sender = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='shift_swap_send')
-    receiver = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='shift_swap_receiver')
-    sent_time = models.DateTimeField()

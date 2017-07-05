@@ -17,6 +17,11 @@ class BusinessRegistrationForm(forms.ModelForm):
         model = Business
         fields = ('business_name', 'business_type', 'tip_method')
 
+    def __init__(self, *args, **kwargs):
+        super(BusinessRegistrationForm, self).__init__(*args, **kwargs)
+        for _, v in self.fields.iteritems():
+            v.widget.attrs.update({'class': 'form-control'})
+
 
 class BusinessEditForm(forms.ModelForm):
     class Meta:
@@ -33,6 +38,7 @@ class BusinessEditForm(forms.ModelForm):
             .update({
             'class': 'form-control'
         })
+        self.fields['tip_method'].help_text = "Whether your employees get their tips personally or share group tips"
 
 
 class ManagerSignUpForm(UserCreationForm):
@@ -41,6 +47,8 @@ class ManagerSignUpForm(UserCreationForm):
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None
+        for _, v in self.fields.iteritems():
+            v.widget.attrs.update({'class': 'form-control'})
 
     class Meta:
         model = User
