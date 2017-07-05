@@ -3,7 +3,7 @@
  */
 $(document).ready(function () {
   $.ajax({
-      url: "{% url 'edit_profile_form' %}",
+      url: edit_profile_form_url, //from template
       type: "get", //send it through get method,
       success: form_success_callback,
       error: function(xhr) {
@@ -51,7 +51,7 @@ function report_incorrect($btn, field, fix, curr_val) {
    var $spinner = $btn.siblings('.fa-spinner');
    $spinner.show();
     $.ajax({
-      url: "{% url 'report_incorrect' %}",
+      url: report_incorrect_url, //from template
       type: "post", //send it through get method
       data: {
         incorrect_field: field,
@@ -59,7 +59,7 @@ function report_incorrect($btn, field, fix, curr_val) {
         curr_val: curr_val
       },
       headers: {
-          'X-CSRFToken': '{{ csrf_token }}'
+          'X-CSRFToken': csrf_token //from template
       },
       success: function(response){
                 $btn.siblings('input[class="new_text"]').remove();
