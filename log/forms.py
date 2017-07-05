@@ -76,13 +76,18 @@ class EditProfileForm(forms.ModelForm):
                   'avg_rate', 'enable_mailing']
 
     def __init__(self, *args, **kwargs):
-        is_manager = kwargs.pop('is_manager', None)
+        requester_is_manager = kwargs.pop('is_manager', None)
         super(EditProfileForm, self).__init__(*args, **kwargs)
+        subject_is_manager = self.instance.user.groups.filter(name='Managers').exists()
         fields_to_delete = ()
         fields_to_disable = ()
-        if not is_manager:
+
+        if not requester_is_manager and not subject_is_manager:
             fields_to_delete = ('avg_rate', )
-            fields_to_disable = ('role', 'started_work_date')
+            fields_to_disable = ('started_work_date', 'role')
+        if requester_is_manager and subject_is_manager:
+            fields_to_delete = ('avg_rate', 'role')
+
         for field in fields_to_delete:
             del self.fields[field]
         for field in fields_to_disable:
