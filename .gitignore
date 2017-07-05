@@ -1,8 +1,8 @@
-.idea/
-.cache/
+.idea/*
 *workspace.xml
 *.pyc
-*.sqlite3
-shifty-virtualenv/*
-.gitignore
-*.DS_Store
+*ini
+.DS_Store
+.cache/
+.gitignore.orig
+.pylintrc

@@ -3,11 +3,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError
 
 from core.models import EmployeeRequest
-from core.utils import create_manager_msg
+from core.utils import create_manager_msg, send_mail_to_manager
 
+from Shifty.utils import must_be_manager_callback, EmailWaitError
 from .forms import *
 
 logger = logging.getLogger('cool')
@@ -30,12 +31,16 @@ def report_incorrect_detail(request):
         new_request.save()
         # add the employee's manager to the recipients list
         new_request.issuers.add(reporting_profile)
+        try:
+            send_mail_to_manager(request.user)
+        except EmailWaitError as e:
+            return HttpResponseServerError(e.message)
 
         return HttpResponse('Report was sent successfully')
 
 
 @login_required(login_url='/login')
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def handle_employee_request(request):
     if request.method == 'POST':
         emp_request_id = request.POST.get('emp_request_id')
@@ -46,9 +51,12 @@ def handle_employee_request(request):
         emp_request.save()
 
         logger.info('creating manager msg in response to the employee request')
-        create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
-                           text='Your following request has been %s by your manager:\n %s' %
-                           (emp_request.get_status_display(), emp_request.text))
+        try:
+            create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
+                               text='Your following request has been %s by your manager:\n %s' %
+                               (emp_request.get_status_display(), emp_request.text))
+        except EmailWaitError as e:
+            return HttpResponseServerError(e.message)
 
         messages.success(request, message='request approved' if new_status == 'A' else 'request rejected')
         return HttpResponse('ok')
@@ -64,7 +72,11 @@ def broadcast_message(request):
             recipients = request.user.profile.business.get_employees()
 
             new_manager_msg = broadcast_form.save(commit=False)
-            create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text)
+
+            try:
+                create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text)
+            except EmailWaitError as e:
+                return HttpResponseServerError(e.message)
 
             messages.success(request, message='Broadcast message created')
             return HttpResponseRedirect('/')

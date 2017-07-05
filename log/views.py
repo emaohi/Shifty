@@ -2,30 +2,24 @@ import traceback
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
-from django.urls import reverse
 
-from core.models import Message, EmployeeRequest, ManagerMessage
 from core.utils import *
 from forms import *
 from log.models import EmployeeProfile
 from utils import *
 
-import tasks
+from Shifty.utils import must_be_manager_callback
 
 logger = logging.getLogger('cool')
 
 
 @login_required(login_url="/login")
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def manager_home(request):
-
-    # res = tasks.add.delay(2, 3)
-    # logger.info(res.get())
 
     curr_manager = request.user.profile
 
@@ -117,13 +111,6 @@ def edit_business(request):
     return render(request, 'manager/edit_business.html', {'business_form': business_form})
 
 
-def must_be_manager_callback(user):
-    if user.groups.filter(name='Managers').exists():
-        return True
-    logger.error('cant proceed - not manager')
-    return False
-
-
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def add_employees(request):
@@ -157,7 +144,7 @@ def add_employees(request):
 
             try:
                 logger.info('sending mails to new employees')
-                new_employee_handler.mass_html(mail_dics)
+                new_employee_handler.send_new_employees_mails(mail_dics)
                 messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                      curr_business))
             except Exception as e:
@@ -205,17 +192,17 @@ def edit_profile_form(request):
             edited_profile = form.save()
             is_edited_other = is_manager and request.user.profile != edited_profile
             messages.success(request, message='successfully edited %s' %
-                                              (edited_profile.user.username if is_edited_other else 'yourself   '))
+                                              (edited_profile.user.username if is_edited_other else 'yourself'))
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))
-            messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors))
+            messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors.as_text()))
             return redirect('manage_employees')
 
 
 @login_required(login_url='/login')
 def edit_profile(request):
-    return render(request, 'edit_profile.html', {})
+    return render(request, 'edit_profile.html', {'employee': request.user.username})
 
 
 @login_required(login_url='/login')

@@ -1,19 +1,19 @@
 from django.contrib import admin
-from .models import ShiftsArrangement, Message, EmployeeRequest, ShiftSwapMessage, ManagerMessage
+
+from .models import ShiftsArrangement, EmployeeRequest, ShiftSwapMessage, ManagerMessage
 
 # Register your models here.
 admin.site.register(ShiftsArrangement)
-
-admin.site.register(EmployeeRequest)
-admin.site.register(ManagerMessage)
 admin.site.register(ShiftSwapMessage)
 
 
-class MessageAdmin(admin.ModelAdmin):
-    list_display = ("sender", "get_recipients", "subject", "text", "sent_time")
+class EmployeeRequestAdmin(admin.ModelAdmin):
+    list_display = ('get_issuers_string', 'text', 'status', 'sent_time')
 
-admin.site.register(Message, MessageAdmin)
+admin.site.register(EmployeeRequest, EmployeeRequestAdmin)
 
 
-# class EmployeeRequest(admin.ModelAdmin):
-#     list_display = ("")
+class ManagerMessageAdmin(admin.ModelAdmin):
+    list_display = ('business', 'get_recipients_string', 'subject', 'text', 'sent_time')
+
+admin.site.register(ManagerMessage, ManagerMessageAdmin)

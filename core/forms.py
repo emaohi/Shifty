@@ -11,9 +11,5 @@ class BroadcastMessageForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BroadcastMessageForm, self).__init__(*args, **kwargs)
-        self.fields['subject'].widget = TextInput(attrs={
-            'class': 'form-control'
-        })
-        self.fields['text'].widget = TextInput(attrs={
-            'class': 'form-control'
-        })
+        for _, v in self.fields.iteritems():
+            v.widget = TextInput(attrs={'class': 'form-control'})

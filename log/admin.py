@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import *
+from .models import Business, EmployeeProfile
 
 
 class BusinessAdmin(admin.ModelAdmin):
@@ -9,6 +9,6 @@ admin.site.register(Business, BusinessAdmin)
 
 
 class EmployeeProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "business", "role")
+    list_display = ("user", "business", "role", "phone_num")
 
 admin.site.register(EmployeeProfile, EmployeeProfileAdmin)
