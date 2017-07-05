@@ -26,6 +26,7 @@ class EmployeeRequest(models.Model):
 
     def get_issuers_string(self):
         return ', '.join(str(emp) for emp in self.issuers.all())
+    get_issuers_string.short_description = 'issuers'
 
 
 class ManagerMessage(models.Model):
@@ -37,6 +38,14 @@ class ManagerMessage(models.Model):
 
     def get_split_msg(self):
         return self.text.split(':')
+
+    def get_recipients_string(self):
+        num_of_recipients = len(self.recipients.all())
+        if num_of_recipients > 5:
+            return ', '.join(str(emp) for emp in self.recipients.all()[:5]) +\
+                   ' and ' + str(num_of_recipients - 5) + ' more'
+        return ', '.join(str(emp) for emp in self.recipients.all())
+    get_recipients_string.short_description = 'recipients'
 
 
 class ShiftSwapMessage(models.Model):
