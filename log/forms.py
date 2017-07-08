@@ -27,6 +27,9 @@ class BusinessEditForm(forms.ModelForm):
     class Meta:
         model = Business
         fields = ('business_type', 'tip_method')
+        help_texts = {
+            'tip_method': 'Whether your employees get their tips personally or share group tips'
+        }
 
     def __init__(self, *args, **kwargs):
         super(BusinessEditForm, self).__init__(*args, **kwargs)
@@ -38,7 +41,6 @@ class BusinessEditForm(forms.ModelForm):
             .update({
             'class': 'form-control'
         })
-        self.fields['tip_method'].help_text = "Whether your employees get their tips personally or share group tips"
 
 
 class ManagerSignUpForm(UserCreationForm):
@@ -76,12 +78,23 @@ class AddEmployeesForm(forms.Form):
                 forms.DateField()
 
 
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+
 class EditProfileForm(forms.ModelForm):
 
     class Meta:
         model = EmployeeProfile
         fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address',
                   'avg_rate', 'enable_mailing']
+        widgets = {
+            'started_work_date': DateInput(),
+            'birth_date': DateInput(),
+        }
+        help_texts = {
+            'phone_num': 'in form of 05x-xxxxxxx',
+        }
 
     def __init__(self, *args, **kwargs):
         requester_is_manager = kwargs.pop('is_manager', None)
@@ -100,6 +113,7 @@ class EditProfileForm(forms.ModelForm):
             del self.fields[field]
         for field in fields_to_disable:
             self.fields[field].disabled = True
+
         self.fields['user'].widget = forms.HiddenInput()
         self.fields['user'].label = ''
         for k, v in self.fields.iteritems():

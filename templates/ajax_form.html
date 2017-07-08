@@ -8,8 +8,8 @@
 {% endif %}
 
 {% for field in form %}
-        {{ field.label }}
-    <div class="form-group input-group">
+        {{ field.label }}<small style="margin-left: 15px">{{ field.help_text }}</small>
+    <div class="form-group">
         {{ field }}
     </div>
 {% endfor %}
