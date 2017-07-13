@@ -61,3 +61,9 @@ def get_current_week_string():
     curr_year = datetime.datetime.now().year
     week_no = datetime.date.today().isocalendar()[1]
     return get_days_range_by_week_num(week_no, curr_year)
+
+
+def get_next_week_string():
+    curr_year = datetime.datetime.now().year
+    week_no = datetime.date.today().isocalendar()[1] + 1
+    return get_days_range_by_week_num(week_no, curr_year)
