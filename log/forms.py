@@ -118,7 +118,7 @@ class EditProfileForm(forms.ModelForm):
         self.fields['user'].label = ''
         for k, v in self.fields.iteritems():
             if k is not 'enable_mailing':
-                v.widget.attrs.update({'class': 'form-control', 'style': 'width: 450px'})
+                v.widget.attrs.update({'class': 'form-control', 'style': 'width: 450px; display: inline'})
             else:
                 v.widget.attrs.update({'style': 'display: inline'})
 

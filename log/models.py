@@ -31,9 +31,6 @@ class Business(models.Model):
         max_length=1, choices=TIP_METHOD_CHOICES, default='G'
     )
 
-    def get_curr_arrangement(self):
-        return self.shiftsArrangement_set.order_by('-id')[0]
-
     def __str__(self):
         return self.business_name
 
@@ -98,6 +95,10 @@ class EmployeeProfile(models.Model):
             if profile.role == 'MA':
                 return profile
         return None
+
+    @staticmethod
+    def get_filtered_upon_fields():
+        return ['home_address', 'birth_date', 'started_work_date', 'gender', 'avg_rate']
 
 
 @receiver(post_save, sender=User)
