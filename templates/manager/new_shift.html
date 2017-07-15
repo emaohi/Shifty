@@ -1,84 +1,176 @@
 {% extends "manager/base.html" %}
 
 {% block title %}
-<title>New shift</title>
+    <title>New shift</title>
 {% endblock %}
 
 {% block comp_name %}
-{{ user.profile.business }}
+    {{ user.profile.business }}
 {% endblock %}
 
 {% block style %}
     <style>
-        .report-btn{
-            margin-left:20px;
+        .report-btn {
+            margin-left: 20px;
+        }
+
+        .modal-dialog {
+            width: 1000px;
+        }
+
+        .modal-body .form-horizontal .col-sm-2,
+        .modal-body .form-horizontal .col-sm-10 {
+            width: 100%
+        }
+
+        .modal-body .form-horizontal .control-label {
+            text-align: left;
+        }
+
+        .modal-body .form-horizontal .col-sm-offset-2 {
+            margin-left: 15px;
         }
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="login-panel panel panel-default">
-                <div class="panel-heading head-custom">
-                    <h3 class="panel-title" style="display: inline">New {{ user.profile.business }} shift ({{ week_range }})</h3>
-                    <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
-                </div>
-                <div class="panel-body" >
-                    <form action="." method="post">
-                        {% csrf_token %}
-                        {% for field in form %}
-                            {% if 'constraint' not in field.name %}
-                                <p>
-                                    <b>{{ field.label }}</b> {{ field }}
-                                </p>
-                            {% endif %}
-                        {% endfor %}
-                    <hr>
-                    <div class="text-center">
-                    <input type="submit" class="btn btn-info btn-lg" value="Submit">
-                        </div>
-                    </form>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading head-custom">
+                        <h3 class="panel-title" style="display: inline">New shift for next week ({{ week_range }})</h3>
+                        <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
+                    </div>
+                    <div class="panel-body">
+                        <form action="." method="post">
+                            {% csrf_token %}
+                            {% for field in form %}
+                                {% if 'constraint' not in field.name %}
+                                    <p>
+                                        <label><b>{{ field.label }}</b></label> {{ field }}
+                                    </p>
+                                {% endif %}
+                            {% endfor %}
+                            <hr>
+                            <div class="text-center">
+                                <input type="submit" class="btn btn-info btn-lg" value="Submit">
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="edit" aria-hidden="true">
-  <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>
-                <h4 class="modal-title custom_align" id="Heading">Edit Your Detail</h4>
+    <div class="modal fade" id="edit" tabindex="-1" role="dialog"
+         aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <button type="button" class="close"
+                            data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                    </button>
+                    <h4 class="modal-title" id="Heading">
+                        Modal title
+                    </h4>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="form-group">
+                            {% for field in form %}
+                                {% if 'constraint' in field.name and 'val' not in field.name %}
+                                    <div class="col-sm-3">
+                                        {{ field }}
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                            <div class="col-xs-1">
+                                <button type="button" class="btn btn-info addButton"><span
+                                        class="glyphicon glyphicon-plus"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- The template for adding new field -->
+                <div class="form-group hide" id="constraintTemplate">
+                    <div class="col-xs-2">
+                        <input type="text" class="form-control" name="field" placeholder="filter by"/>
+                    </div>
+                    <div class="col-xs-2">
+                        <input type="text" class="form-control" name="op" placeholder="operator"/>
+                    </div>
+                    <div class="col-xs-3">
+                        <input type="email" class="form-control" name="apply" placeholder="Apply on"/>
+                    </div>
+                </div>
+
+                    <!-- Modal Footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default"
+                                data-dismiss="modal">
+                            Close
+                        </button>
+                        <button type="button" class="btn btn-primary">
+                            Save changes
+                        </button>
+                    </div>
+                </div>
             </div>
-           {% for field in form %}
-                {% if 'constraint' in field.name %}
-                    <p>
-                        <b>{{ field.label }}</b> {{ field }}
-                    </p>
-                {% endif %}
-            {% endfor %}
         </div>
     </div>
-<!-- /.modal-content -->
-</div>
-  <!-- /.modal-dialog -->
 {% endblock %}
 
 {% block javascript %}
 
     <script>
-    $(document).ready(function () {
-        $('.attach-constraint').after(
-                    '<button type="button" class="btn btn-warning btn-sm report-btn">' +
-                    'Add constraints</button>');
+        $(document).ready(function () {
+            var waiterConstraintIndex = 0;
+            var bartenderConstraintIndex = 0;
+            var cookConstraintIndex = 0;
 
-        $('.btn-warning').click(function () {
-            $('#edit').modal('show');
-        })
-    })
+            $('.attach-constraint').after(
+                '<button type="button" class="btn btn-warning btn-sm report-btn">' +
+                'Add constraints</button>');
+
+            $('.btn-warning').click(function () {
+                var $btnClicked = $(this);
+                var curr_modal_role = getRoleBtn($btnClicked);
+                $('#edit').find('#Heading').html(curr_modal_role + ' constraints');
+{#                hideNotRoleFileds($btnClicked);#}
+                $('#edit').modal('show');
+            });
+
+            $('.addButton').click(function () {
+                var toAddRole = checkRoleAddBtn($(this));
+                {#        the increment will happen here        #}
+                var correctRoleIndex = incrementRoleIndex();
+                var $template = $('#constraintTemplate'),
+                    $clone = $template
+                        .clone()
+                        .removeClass('hide')
+                        .removeAttr('id')
+                        .insertBefore($(".submit-group"));
+
+                // Update the name attributes
+                $clone
+                    .find('[name="filter_by"]').attr('name', toAddRole + '_constraint_' + correctRoleIndex + '_field').end()
+                    .find('[name="operator"]').attr('name', toAddRole + '_constraint_' + correctRoleIndex + '_op').end()
+                    .find('[name="apply"]').attr('name', toAddRole + '_constraint_' + correctRoleIndex + '_apply_on').end();
+            });
+        });
+        function getRoleBtn($btnClicked) {
+            var btn_sibling_input_name = $btnClicked.siblings("label").text();
+            var text_parts = btn_sibling_input_name.split(" ");
+            var role_plural = text_parts[2];
+            return role_plural.substring(0, role_plural.length - 1);
+        }
     </script>
 
 {% endblock %}
