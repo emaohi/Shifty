@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError
 
 from core.models import EmployeeRequest
-from core.utils import create_manager_msg, send_mail_to_manager
+from core.utils import create_manager_msg, send_mail_to_manager, get_next_week_string
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError
 from .forms import *
@@ -63,7 +63,7 @@ def handle_employee_request(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(lambda user: user.groups.filter(name='Managers').exists())
+@user_passes_test(must_be_manager_callback)
 def broadcast_message(request):
     if request.method == 'POST':
         broadcast_form = BroadcastMessageForm(request.POST)
@@ -89,3 +89,10 @@ def broadcast_message(request):
         form = BroadcastMessageForm()
         return render(request, 'ajax_form.html', {'form': form})
 
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+def add_shift_slot(request):
+    if request.method == 'GET':
+        form = ShiftSlotForm()
+        return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string()})

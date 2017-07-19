@@ -30,7 +30,10 @@ def manager_home(request):
 
     done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
 
-    context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests}
+    curr_week_string = get_current_week_string()
+
+    context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
+               'curr_week_str': curr_week_string}
     return render(request, "manager/home.html", context)
 
 

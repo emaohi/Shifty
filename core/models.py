@@ -1,5 +1,6 @@
 from __future__ import unicode_literals
 
+import datetime
 from django.db import models
 
 from log.models import Business, EmployeeProfile
@@ -38,3 +39,30 @@ class ManagerMessage(models.Model):
                    ' and ' + str(num_of_recipients - 5) + ' more'
         return ', '.join(str(emp) for emp in self.recipients.all())
     get_recipients_string.short_description = 'recipients'
+
+
+class ShiftSlot(models.Model):
+    business = models.ForeignKey(Business, on_delete=models.CASCADE)
+
+    YEAR_CHOICES = [(r, r) for r in range(datetime.date.today().year, datetime.date.today().year + 30)]
+    year = models.IntegerField(choices=YEAR_CHOICES, default=datetime.datetime.now().year)
+
+    WEEK_CHOICES = [(w, w) for w in range(1, 53)]
+    week = models.IntegerField(choices=WEEK_CHOICES, default=1)
+
+    DAYS_OF_WEEK = (
+        ('1', 'Sunday'),
+        ('2', 'Monday'),
+        ('3', 'Tuesday'),
+        ('4', 'Wednesday'),
+        ('5', 'Thursday'),
+        ('6', 'Friday'),
+        ('7', 'Saturday'),
+    )
+    day = models.CharField(max_length=1, choices=DAYS_OF_WEEK)
+
+    start_hour = models.TimeField()
+    end_hour = models.TimeField()
+
+    constraints = models.TextField(max_length=300)
+
