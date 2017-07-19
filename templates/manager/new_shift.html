@@ -43,7 +43,7 @@
                         <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
                     </div>
                     <div class="panel-body">
-                        <form action="." method="post">
+                        <form action="." method="post" id="theForm">
                             {% csrf_token %}
                             {% for field in form %}
                                 {% if 'constraint' not in field.name %}
@@ -63,7 +63,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="edit" tabindex="-1" role="dialog"
+    <div class="modal fade" id="constraintModal" tabindex="-1" role="dialog"
          aria-labelledby="myModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -81,34 +81,19 @@
 
                 <!-- Modal Body -->
                 <div class="modal-body">
-                    <div class="row">
-                        <div class="form-group">
-                            {% for field in form %}
-                                {% if 'constraint' in field.name and 'val' not in field.name %}
-                                    <div class="col-sm-3">
-                                        {{ field }}
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-                            <div class="col-xs-1">
-                                <button type="button" class="btn btn-info addButton"><span
-                                        class="glyphicon glyphicon-plus"></span>
-                                </button>
+                {% for group in form.get_constraint_groups %}
+                        <div class="row">
+                            <div class="form-group modal-form-here">
+                                {% for cont_field in form %}
+                                    {% if group in cont_field.name  %}
+                                        <div class="col-sm-3">
+                                            {{ cont_field }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
-                    </div>
-                </div>
-                <!-- The template for adding new field -->
-                <div class="form-group hide" id="constraintTemplate">
-                    <div class="col-xs-2">
-                        <input type="text" class="form-control" name="field" placeholder="filter by"/>
-                    </div>
-                    <div class="col-xs-2">
-                        <input type="text" class="form-control" name="op" placeholder="operator"/>
-                    </div>
-                    <div class="col-xs-3">
-                        <input type="email" class="form-control" name="apply" placeholder="Apply on"/>
-                    </div>
+                {% endfor %}
                 </div>
 
                     <!-- Modal Footer -->
@@ -131,45 +116,37 @@
 
     <script>
         $(document).ready(function () {
-            var waiterConstraintIndex = 0;
-            var bartenderConstraintIndex = 0;
-            var cookConstraintIndex = 0;
 
-            $('.attach-constraint').after(
+            $('.attach-con').after(
                 '<button type="button" class="btn btn-warning btn-sm report-btn">' +
                 'Add constraints</button>');
 
             $('.btn-warning').click(function () {
                 var $btnClicked = $(this);
                 var curr_modal_role = getRoleBtn($btnClicked);
-                $('#edit').find('#Heading').html(curr_modal_role + ' constraints');
-{#                hideNotRoleFileds($btnClicked);#}
-                $('#edit').modal('show');
-            });
-
-            $('.addButton').click(function () {
-                var toAddRole = checkRoleAddBtn($(this));
-                {#        the increment will happen here        #}
-                var correctRoleIndex = incrementRoleIndex();
-                var $template = $('#constraintTemplate'),
-                    $clone = $template
-                        .clone()
-                        .removeClass('hide')
-                        .removeAttr('id')
-                        .insertBefore($(".submit-group"));
-
-                // Update the name attributes
-                $clone
-                    .find('[name="filter_by"]').attr('name', toAddRole + '_constraint_' + correctRoleIndex + '_field').end()
-                    .find('[name="operator"]').attr('name', toAddRole + '_constraint_' + correctRoleIndex + '_op').end()
-                    .find('[name="apply"]').attr('name', toAddRole + '_constraint_' + correctRoleIndex + '_apply_on').end();
+                var $constraintModal = $('#constraintModal');
+                hideNotRoleFields(curr_modal_role);
+{#                limit_apply_on(curr_modal_role); limit the role apply on fields to num of role#}
+                $constraintModal.find('#Heading').html(curr_modal_role + ' constraints');
+                $constraintModal.modal('show');
             });
         });
+
         function getRoleBtn($btnClicked) {
             var btn_sibling_input_name = $btnClicked.siblings("label").text();
             var text_parts = btn_sibling_input_name.split(" ");
             var role_plural = text_parts[2];
             return role_plural.substring(0, role_plural.length - 1);
+        }
+        function hideNotRoleFields(roleNotToHide) {
+            var all_modal_fields = $('[form="theForm"]');
+            all_modal_fields.each(function () {
+                if(!$(this).attr('name').includes(roleNotToHide) && $(this).attr('name').includes('__')){
+                    $(this).hide();
+                }else{
+                    $(this).show();
+                }
+            })
         }
     </script>
 

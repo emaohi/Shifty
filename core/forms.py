@@ -1,4 +1,6 @@
 import time
+
+import datetime
 from django import forms
 from django.forms import TextInput
 from django.forms.models import fields_for_model
@@ -24,52 +26,59 @@ class ShiftSlotForm(forms.Form):
     end_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
 
     # constraints
-    num_of_waiters = forms.IntegerField()
-    num_of_bartenders = forms.IntegerField()
-    num_of_cooks = forms.IntegerField()
+    num_of_waiters = forms.IntegerField(initial=1)
+    num_of_bartenders = forms.IntegerField(initial=1)
+    num_of_cooks = forms.IntegerField(initial=1)
 
     OP_CHOICES = (
-        ('', 'more/euqal/less than'),
+        ('', 'more/equal/less than'),
         ('gte', '>'),
         ('lte', '<'),
         ('eq', '=')
     )
-
-    employee_fields_dict = fields_for_model(EmployeeProfile, fields=EmployeeProfile.get_filtered_upon_fields())
+    GENDER_CHOICES = (
+        ('', 'Gender'),
+        ('M', 'Male'),
+        ('F', 'Female'),
+    )
 
     def __init__(self, *args, **kwargs):
-        num_of_cook_constraints = kwargs.pop('num_of_cook_constraints', 0)
-        num_of_bartender_constraints = kwargs.pop('num_of_bartender_constraints', 0)
-        num_of_waiter_constraints = kwargs.pop('num_of_waiter_constraints', 1)
+
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 
-        role_to_constraint_num = {'cook': num_of_cook_constraints, 'bartender': num_of_bartender_constraints,
-                                  'waiter': num_of_waiter_constraints}
+        roles = ['waiter', 'bartender', 'cook']
+        field_to_vals = {'age': forms.IntegerField(required=False,
+                                                   widget=forms.NumberInput(attrs={'placeholder': 'Age'})),
+                         'months_working': forms.IntegerField(
+                             required=False, widget=forms.NumberInput(attrs={'placeholder': 'Working months'})),
+                         'gender': forms.ChoiceField(choices=self.GENDER_CHOICES),
+                         'average_rate': forms.FloatField(min_value=0.0,
+                                                          widget=forms.NumberInput(attrs={'placeholder': 'Average rate'}))}
+        for role in roles:
+            for field, val in field_to_vals.iteritems():
+                self.fields[role + '_' + field + '__desc_constraint'] = \
+                    forms.CharField(disabled=True, initial=(role + ' ' + field).replace('_', ' ').title())
+                self.fields[role + '_' + field + '__operation_constraint'] =\
+                    forms.ChoiceField(choices=self.OP_CHOICES, disabled=True if field is 'gender' else False, required=False)
+                self.fields[role + '_' + field + '__value_constraint'] = val
+                self.fields[role + '_' + field + '__applyOn_constraint'] =\
+                    forms.IntegerField(min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Apply on'}))
 
-        fields_to_hide = []
-        for role in role_to_constraint_num:
-            for index in range(role_to_constraint_num[role]):
-                str_index = str(index)
-                self.fields['%s_constraint_%s_field' % (role, str_index)] = \
-                    forms.ChoiceField(choices=[('', 'choose field to filter upon')] +
-                                              [(choice, choice) for choice in EmployeeProfile.get_filtered_upon_fields()],
-                                      required=False)
-                for filtered_name, filtered_field in self.employee_fields_dict.iteritems():
-                    new_val_field = '%s_constraint_%s_val_%s' % (role, str_index, filtered_name)
-                    self.fields[new_val_field] = filtered_field
-                    # self.fields[new_val_field].label = new_val_field
-                    fields_to_hide.append(new_val_field)
-                self.fields['%s_constraint_%s_op' % (role, str_index)] = forms.ChoiceField(choices=self.OP_CHOICES)
-                self.fields['%s_constraint_%s_apply_on' % (role, str_index)] = forms.IntegerField(initial=1)
-        for field in fields_to_hide:
-            # pass
-            self.fields[field].label = ''
-            self.fields[field].widget = forms.HiddenInput()
-        for k, v in self.fields.iteritems():
-            v.widget.attrs.update({'class': 'form-control'})
-            if 'num' in k:
-                v.widget.attrs.update({'style': 'width: 450px; display: inline',
-                                       'class': 'form-control attach-constraint'})
+        for name, field in self.fields.iteritems():
+            field.widget.attrs.update({'class': 'form-control', 'form': 'theForm'})
+            if 'num' in name:
+                field.widget.attrs.update({'style': 'width: 450px; display: inline',
+                                           'class': 'form-control attach-con'})
+        self.field_order = sorted(self.fields)
+
+    def get_constraint_groups(self):
+        return self.remove_duplicates([f.split('__')[0] for f in self.fields if '__' in f])
+
+    @staticmethod
+    def remove_duplicates(seq):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if not (x in seen or seen_add(x))]
 
     def clean(self):
         clean_data = super(ShiftSlotForm, self).clean()

@@ -98,7 +98,7 @@ class EmployeeProfile(models.Model):
 
     @staticmethod
     def get_filtered_upon_fields():
-        return ['home_address', 'birth_date', 'started_work_date', 'gender', 'avg_rate']
+        return ['birth_date', 'started_work_date', 'gender', 'avg_rate']
 
 
 @receiver(post_save, sender=User)
