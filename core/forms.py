@@ -3,10 +3,8 @@ import time
 import datetime
 from django import forms
 from django.forms import TextInput
-from django.forms.models import fields_for_model
 
 from core.models import ManagerMessage, ShiftSlot
-from log.models import EmployeeProfile
 
 
 class BroadcastMessageForm(forms.ModelForm):
@@ -42,27 +40,27 @@ class ShiftSlotForm(forms.Form):
         ('F', 'Female'),
     )
 
-    def __init__(self, *args, **kwargs):
+    roles = ['waiter', 'bartender', 'cook']
 
+    def __init__(self, *args, **kwargs):
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 
-        roles = ['waiter', 'bartender', 'cook']
         field_to_vals = {'age': forms.IntegerField(required=False,
                                                    widget=forms.NumberInput(attrs={'placeholder': 'Age'})),
                          'months_working': forms.IntegerField(
                              required=False, widget=forms.NumberInput(attrs={'placeholder': 'Working months'})),
-                         'gender': forms.ChoiceField(choices=self.GENDER_CHOICES),
-                         'average_rate': forms.FloatField(min_value=0.0,
+                         'gender': forms.ChoiceField(choices=self.GENDER_CHOICES, required=False),
+                         'average_rate': forms.FloatField(min_value=0.0, required=False,
                                                           widget=forms.NumberInput(attrs={'placeholder': 'Average rate'}))}
-        for role in roles:
+        for role in self.roles:
             for field, val in field_to_vals.iteritems():
                 self.fields[role + '_' + field + '__desc_constraint'] = \
-                    forms.CharField(disabled=True, initial=(role + ' ' + field).replace('_', ' ').title())
+                    forms.CharField(required=False, disabled=True, widget=forms.TextInput(attrs={'placeholder': (role + ' ' + field).replace('_', ' ').title()}))
                 self.fields[role + '_' + field + '__operation_constraint'] =\
                     forms.ChoiceField(choices=self.OP_CHOICES, disabled=True if field is 'gender' else False, required=False)
                 self.fields[role + '_' + field + '__value_constraint'] = val
                 self.fields[role + '_' + field + '__applyOn_constraint'] =\
-                    forms.IntegerField(min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Apply on'}))
+                    forms.IntegerField(min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Apply on'}), required=False)
 
         for name, field in self.fields.iteritems():
             field.widget.attrs.update({'class': 'form-control', 'form': 'theForm'})
@@ -81,8 +79,20 @@ class ShiftSlotForm(forms.Form):
         return [x for x in seq if not (x in seen or seen_add(x))]
 
     def clean(self):
-        # TODO: check that num of emps is lte/eq num same role in that business + think about more rules
         clean_data = super(ShiftSlotForm, self).clean()
 
+        for role in self.roles:
+            num_of_role = clean_data['num_of_' + role + 's']
+            for clean_field in clean_data:
+                if role in clean_field and 'apply' in clean_field:
+                    if clean_data[clean_field] > num_of_role:
+                        msg = 'you must not apply rule of %ss more than the num you declared they will be' % role
+                        raise forms.ValidationError(msg)
 
+        end_hour = clean_data['end_hour']
+        start_hour = clean_data['start_hour']
+        if end_hour < start_hour:
+            msg = 'end hour (%s) is not later than start_hour (%s)' % (end_hour, start_hour)
+            raise forms.ValidationError(msg)
 
+        # TODO if value has added - apply_on mustn't be empty and vice versa

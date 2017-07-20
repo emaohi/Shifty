@@ -2,11 +2,13 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render
+from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError
 
 from core.models import EmployeeRequest
-from core.utils import create_manager_msg, send_mail_to_manager, get_next_week_string
+from core.utils import create_manager_msg, send_mail_to_manager, get_next_week_string,\
+    create_constraint_json_from_form
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError
 from .forms import *
@@ -93,6 +95,19 @@ def broadcast_message(request):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def add_shift_slot(request):
-    if request.method == 'GET':
+    if request.method == 'POST':
+        slot_form = ShiftSlotForm(request.POST)
+        if slot_form.is_valid():
+            data = slot_form.cleaned_data
+            slot_constraint_json = create_constraint_json_from_form(data)
+            new_slot = ShiftSlot(business=request.user.profile.business, day=data['day'],
+                                 start_hour=data['start_hour'], end_hour=data['end_hour'],
+                                 constraints=slot_constraint_json)
+            new_slot.save()
+            messages.success(request, 'slot form was ok')
+            return HttpResponseRedirect('/')
+        else:
+            return render(request, 'manager/new_shift.html', {'form': slot_form})
+    else:
         form = ShiftSlotForm()
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string()})

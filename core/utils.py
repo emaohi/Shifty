@@ -67,3 +67,38 @@ def get_next_week_string():
     curr_year = datetime.datetime.now().year
     week_no = datetime.date.today().isocalendar()[1] + 1
     return get_days_range_by_week_num(week_no, curr_year)
+
+
+def get_op_and_apply(data, constraint_name):
+    role = constraint_name.split('__')[0].split('_')[0]
+    field_name = constraint_name.split('__')[0].split('_')[1]
+    op = apply_on = ''
+
+    for field in data:
+        split_field = field.split('__')
+        if split_field[0].split('_')[0] == role and split_field[0].split('_')[1] == field_name:
+            action = split_field[1].split('_')[0]
+            if action == 'operation':
+                op = field
+            elif action == 'applyOn':
+                apply_on = field
+    if op and apply_on:
+        return op, apply_on
+    else:
+        raise Exception('not enough fields for %s' % constraint_name)
+
+
+def create_constraint_json_from_form(data):
+    roles = ['waiter', 'bartender', 'cook']
+    constraint_json = {role: {'num': data['num_of_%ss' % role]} for role in roles}
+
+    filtered_constraint_names = [f for f in data if '__' in f]
+    for role in roles:
+        for constraint_name in filtered_constraint_names:
+            if all(x in constraint_name for x in ['val', role]) and data[constraint_name]:
+                op, apply_on = get_op_and_apply(data, constraint_name)
+                val_content = data[constraint_name]
+                constraint_field = constraint_name.split('__')[0].split('_')[1]
+                role_json = constraint_json[role]
+                role_json[constraint_field] = {'val': val_content, 'op': data[op], 'apply_on': data[apply_on]}
+    return constraint_json

@@ -16,6 +16,15 @@ $(document).ready(function () {
         $constraintModal.find('#Heading').html(curr_modal_role + ' constraints');
         $constraintModal.modal('show');
     });
+
+    $('#removeModalFields').click(function () {
+        var all_form_fields = $('[form="theForm"]');
+        all_form_fields.each(function () {
+            if($(this).attr('name').includes('__')){
+                $(this).val("");
+            }
+        })
+    })
 });
 
 function getRoleBtn($btnClicked) {
@@ -30,8 +39,8 @@ function getMaxEmpNum($btnClicked) {
 }
 
 function hideNotRoleFields(roleNotToHide) {
-    var all_modal_fields = $('[form="theForm"]');
-    all_modal_fields.each(function () {
+    var all_form_fields = $('[form="theForm"]');
+    all_form_fields.each(function () {
         if(!$(this).attr('name').includes(roleNotToHide) && $(this).attr('name').includes('__')){
             $(this).hide();
         }else{

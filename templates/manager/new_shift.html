@@ -35,6 +35,12 @@
 {% endblock %}
 
 {% block content %}
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            <strong>{{ form.non_field_errors }}</strong>
+        </div>
+    {% endif %}
+
     <div class="container">
         <div class="row">
             <div class="col-md-8 col-md-offset-2">
@@ -101,11 +107,12 @@
 
                     <!-- Modal Footer -->
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default"
+                        <button type="button" class="btn btn-default" id="removeModalFields"
                                 data-dismiss="modal">
                             Close
                         </button>
-                        <button type="button" class="btn btn-primary">
+                        <button type="button" class="btn btn-primary"
+                                data-dismiss="modal">
                             Save changes
                         </button>
                     </div>
