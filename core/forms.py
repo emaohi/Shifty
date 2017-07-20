@@ -81,6 +81,7 @@ class ShiftSlotForm(forms.Form):
         return [x for x in seq if not (x in seen or seen_add(x))]
 
     def clean(self):
+        # TODO: check that num of emps is lte/eq num same role in that business + think about more rules
         clean_data = super(ShiftSlotForm, self).clean()
 
 
