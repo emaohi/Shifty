@@ -3,11 +3,17 @@ from celery.schedules import crontab
 from celery.task import periodic_task
 from datetime import datetime
 
-from core.models import TmpHoliday
+from django.conf import settings
+from core.utils import save_holidays
 
 
-@periodic_task(run_every=crontab())
+@periodic_task(run_every=crontab(0, 0, day_of_month='2'))
 def get_holidays():
-    res = requests.get('http://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&year=2017&month=9')
-    new_tmp_holiday = TmpHoliday(str(datetime.now()), res.text)
-    new_tmp_holiday.save()
+
+    year = str(datetime.now().year)
+    month = str(settings.HOLIDAY_FETCH_MONTHS)
+
+    res = requests.get('http://www.hebcal.com/hebcal/?v=1&cfg=json&maj=on&min=on&mod=on&year=%s&month=%s' %
+                       (year, month))
+
+    save_holidays(res.text)

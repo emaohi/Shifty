@@ -1,10 +1,11 @@
 import itertools
 
 import datetime
+import json
 import time
 from django.utils import timezone
 
-from core.models import ManagerMessage, EmployeeRequest
+from core.models import ManagerMessage, EmployeeRequest, Holiday
 from Shifty.utils import send_multiple_mails_with_html
 
 
@@ -102,3 +103,14 @@ def create_constraint_json_from_form(data):
                 role_json = constraint_json[role]
                 role_json[constraint_field] = {'val': val_content, 'op': data[op], 'apply_on': data[apply_on]}
     return constraint_json
+
+
+def save_holidays(holiday_json):
+    holiday_list = json.loads(holiday_json)['items']
+    for holiday in holiday_list:
+        h_name = holiday.get('title')
+        h_date = holiday.get('date')
+        date = datetime.datetime.strptime(h_date, '%Y-%m-%d')
+
+        new_holiday = Holiday(name=h_name, date=date)
+        new_holiday.save()
