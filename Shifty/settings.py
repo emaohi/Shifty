@@ -182,6 +182,8 @@ LOGGING = {
     },
 }
 
+HOLIDAY_FETCH_MONTHS = 'all'
+
 # Celery settings
 CELERY = config('CELERY', cast=bool)
 
