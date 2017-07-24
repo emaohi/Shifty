@@ -66,3 +66,14 @@ class ShiftSlot(models.Model):
 
     constraints = models.TextField(max_length=300)
 
+
+class Holiday(models.Model):
+    name = models.CharField(primary_key=True, max_length=30)
+    date = models.DateField()
+
+
+class TmpHoliday(models.Model):
+    year = models.CharField(primary_key=True, max_length=5)
+    full_json = models.TextField()
+
+
