@@ -51,11 +51,13 @@ class ShiftSlotForm(forms.Form):
                              required=False, widget=forms.NumberInput(attrs={'placeholder': 'Working months'})),
                          'gender': forms.ChoiceField(choices=self.GENDER_CHOICES, required=False),
                          'average_rate': forms.FloatField(min_value=0.0, required=False,
-                                                          widget=forms.NumberInput(attrs={'placeholder': 'Average rate'}))}
+                                                          widget=forms.NumberInput(
+                                                              attrs={'placeholder': 'Average rate'}))}
         for role in self.roles:
             for field, val in field_to_vals.iteritems():
                 self.fields[role + '_' + field + '__desc_constraint'] = \
-                    forms.CharField(required=False, disabled=True, widget=forms.TextInput(attrs={'placeholder': (role + ' ' + field).replace('_', ' ').title()}))
+                    forms.CharField(required=False, disabled=True, widget=forms.TextInput(
+                        attrs={'placeholder': (role + ' ' + field).replace('_', ' ').title()}))
                 self.fields[role + '_' + field + '__operation_constraint'] =\
                     forms.ChoiceField(choices=self.OP_CHOICES, disabled=True if field is 'gender' else False, required=False)
                 self.fields[role + '_' + field + '__value_constraint'] = val
@@ -88,11 +90,10 @@ class ShiftSlotForm(forms.Form):
                     if clean_data[clean_field] > num_of_role:
                         msg = 'you must not apply rule of %ss more than the num you declared they will be' % role
                         raise forms.ValidationError(msg)
-
         end_hour = clean_data['end_hour']
         start_hour = clean_data['start_hour']
         if end_hour < start_hour:
             msg = 'end hour (%s) is not later than start_hour (%s)' % (end_hour, start_hour)
             raise forms.ValidationError(msg)
-
-        # TODO if value has added - apply_on mustn't be empty and vice versa
+    # TODO if value has added - apply_on&op mustn't be empty and vice versa
+    # TODO also it's possible to check emp values to identify bigger than max / smaller than min cases
