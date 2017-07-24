@@ -51,18 +51,22 @@ class ShiftSlotForm(forms.Form):
                                                    widget=forms.NumberInput(attrs={'placeholder': 'Age'})),
                          'months_working': forms.IntegerField(
                              required=False, widget=forms.NumberInput(attrs={'placeholder': 'Working months'})),
-                         'gender': forms.ChoiceField(choices=self.GENDER_CHOICES),
+                         'gender': forms.ChoiceField(choices=self.GENDER_CHOICES, required=False, initial=''),
                          'average_rate': forms.FloatField(min_value=0.0,
                                                           widget=forms.NumberInput(attrs={'placeholder': 'Average rate'}))}
         for role in roles:
             for field, val in field_to_vals.iteritems():
                 self.fields[role + '_' + field + '__desc_constraint'] = \
-                    forms.CharField(disabled=True, initial=(role + ' ' + field).replace('_', ' ').title())
+                    forms.CharField(required=False, disabled=True,
+                                    widget=forms.TextInput(
+                                        attrs={'placeholder': (role + ' ' + field).replace('_', ' ').title()}))
                 self.fields[role + '_' + field + '__operation_constraint'] =\
-                    forms.ChoiceField(choices=self.OP_CHOICES, disabled=True if field is 'gender' else False, required=False)
+                    forms.ChoiceField(choices=self.OP_CHOICES, disabled=True if field is 'gender' else False,
+                                      required=False, initial='eq' if field is 'gender' else '')
                 self.fields[role + '_' + field + '__value_constraint'] = val
                 self.fields[role + '_' + field + '__applyOn_constraint'] =\
-                    forms.IntegerField(min_value=0, widget=forms.NumberInput(attrs={'placeholder': 'Apply on'}))
+                    forms.IntegerField(min_value=0,
+                                       widget=forms.NumberInput(attrs={'placeholder': 'Apply on'}), required=False)
 
         for name, field in self.fields.iteritems():
             field.widget.attrs.update({'class': 'form-control', 'form': 'theForm'})
@@ -85,3 +89,5 @@ class ShiftSlotForm(forms.Form):
 
 
 
+        # TODO if value has added - apply_on&op mustn't be empty and vice versa
+        # TODO also it's possible to check emp values to identify bigger than max / smaller than min cases

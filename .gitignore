@@ -6,3 +6,4 @@
 .cache/
 .gitignore.orig
 .pylintrc
+celerybeat-schedule
