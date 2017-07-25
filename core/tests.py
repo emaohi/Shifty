@@ -70,3 +70,7 @@ class EmployeeRequestTest(TestCase):
         print User.objects.filter(username__contains='RoniL')
 
         self.assertGreater(num_results, 0)
+
+
+class ShiftSlotTest(TestCase):
+    pass

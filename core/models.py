@@ -16,6 +16,10 @@ class EmployeeRequest(models.Model):
         ('P', 'Pending'), ('A', 'Approved'), ('R', 'Rejected')
     )
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    TYPE_CHOICES = (
+        ('P', 'Profile change'), ('S', 'Shift swap')
+    )
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='P')
 
     def get_issuers_string(self):
         return ', '.join(str(emp) for emp in self.issuers.all())
@@ -68,8 +72,8 @@ class ShiftSlot(models.Model):
 
 
 class Holiday(models.Model):
-    name = models.CharField(primary_key=True, max_length=30)
-    date = models.DateField()
+    name = models.CharField(max_length=30)
+    date = models.DateField(primary_key=True)
 
 
 class TmpHoliday(models.Model):

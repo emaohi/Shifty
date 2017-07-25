@@ -26,6 +26,7 @@ def report_incorrect_detail(request):
 
         logger.info('creating new employee request')
         new_request = EmployeeRequest(sent_time=timezone.now(),
+                                      type='P',
                                       subject='Employee Change Request',
                                       text='Field claimed to be incorrect: %s.'
                                            ' Current field value is %s; Suggestion is %s' %

@@ -4,7 +4,7 @@ from .models import EmployeeRequest, ManagerMessage, ShiftSlot, TmpHoliday, Holi
 
 
 class EmployeeRequestAdmin(admin.ModelAdmin):
-    list_display = ('get_issuers_string', 'text', 'status', 'sent_time')
+    list_display = ('get_issuers_string', 'type', 'text', 'status', 'sent_time')
 
 admin.site.register(EmployeeRequest, EmployeeRequestAdmin)
 
