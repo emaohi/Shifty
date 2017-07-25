@@ -110,5 +110,7 @@ def add_shift_slot(request):
         else:
             return render(request, 'manager/new_shift.html', {'form': slot_form})
     else:
-        form = ShiftSlotForm()
+        day = request.GET.get('day', '')
+        start_hour = request.GET.get('startTime', '')
+        form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')})
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string()})

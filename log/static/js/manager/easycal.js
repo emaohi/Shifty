@@ -124,7 +124,7 @@
 		_mapEventsByDate : function(){
 			var res = {};
 			var events = this.options.events;
-			var date = this.momStartDate.clone().isoWeekday(1);
+			var date = this.momStartDate.clone().isoWeekday(7);
 			
 			for(var i = 0 ; i < 7 ; i++){
 				var dateStr = date.format(format.dateShort);
@@ -304,7 +304,7 @@
 
 		renderHeadHTML : function(){
 			var date = moment(this.options.startDate, format.dateShort);
-			date.isoWeekday(1);
+			date.isoWeekday(7);
 
 			var html = '<table border="0" cellspacing="0" cellpadding="0" class="ec-head-table"><tbody><tr>';
 			for(var i = 0 ; i < 8 ; i++){
@@ -326,7 +326,7 @@
 			var time = minTime.clone();
 
 			var date = moment(this.options.startDate, format.dateShort);
-			date.isoWeekday(1);
+			date.isoWeekday(7);
 			
 			var html = '<table border="0" cellspacing="0" cellpadding="0" class="ec-time-grid-table"><tbody><tr>';
 
