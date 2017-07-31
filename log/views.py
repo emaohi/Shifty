@@ -18,7 +18,7 @@ logger = logging.getLogger('cool')
 
 
 @login_required(login_url="/login")
-@user_passes_test(must_be_manager_callback)
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def manager_home(request):
 
     curr_manager = request.user.profile
@@ -31,9 +31,11 @@ def manager_home(request):
     done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
 
     curr_week_string = get_current_week_string()
+    next_week_date = get_next_week_string().split(' --')[0].replace('/', '-')
+    logger.info(next_week_date)
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
-               'curr_week_str': curr_week_string}
+               'curr_week_str': curr_week_string, 'start_date': next_week_date}
     return render(request, "manager/home.html", context)
 
 
@@ -89,6 +91,7 @@ def success(request):
 
 
 @login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def edit_business(request):
 
     curr_business = request.user.profile.business
@@ -115,7 +118,7 @@ def edit_business(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_employees(request):
     if request.method == 'POST':
         # get the number of fields (minus the csrf token) and divide by 4 as every user has 4 fields

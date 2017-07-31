@@ -70,6 +70,17 @@ class ShiftSlot(models.Model):
 
     constraints = models.TextField(max_length=300)
 
+    def start_time_str(self):
+        return '%s %s' % (self.get_date(), self.start_hour)
+
+    def end_time_str(self):
+        return '%s %s' % (self.get_date(), self.end_hour)
+
+    def get_date(self):
+        correct_week = self.week if int(self.day) > 1 else self.week - 1
+        d = '%s-W%s' % (str(self.year), str(correct_week))
+        return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
+
 
 class Holiday(models.Model):
     name = models.CharField(max_length=30)

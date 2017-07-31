@@ -17,6 +17,7 @@
         font-size: 20px;
         border-radius: 10px;
         width:100%;
+{#        background-color: li;#}
     }
     .approved{
         background-color: greenyellow !important;
@@ -26,6 +27,9 @@
     }
     .panel-body{
         text-align: center;
+    }
+    .modal .modal-dialog {
+        width: 800px;
     }
 </style>
 {% endblock %}
@@ -37,7 +41,7 @@
 <div class="container">
   <ul class="nav nav-tabs">
     <li class="active"><a data-toggle="tab" href="#current">Current week shifts</a></li>
-    <li><a data-toggle="tab" href="#next">Add next week shifts</a></li>
+    <li><a data-toggle="tab" href="#next">Next week shifts</a></li>
     <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
     <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests</a></li>
     <li class="pull-right"><a data-toggle="tab" href="#emps">Employees</a></li>
@@ -140,6 +144,26 @@
   </div>
 </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="constraintModal" role="dialog">
+<div class="modal-dialog modal-sm">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+      <h4 class="modal-title">Shift constraints</h4>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-info edit-slot">Edit Slot</button>
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <div id="putShiftId" style="display: none"></div>
+    </div>
+  </div>
+</div>
+</div>
+
 {% endblock %}
 
 {% block javascript %}
@@ -148,81 +172,13 @@
         var handle_emp_request_url = "{% url 'handle_emp_request' %}";
         var csrf_token = "{{ csrf_token }}";
         var new_slot_url = "{% url 'add_shift_slot' %}";
+        var update_slot_url = "{% url 'update_shift_slot' 0%}";
+        var next_slots_url = "{% url 'get_next_slots' %}";
+        var start_date = "{{ start_date }}";
     </script>
     <script src="{% static 'js/manager/home.js' %}" type="text/javascript"></script>
 
     {#  calendar resources  #}
     <script src="{% static 'js/manager/easycal.js' %}" type="text/javascript"></script>
-    <script>
-        $(document).ready(function () {
-
-             $('#calDiv').easycal({
-
-                minTime : '08:00:00',
-                maxTime : '23:59:00',
-                timeGranularity: 60,
-                slotDuration : 60,
-                startDate : '23-10-2015',
-                dayClick : function(el, startTime){
-                    var dateStr = el.parent().attr('data-date');
-                    var d = toDate(dateStr);
-                    window.location.href = getNewShiftUrl(d.getDay(), startTime);
-			    },
-                eventClick : function(eventId){
-				    alert('Event was clicked with id: ' + eventId);
-			    },
-                events : getEvents()
-
-             });
-        });
-
-        function getNewShiftUrl(day, startTime) {
-            var params = {"day": day + 1, "startTime": startTime.replace(/:/g, "-")};
-            return new_slot_url + "?" + $.param(params);
-        }
-
-        function getEvents() {
-
-            $.aja
-
-            return [
-                {
-                    id: 'E01',
-                    title: 'Meeting with BA',
-                    start: '27-10-2015 10:00:00',
-                    end: '27-10-2015 11:00:00',
-                    backgroundColor: '#443322',
-                    textColor: '#FFF'
-                },
-                {
-                    id: 'E09',
-                    title: 'Lunch',
-                    start: '27-10-2015 12:00:00',
-                    end: '27-10-2015 13:00:00',
-                    backgroundColor: '#12CA6B',
-                    textColor: '#FFF'
-                },
-                {
-                    id: 'E02',
-                    title: 'Customer Appointment',
-                    start: '29-10-2015 09:00:00',
-                    end: '29-10-2015 09:30:00',
-                    backgroundColor: '#34BB22',
-                    textColor: '#FFF'
-                },
-                {
-                    id: 'E03',
-                    title: 'Buddy Time',
-                    start: '30-10-2015 11:00:00',
-                    end: '30-10-2015 12:30:00',
-                    backgroundColor: '#AA3322',
-                    textColor: '#FFF'
-                }];
-        }
-        function toDate(dateStr) {
-            var parts = dateStr.split("-");
-            return new Date(parts[2], parts[1] - 1, parts[0]);
-        }
-    </script>
 
 {% endblock %}
