@@ -1,10 +1,11 @@
+import json
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
 from django.utils import timezone
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse
 
 from core.models import EmployeeRequest
 from core.utils import create_manager_msg, send_mail_to_manager, get_next_week_string,\
@@ -43,7 +44,7 @@ def report_incorrect_detail(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def handle_employee_request(request):
     if request.method == 'POST':
         emp_request_id = request.POST.get('emp_request_id')
@@ -66,7 +67,7 @@ def handle_employee_request(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def broadcast_message(request):
     if request.method == 'POST':
         broadcast_form = BroadcastMessageForm(request.POST)
@@ -94,7 +95,7 @@ def broadcast_message(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_shift_slot(request):
     if request.method == 'POST':
         slot_form = ShiftSlotForm(request.POST)
@@ -103,7 +104,7 @@ def add_shift_slot(request):
             slot_constraint_json = create_constraint_json_from_form(data)
             new_slot = ShiftSlot(business=request.user.profile.business, day=data['day'],
                                  start_hour=data['start_hour'], end_hour=data['end_hour'],
-                                 constraints=slot_constraint_json)
+                                 constraints=json.dumps(slot_constraint_json), week=datetime.datetime.now().isocalendar()[1] + 1)
             new_slot.save()
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')
@@ -114,3 +115,54 @@ def add_shift_slot(request):
         start_hour = request.GET.get('startTime', '')
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')})
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string()})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def update_shift_slot(request, shift_id):
+
+    updated_slot = get_object_or_404(ShiftSlot, id=shift_id)
+
+    if request.method == 'POST':
+        logger.info('in post, is is %s' % shift_id)
+        slot_form = ShiftSlotForm(request.POST)
+        if slot_form.is_valid():
+            data = slot_form.cleaned_data
+            slot_constraint_json = create_constraint_json_from_form(data)
+
+            logger.info('new end hour is %s' % str(data['end_hour']))
+            ShiftSlot.objects.filter(id=shift_id).update(business=request.user.profile.business, day=data['day'],
+                                                         start_hour=data['start_hour'], end_hour=data['end_hour'],
+                                                         constraints=json.dumps(slot_constraint_json),
+                                                         week=datetime.datetime.now().isocalendar()[1] + 1)
+            messages.success(request, 'slot updated')
+            return HttpResponseRedirect('/')
+        else:
+            return render(request, 'manager/new_shift.html', {'form': slot_form})
+    else:
+        logger.info('in get, is is %s' % shift_id)
+        day = int(updated_slot.day)
+        start_hour = str(updated_slot.start_hour)
+        end_hour = str(updated_slot.end_hour)
+        form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':'),
+                                      'end_hour': end_hour.replace('-', ':')})
+        return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
+                                                             'id': shift_id})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def get_next_week_slots(request):
+    shifts_json = []
+    slot_to_id_dict = {}
+    next_week_no = datetime.datetime.now().isocalendar()[1] + 1
+    next_week_slots = ShiftSlot.objects.filter(week=next_week_no)
+    for slot in next_week_slots:
+        jsoned_shifts = json.dumps({'id': str(slot.id), 'title': 'Shift Slot %s' % str(slot.id),
+                                    'start': slot.start_time_str(),
+                                    'end': slot.end_time_str(), 'backgroundColor': '#205067', 'textColor': '#f5dd5d'})
+        shifts_json.append(jsoned_shifts)
+        slot_to_id_dict[slot.id] = slot.constraints
+    shifts_json.append(json.dumps(slot_to_id_dict))
+    logger.debug('jsoned shifts are %s' % shifts_json)
+    return JsonResponse(shifts_json, safe=False)

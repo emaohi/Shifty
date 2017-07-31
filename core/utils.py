@@ -59,15 +59,21 @@ def get_days_range_by_week_num(week_no, year_no):
 
 
 def get_current_week_string():
+
+    is_sunday = True if datetime.datetime.today().weekday() == 6 else False
+
     curr_year = datetime.datetime.now().year
     week_no = datetime.date.today().isocalendar()[1]
-    return get_days_range_by_week_num(week_no, curr_year)
+    return get_days_range_by_week_num(week_no if not is_sunday else week_no + 1, curr_year)
 
 
 def get_next_week_string():
+
+    is_sunday = True if datetime.datetime.today().weekday() == 6 else False
+
     curr_year = datetime.datetime.now().year
     week_no = datetime.date.today().isocalendar()[1] + 1
-    return get_days_range_by_week_num(week_no, curr_year)
+    return get_days_range_by_week_num(week_no if not is_sunday else week_no + 1, curr_year)
 
 
 def get_op_and_apply(data, constraint_name):
