@@ -16,7 +16,7 @@ admin.site.register(ManagerMessage, ManagerMessageAdmin)
 
 
 class ShiftSlotAdmin(admin.ModelAdmin):
-    list_display = ('id', 'business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints')
+    list_display = ('id', 'business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints', 'holiday')
 admin.site.register(ShiftSlot, ShiftSlotAdmin)
 
 

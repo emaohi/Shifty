@@ -2,9 +2,11 @@ import itertools
 
 import datetime
 import json
-import time
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
+from core.date_utils import get_date, get_curr_year
 from core.models import ManagerMessage, EmployeeRequest, Holiday
 from Shifty.utils import send_multiple_mails_with_html
 
@@ -47,33 +49,6 @@ def send_mail_to_manager(emp_user):
                                   r_2_c_dict={emp_user.profile.business.manager:
                                                   {'employee_first_name': emp_user.first_name,
                                                    'employee_last_name': emp_user.last_name}})
-
-
-def get_days_range_by_week_num(week_no, year_no):
-    curr_week = "%s-W%s" % (year_no, str(week_no))
-    prev_week = "%s-W%s" % (year_no, str(week_no-1))
-    sunday = str(datetime.datetime.strptime(prev_week + '-0', "%Y-W%W-%w").date().strftime("%d/%m/%Y"))
-    saturday = str(datetime.datetime.strptime(curr_week + '-6', "%Y-W%W-%w").date().strftime("%d/%m/%Y"))
-
-    return '%s --> %s' % (sunday, saturday)
-
-
-def get_current_week_string():
-
-    is_sunday = True if datetime.datetime.today().weekday() == 6 else False
-
-    curr_year = datetime.datetime.now().year
-    week_no = datetime.date.today().isocalendar()[1]
-    return get_days_range_by_week_num(week_no if not is_sunday else week_no + 1, curr_year)
-
-
-def get_next_week_string():
-
-    is_sunday = True if datetime.datetime.today().weekday() == 6 else False
-
-    curr_year = datetime.datetime.now().year
-    week_no = datetime.date.today().isocalendar()[1] + 1
-    return get_days_range_by_week_num(week_no if not is_sunday else week_no + 1, curr_year)
 
 
 def get_op_and_apply(data, constraint_name):
@@ -120,3 +95,11 @@ def save_holidays(holiday_json):
 
         new_holiday = Holiday(name=h_name, date=date)
         new_holiday.save()
+
+
+def get_holiday_or_none(year, day, week):
+    try:
+        slot_holiday = Holiday.objects.get(date=get_date(year, day, week))
+    except ObjectDoesNotExist:
+        slot_holiday = None
+    return slot_holiday

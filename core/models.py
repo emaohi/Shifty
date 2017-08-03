@@ -45,6 +45,20 @@ class ManagerMessage(models.Model):
     get_recipients_string.short_description = 'recipients'
 
 
+class Holiday(models.Model):
+    name = models.CharField(max_length=30)
+    date = models.DateField(primary_key=True)
+
+    def get_holiday_week_no(self):
+        base_week_no = self.date.isocalendar()[1]
+
+        is_sunday = True if datetime.datetime.today().weekday() == 6 else False
+        return base_week_no if not is_sunday else base_week_no + 1
+
+    def __str__(self):
+        return self.name
+
+
 class ShiftSlot(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
 
@@ -70,6 +84,8 @@ class ShiftSlot(models.Model):
 
     constraints = models.TextField(max_length=300)
 
+    holiday = models.ForeignKey(Holiday, blank=True, null=True)
+
     def start_time_str(self):
         return '%s %s' % (self.get_date(), self.start_hour)
 
@@ -81,10 +97,13 @@ class ShiftSlot(models.Model):
         d = '%s-W%s' % (str(self.year), str(correct_week))
         return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
 
+    def is_next_week(self):
+        base_week_no = datetime.date.today().isocalendar()[1] + 1
 
-class Holiday(models.Model):
-    name = models.CharField(max_length=30)
-    date = models.DateField(primary_key=True)
+        is_sunday = True if datetime.datetime.today().weekday() == 6 else False
+        week_no = base_week_no if not is_sunday else base_week_no + 1
+
+        return self.week == week_no
 
 
 class TmpHoliday(models.Model):

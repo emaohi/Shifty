@@ -81,7 +81,7 @@ function display_cal(event_list){
 
         minTime : '06:00:00',
         maxTime : '23:59:00',
-        timeGranularity: 60,
+        timeGranularity: 30,
         slotDuration : 60,
         startDate : start_date,
         dayClick : function(el, startTime){

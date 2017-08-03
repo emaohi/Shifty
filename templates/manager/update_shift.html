@@ -50,6 +50,11 @@
                         <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
                     </div>
                     <div class="panel-body">
+                        {% if holiday %}
+                            <div class="alert alert-danger">
+                                <strong>Notice - {{ holiday }} holiday is on this date</strong>
+                            </div>
+                        {% endif %}
                         <form action="{% url 'update_shift_slot' id %}" method="post" id="theForm">
                             {% csrf_token %}
                             {% for field in form %}
