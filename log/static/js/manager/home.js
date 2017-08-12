@@ -23,6 +23,11 @@ $(document).ready(function() {
         window.location.href = getUpdateShiftUrl(shiftId);
     });
 
+    $('.remove-slot').click(function () {
+        var shiftId = $('#putShiftId').text();
+        deleteSlot(shiftId);
+    });
+
     $(document.body).on("click", "a[data-toggle]", function(event) {
         location.hash = this.getAttribute("href");
     });
@@ -64,6 +69,22 @@ function handle_request(new_status, request_id) {
       data: {
         emp_request_id: request_id,
         new_status: new_status
+      },
+      headers: {
+          'X-CSRFToken': csrf_token
+      },
+      success: function(response){
+                window.location.reload();
+            }
+    });
+}
+
+function deleteSlot(shiftId) {
+    $.ajax({
+      url: delete_slot_url,
+      type: "post", //send it through get method
+      data: {
+          slot_id: shiftId
       },
       headers: {
           'X-CSRFToken': csrf_token

@@ -195,6 +195,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-info edit-slot">Edit Slot</button>
+                    <button type="button" class="btn btn-danger remove-slot">Remove Slot</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     <div id="putShiftId" style="display: none"></div>
                 </div>
@@ -211,6 +212,7 @@
         var csrf_token = "{{ csrf_token }}";
         var new_slot_url = "{% url 'add_shift_slot' %}";
         var update_slot_url = "{% url 'update_shift_slot' 0%}";
+        var delete_slot_url = "{% url 'delete_shift_slot'%}";
         var next_slots_url = "{% url 'get_next_slots' %}";
         var start_date = "{{ start_date }}";
         var deadline_date = "{{ deadline_date }}";

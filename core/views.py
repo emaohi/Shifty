@@ -132,38 +132,56 @@ def add_shift_slot(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
-def update_shift_slot(request, shift_id):
+def update_shift_slot(request, slot_id):
 
-    updated_slot = get_object_or_404(ShiftSlot, id=shift_id)
+    updated_slot = get_object_or_404(ShiftSlot, id=slot_id)
 
     if not updated_slot.is_next_week():
         return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
 
     if request.method == 'POST':
-        logger.info('in post, is is %s' % shift_id)
+        logger.info('in post, is is %s' % slot_id)
         slot_form = ShiftSlotForm(request.POST)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             slot_constraint_json = create_constraint_json_from_form(data)
 
             logger.info('new end hour is %s' % str(data['end_hour']))
-            ShiftSlot.objects.filter(id=shift_id).update(business=request.user.profile.business, day=data['day'],
-                                                         start_hour=data['start_hour'], end_hour=data['end_hour'],
-                                                         constraints=json.dumps(slot_constraint_json),
-                                                         week=get_next_week_num())
+            ShiftSlot.objects.filter(id=slot_id).update(business=request.user.profile.business, day=data['day'],
+                                                        start_hour=data['start_hour'], end_hour=data['end_hour'],
+                                                        constraints=json.dumps(slot_constraint_json),
+                                                        week=get_next_week_num())
             messages.success(request, 'slot updated')
             return HttpResponseRedirect('/')
         else:
             return render(request, 'manager/new_shift.html', {'form': slot_form})
     else:
-        logger.info('in get, is is %s' % shift_id)
+        logger.info('in get, is is %s' % slot_id)
         day = int(updated_slot.day)
         start_hour = str(updated_slot.start_hour)
         end_hour = str(updated_slot.end_hour)
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':'),
                                       'end_hour': end_hour.replace('-', ':')})
         return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
-                                                             'id': shift_id, 'holiday': updated_slot.holiday})
+                                                             'id': slot_id, 'holiday': updated_slot.holiday})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def delete_slot(request):
+
+    if request.method == 'POST':
+        slot_id = request.POST.get('slot_id')
+        updated_slot = get_object_or_404(ShiftSlot, id=slot_id)
+        if not updated_slot.is_next_week():
+            return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
+
+        updated_slot.delete()
+        logger.info('shift slow id %s was deleted' % slot_id)
+        messages.success(request, 'slot was deleted successfully')
+        return HttpResponse('ok')
+
+    return HttpResponseBadRequest('cannot delete with GET')
 
 
 @login_required(login_url='/login')
