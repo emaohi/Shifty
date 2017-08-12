@@ -1,24 +1,18 @@
 from django.contrib.auth.models import User, Group
-from django.test import TestCase, override_settings
+from django.test import TestCase
 
 from core.models import ManagerMessage
-from log.tests import AddEmployeesTest
+from core.test.test_utils import set_employee, create_new_manager
+from log.test.test_utils import make_data
 
 
 class ManagerMessageTest(TestCase):
     def setUp(self):
-        self.credentials = {
-            'username': 'testuser1',
-            'password': 'secret'
-        }
-        new_user = User.objects.create_user(**self.credentials)
 
-        Group.objects.create(name='Managers')
+        credentials = create_new_manager()
         Group.objects.create(name='Employees')
 
-        Group.objects.get(name='Managers').user_set.add(new_user)
-
-        self.client.post('/login/', self.credentials, follow=True)
+        self.client.post('/login/', credentials, follow=True)
 
     def test_status_changed_appears_right_for_employee(self):
         pass
@@ -27,7 +21,7 @@ class ManagerMessageTest(TestCase):
 
         num_emps = 5
         try:
-            self.client.post('/manager/add_employees/', AddEmployeesTest.make_data(num_emps), follow=True)
+            self.client.post('/manager/add_employees/', make_data(num_emps), follow=True)
 
             self.client.post('/core/broadcast_message/', {'subject': 'subject', 'text': 'text'}, follow=True)
         except Exception as e:
@@ -55,11 +49,11 @@ class EmployeeRequestTest(TestCase):
         Group.objects.create(name='Managers')
         Group.objects.create(name='Employees')
 
-        Group.objects.get(name='Managers').user_set.add(new_user)
+        set_employee(new_user)
 
         self.client.post('/login/', self.credentials, follow=True)
 
-    def test_msg_should_appear_for_every_employee(self):
+    def test_request_should_appear_for_business_manager(self):
         try:
             self.client.post('/manager/broadcast_msg/', 'broadcast_test', follow=True)
         except Exception as e:
@@ -73,4 +67,19 @@ class EmployeeRequestTest(TestCase):
 
 
 class ShiftSlotTest(TestCase):
-    pass
+    def setUp(self):
+        self.credentials = {
+            'username': 'testuser1',
+            'password': 'secret'
+        }
+        new_user = User.objects.create_user(**self.credentials)
+
+        Group.objects.create(name='Managers')
+        Group.objects.create(name='Employees')
+
+        Group.objects.get(name='Managers').user_set.add(new_user)
+
+        self.client.post('/login/', self.credentials, follow=True)
+
+    def test_add_shift_slot(self):
+        pass
