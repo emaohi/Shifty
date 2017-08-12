@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import EmployeeRequest, ManagerMessage, ShiftSlot, TmpHoliday, Holiday
+from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday
 
 
 class EmployeeRequestAdmin(admin.ModelAdmin):

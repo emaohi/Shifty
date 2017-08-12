@@ -14,6 +14,7 @@ from core.models import EmployeeRequest, Holiday
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError
+from log.models import Business
 from .forms import *
 
 logger = logging.getLogger('cool')
@@ -136,7 +137,7 @@ def update_shift_slot(request, shift_id):
     updated_slot = get_object_or_404(ShiftSlot, id=shift_id)
 
     if not updated_slot.is_next_week():
-        return HttpResponseBadRequest('<h3>this shift is not next week\'s</h3>')
+        return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
 
     if request.method == 'POST':
         logger.info('in post, is is %s' % shift_id)
