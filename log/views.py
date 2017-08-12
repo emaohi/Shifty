@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 
-from core.date_utils import get_current_week_string, get_next_week_string
+from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date
 from core.utils import *
 from forms import *
 from log.models import EmployeeProfile
@@ -35,8 +35,12 @@ def manager_home(request):
     next_week_date = get_next_week_string().split(' --')[0].replace('/', '-')
     logger.info(next_week_date)
 
+    deadline_date = get_current_deadline_date(curr_manager.business.deadline_day)
+    logger.info('deadline date is %s' % deadline_date)
+
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
-               'curr_week_str': curr_week_string, 'start_date': next_week_date}
+               'curr_week_str': curr_week_string, 'start_date': next_week_date,
+               'deadline_date': deadline_date}
     return render(request, "manager/home.html", context)
 
 

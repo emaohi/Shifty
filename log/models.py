@@ -27,9 +27,18 @@ class Business(models.Model):
         ('P', 'Personal'), ('G', 'Group')
     )
 
-    tip_method = models.CharField(
-        max_length=1, choices=TIP_METHOD_CHOICES, default='G'
+    tip_method = models.CharField(max_length=1, choices=TIP_METHOD_CHOICES, default='G')
+
+    DAYS_OF_WEEK = (
+        ('1', 'Sunday'),
+        ('2', 'Monday'),
+        ('3', 'Tuesday'),
+        ('4', 'Wednesday'),
+        ('5', 'Thursday'),
+        ('6', 'Friday'),
+        ('7', 'Saturday'),
     )
+    deadline_day = models.CharField(max_length=1, choices=DAYS_OF_WEEK, default='7')
 
     def __str__(self):
         return self.business_name
@@ -75,11 +84,11 @@ class EmployeeProfile(models.Model):
         return self.user.username
 
     # noinspection PyTypeChecker
-    def get_employment_time(self):
+    def get_employment_months(self):
         if self.started_work_date:
             today = datetime.now().date()
             delta = today - self.started_work_date
-            return delta.days
+            return round(delta.days / 30, 1)
         return None
 
     def get_age(self):

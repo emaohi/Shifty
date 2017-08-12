@@ -3,7 +3,7 @@
 
 
 {% block title %}
-<title>Shifty Bitch</title>
+    <title>Shifty Bitch</title>
 {% endblock %}
 
 {% block comp_name %}
@@ -11,158 +11,196 @@
 {% endblock %}
 
 {% block style %}
-<style>
-    .btn-xl{
-        padding: 10px 20px;
-        font-size: 20px;
-        border-radius: 10px;
-        width:100%;
-{#        background-color: li;#}
-    }
-    .approved{
-        background-color: greenyellow !important;
-    }
-    .rejected{
-        background-color: lightcoral !important;
-    }
-    .panel-body{
-        text-align: center;
-    }
-    .modal .modal-dialog {
-        width: 800px;
-    }
-</style>
+    <style>
+        .btn-xl {
+            padding: 10px 20px;
+            font-size: 20px;
+            border-radius: 10px;
+            width: 100%;
+        {#        background-color: li;#}
+        }
+
+        .approved {
+            background-color: greenyellow !important;
+        }
+
+        .rejected {
+            background-color: lightcoral !important;
+        }
+
+        .panel-body {
+            text-align: center;
+        }
+
+        .modal .modal-dialog {
+            width: 800px;
+        }
+
+        #timerDiv {
+            margin-bottom: 30px;
+        }
+
+        .tab-content > .tab-pane {
+            display: none;
+        }
+
+        .tab-content > .active {
+            display: block;
+        }
+        .disabledbutton {
+            pointer-events: none;
+            opacity: 0.5;
+
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
 
 
 
-<div class="container">
-  <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#current">Current week shifts</a></li>
-    <li><a data-toggle="tab" href="#next">Next week shifts</a></li>
-    <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
-    <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests</a></li>
-    <li class="pull-right"><a data-toggle="tab" href="#emps">Employees</a></li>
-  </ul>
+    <div class="container">
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#current">Current week shifts</a></li>
+            <li><a data-toggle="tab" href="#next">Next week shifts</a></li>
+            <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
+            <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests</a></li>
+            <li class="pull-right"><a data-toggle="tab" href="#emps">Employees</a></li>
+        </ul>
 
-  <div class="tab-content">
+        <div class="tab-content">
 
-    <div id="emps_reqs" class="tab-pane fade ">
-        <div class="container" style="margin-top: 20px">
-            <h3>Pending requests</h3>
-            {% for request in pending_requests %}
-                <div class="row" style="margin-top: 20px">
-                    <div class="col-xs-8">
-                        <div class="panel panel-default">
-                          <div class="panel-heading">
-                              <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
-                              <span style="float: right">From: {{ request.get_issuers_string }}</span>
-                          </div>
-                          <div class="panel-body">
-                              {{ request.text }}
-                          </div>
-                            <div class="panel-footer">
-                                <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
-                                <span class="timestamp"> {{ request.sent_time }} </span>
-                                <div style="float: right">
-                                    <button type="button" class="btn btn-xs btn-success approve"><span class="glyphicon glyphicon-ok-sign"></span> Approve</button>
-                                    <button type="button" class="btn btn-xs btn-danger reject"><span class="glyphicon glyphicon-remove"></span> Reject</button>
-                                    <i class="fa fa-spinner fa-spin" style="font-size:18px; margin-left: 10px; display: none"></i>
+            <div id="emps_reqs" class="tab-pane fade">
+                <div class="container" style="margin-top: 20px">
+                    <h3>Pending requests</h3>
+                    {% for request in pending_requests %}
+                        <div class="row" style="margin-top: 20px">
+                            <div class="col-xs-8">
+                                <div class="panel panel-default">
+                                    <div class="panel-heading">
+                                        <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
+                                        <span style="float: right">From: {{ request.get_issuers_string }}</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        {{ request.text }}
+                                    </div>
+                                    <div class="panel-footer">
+                                        <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
+                                        <span class="timestamp"> {{ request.sent_time }} </span>
+                                        <div style="float: right">
+                                            <button type="button" class="btn btn-xs btn-success approve"><span
+                                                    class="glyphicon glyphicon-ok-sign"></span> Approve
+                                            </button>
+                                            <button type="button" class="btn btn-xs btn-danger reject"><span
+                                                    class="glyphicon glyphicon-remove"></span> Reject
+                                            </button>
+                                            <i class="fa fa-spinner fa-spin"
+                                               style="font-size:18px; margin-left: 10px; display: none"></i>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    {% endfor %}
                 </div>
-            {% endfor %}
-        </div>
-        <div class="container" style="margin-top: 50px">
-            <h3>Closed requests</h3>
-            {% for request in done_requests %}
-                <div class="row" style="margin-top: 20px">
-                    <div class="col-xs-8">
-                        <div class="panel panel-default">
-                            <div class="panel-heading">
-                              <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
-                              <span style="float: right">From: {{ request.get_issuers_string }}</span>
-                          </div>
-                          <div class="panel-body">
-                              {{ request.text }}
-                          </div>
-                            {% if request.status == 'A' %}
-                                <div class="panel-footer approved">
-                            {% else %}
-                                <div class="panel-footer rejected">
-                            {% endif %}
+                <div class="container" style="margin-top: 50px">
+                    <h3>Closed requests</h3>
+                    {% for request in done_requests %}
+                        <div class="row" style="margin-top: 20px">
+                        <div class="col-xs-8">
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
+                                    <span style="float: right">From: {{ request.get_issuers_string }}</span>
+                                </div>
+                                <div class="panel-body">
+                                    {{ request.text }}
+                                </div>
+                                {% if request.status == 'A' %}
+                                    <div class="panel-footer approved">
+                                {% else %}
+                                    <div class="panel-footer rejected">
+                                {% endif %}
                                 <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
                                 <span class="timestamp"> {{ request.sent_time }} </span>
                                 <div style="float: right">
                                     <span>{{ request.get_status_display }}</span>
                                 </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    </div>
+                </div>
+
+
+                <div id="emps" class="tab-pane fade">
+                    <div class="row" style="margin-top: 130px">
+                        <div class="col-md-5 col-md-offset-1">
+                            <div class="panel panel-default">
+                                <div class="panel-body"><img src="{% static 'imgs/download.jpeg' %}"></div>
+                                <div class="panel-footer"><a href="{% url 'add_employees' %}"
+                                                             class="btn btn-success btn-xl"
+                                                             role="button">Add Employees</a></div>
+                            </div>
+                        </div>
+                        <div class="col-md-5">
+                            <div class="panel panel-default">
+                                <div class="panel-body"><img src="{% static 'imgs/bt.jpeg' %}"></div>
+                                <div class="panel-footer"><a href="{% url 'manage_employees' %}"
+                                                             class="btn btn-info btn-xl"
+                                                             role="button">Manage Employees</a></div>
                             </div>
                         </div>
                     </div>
                 </div>
-            {% endfor %}
-        </div>
-    </div>
 
-    <div id="emps" class="tab-pane fade">
-        <div class="row" style="margin-top: 130px">
-            <div class="col-md-5 col-md-offset-1">
-                  <div class="panel panel-default">
-                        <div class="panel-body"><img src="{% static 'imgs/download.jpeg' %}"></div>
-                        <div class="panel-footer"><a href="{% url 'add_employees' %}" class="btn btn-success btn-xl"
-                               role="button">Add Employees</a></div>
-                  </div>
-            </div>
-            <div class="col-md-5">
-                <div class="panel panel-default">
-                    <div class="panel-body"><img src="{% static 'imgs/bt.jpeg' %}"></div>
-                    <div class="panel-footer"><a href="{% url 'manage_employees' %}" class="btn btn-info btn-xl"
-                               role="button">Manage Employees</a></div>
+                <div id="current" class="tab-pane fade in active">
+                    <div class="row">
+                        <h2>{{ curr_week_str }}</h2>
+                    </div>
+                </div>
+
+                <div id="next" class="tab-pane fade" style="margin-top: 20px">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-md-4 col-md-offset-4">
+                                <div id="timerDiv" style="display: none"><h3 id="timerH"></h3></div>
+                                <button id="finishSlots" type="submit" class="btn btn-xl btn-primary">
+                                    Finish and start countdown</button>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 20px">
+                            <div id="calDiv"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="previous" class="tab-pane fade">
+                    <p>Previous shifts here</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="current" class="tab-pane fade in active">
-      <div class="row"  >
-            <h2>{{ curr_week_str }}</h2>
-      </div>
+    <!-- Modal -->
+    <div class="modal fade" id="constraintModal" role="dialog">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Shift constraints</h4>
+                </div>
+                <div class="modal-body">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-info edit-slot">Edit Slot</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <div id="putShiftId" style="display: none"></div>
+                </div>
+            </div>
+        </div>
     </div>
-
-    <div id="next" class="tab-pane fade in" style="margin-top: 20px">
-        <div id="calDiv"></div>
-    </div>
-
-    <div id="previous" class="tab-pane fade in">
-        <p>Yoni</p>
-    </div>
-
-  </div>
-</div>
-</div>
-
-<!-- Modal -->
-<div class="modal fade" id="constraintModal" role="dialog">
-<div class="modal-dialog modal-sm">
-  <div class="modal-content">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal">&times;</button>
-      <h4 class="modal-title">Shift constraints</h4>
-    </div>
-    <div class="modal-body">
-    </div>
-    <div class="modal-footer">
-      <button type="button" class="btn btn-info edit-slot">Edit Slot</button>
-      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      <div id="putShiftId" style="display: none"></div>
-    </div>
-  </div>
-</div>
-</div>
 
 {% endblock %}
 
@@ -175,10 +213,13 @@
         var update_slot_url = "{% url 'update_shift_slot' 0%}";
         var next_slots_url = "{% url 'get_next_slots' %}";
         var start_date = "{{ start_date }}";
+        var deadline_date = "{{ deadline_date }}";
     </script>
     <script src="{% static 'js/manager/home.js' %}" type="text/javascript"></script>
 
     {#  calendar resources  #}
     <script src="{% static 'js/manager/easycal.js' %}" type="text/javascript"></script>
+    {# countdown resource #}
+    <script src="{% static 'js/manager/jquery.countdown.js' %}" type="text/javascript"></script>
 
 {% endblock %}

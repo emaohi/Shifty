@@ -43,5 +43,13 @@ def get_curr_year():
 def get_date(year, day, week):
     d = "%s-W%s" % (str(year), str(week))
     date = datetime.datetime.strptime(d + '-%s' % str(int(day) - 1), "%Y-W%W-%w")
-
     return date
+
+
+def get_current_deadline_date(day_of_week):
+    is_sunday = True if day_of_week == 1 else False
+    r_date = get_date(get_curr_year(), day_of_week,
+                      get_curr_week_num() if not is_sunday else get_curr_week_num() - 1)
+    if r_date.date() > datetime.date.today():
+        return r_date.strftime('%Y/%m/%d')
+    return None

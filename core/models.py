@@ -106,8 +106,11 @@ class ShiftSlot(models.Model):
         return self.week == week_no
 
 
-class TmpHoliday(models.Model):
-    year = models.CharField(primary_key=True, max_length=5)
-    full_json = models.TextField()
-
-
+# class Shift(models.Model):
+#     pass
+#
+#
+# class ShiftRequest(models.Model):
+#     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
+#     first_priority_slots = models.ManyToManyField(ShiftSlot)
+#     second_priority_slots = models.ManyToManyField(ShiftSlot)

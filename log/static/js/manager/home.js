@@ -1,12 +1,11 @@
-/**
- * Created by rsegev on 02/07/2017.
- */
 
-setTimeout(function(){
-  $('.alert-success').hide()
-}, 60000);
 
 $(document).ready(function() {
+
+    setTimeout(function(){
+      $('.alert').hide()
+    }, 3000);
+
     if (location.hash) {
         $("a[href='" + location.hash + "']").tab("show");
     }
@@ -37,6 +36,13 @@ $(document).ready(function() {
         var request_id = $(this).parents('div').siblings("span:first").text();
         spin_instead_of_btn($(this));
         handle_request("R", request_id);
+    });
+
+    $('#finishSlots').click(function () {
+       $('#calDiv').addClass("disabledbutton");
+        $(this).hide();
+        populateTimerDiv();
+        $('#timerDiv').show();
     });
 
 });
@@ -156,4 +162,19 @@ function getUpdateShiftUrl(id) {
 function toDate(dateStr) {
     var parts = dateStr.split("-");
     return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+function populateTimerDiv() {
+    if (deadline_date != "None") {
+        $('#timerH').countdown(deadline_date, function (event) {
+            $(this).html(event.strftime('Timeout in: '
+                + '<span>%d</span> days '
+                + '<span>%H</span> hr '
+                + '<span>%M</span> min '
+                + '<span>%S</span> sec ')
+            );
+        });
+    }else{
+        $('#timerH').text('Time is over !');
+    }
 }
