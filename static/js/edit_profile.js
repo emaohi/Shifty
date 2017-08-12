@@ -52,7 +52,7 @@ function report_incorrect($btn, field, fix, curr_val) {
    $spinner.show();
     $.ajax({
       url: report_incorrect_url, //from template
-      type: "post", //send it through get method
+      type: "post",
       data: {
         incorrect_field: field,
         fix_suggestion: fix,

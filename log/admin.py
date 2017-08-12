@@ -4,7 +4,7 @@ from .models import Business, EmployeeProfile
 
 
 class BusinessAdmin(admin.ModelAdmin):
-    list_display = ("business_name", "business_type", "tip_method", "manager")
+    list_display = ("business_name", "business_type", "tip_method", "manager", "deadline_day")
 admin.site.register(Business, BusinessAdmin)
 
 

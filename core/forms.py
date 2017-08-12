@@ -43,6 +43,7 @@ class ShiftSlotForm(forms.Form):
     roles = ['waiter', 'bartender', 'cook']
 
     def __init__(self, *args, **kwargs):
+
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 
         field_to_vals = {'age': forms.IntegerField(required=False,

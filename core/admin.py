@@ -1,10 +1,10 @@
 from django.contrib import admin
 
-from .models import EmployeeRequest, ManagerMessage, ShiftSlot, TmpHoliday, Holiday
+from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday
 
 
 class EmployeeRequestAdmin(admin.ModelAdmin):
-    list_display = ('get_issuers_string', 'text', 'status', 'sent_time')
+    list_display = ('get_issuers_string', 'type', 'text', 'status', 'sent_time')
 
 admin.site.register(EmployeeRequest, EmployeeRequestAdmin)
 
@@ -16,7 +16,7 @@ admin.site.register(ManagerMessage, ManagerMessageAdmin)
 
 
 class ShiftSlotAdmin(admin.ModelAdmin):
-    list_display = ('business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints')
+    list_display = ('id', 'business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints', 'holiday')
 admin.site.register(ShiftSlot, ShiftSlotAdmin)
 
 

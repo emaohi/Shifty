@@ -15,7 +15,7 @@ class LoginForm(AuthenticationForm):
 class BusinessRegistrationForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('business_name', 'business_type', 'tip_method')
+        fields = ('business_name', 'business_type', 'tip_method', 'deadline_day')
 
     def __init__(self, *args, **kwargs):
         super(BusinessRegistrationForm, self).__init__(*args, **kwargs)
@@ -26,9 +26,10 @@ class BusinessRegistrationForm(forms.ModelForm):
 class BusinessEditForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('business_type', 'tip_method')
+        fields = ('business_type', 'tip_method', 'deadline_day')
         help_texts = {
-            'tip_method': 'Whether your employees get their tips personally or share group tips'
+            'tip_method': 'Whether your employees get their tips personally or share group tips',
+            'deadline_day': 'The day until which shift requests must be submitted by your employees'
         }
 
     def __init__(self, *args, **kwargs):

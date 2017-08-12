@@ -7,3 +7,4 @@
 .gitignore.orig
 .pylintrc
 celerybeat-schedule
+Shifty/checking_calendar.py

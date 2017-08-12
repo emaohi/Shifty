@@ -16,6 +16,10 @@ class EmployeeRequest(models.Model):
         ('P', 'Pending'), ('A', 'Approved'), ('R', 'Rejected')
     )
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    TYPE_CHOICES = (
+        ('P', 'Profile change'), ('S', 'Shift swap')
+    )
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='P')
 
     def get_issuers_string(self):
         return ', '.join(str(emp) for emp in self.issuers.all())
@@ -39,6 +43,20 @@ class ManagerMessage(models.Model):
                    ' and ' + str(num_of_recipients - 5) + ' more'
         return ', '.join(str(emp) for emp in self.recipients.all())
     get_recipients_string.short_description = 'recipients'
+
+
+class Holiday(models.Model):
+    name = models.CharField(max_length=30)
+    date = models.DateField(primary_key=True)
+
+    def get_holiday_week_no(self):
+        base_week_no = self.date.isocalendar()[1]
+
+        is_sunday = True if datetime.datetime.today().weekday() == 6 else False
+        return base_week_no if not is_sunday else base_week_no + 1
+
+    def __str__(self):
+        return self.name
 
 
 class ShiftSlot(models.Model):
@@ -66,14 +84,33 @@ class ShiftSlot(models.Model):
 
     constraints = models.TextField(max_length=300)
 
+    holiday = models.ForeignKey(Holiday, blank=True, null=True)
 
-class Holiday(models.Model):
-    name = models.CharField(primary_key=True, max_length=30)
-    date = models.DateField()
+    def start_time_str(self):
+        return '%s %s' % (self.get_date(), self.start_hour)
+
+    def end_time_str(self):
+        return '%s %s' % (self.get_date(), self.end_hour)
+
+    def get_date(self):
+        correct_week = self.week if int(self.day) > 1 else self.week - 1
+        d = '%s-W%s' % (str(self.year), str(correct_week))
+        return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
+
+    def is_next_week(self):
+        base_week_no = datetime.date.today().isocalendar()[1] + 1
+
+        is_sunday = True if datetime.datetime.today().weekday() == 6 else False
+        week_no = base_week_no if not is_sunday else base_week_no + 1
+
+        return self.week == week_no
 
 
-class TmpHoliday(models.Model):
-    year = models.CharField(primary_key=True, max_length=5)
-    full_json = models.TextField()
-
-
+# class Shift(models.Model):
+#     pass
+#
+#
+# class ShiftRequest(models.Model):
+#     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
+#     first_priority_slots = models.ManyToManyField(ShiftSlot)
+#     second_priority_slots = models.ManyToManyField(ShiftSlot)

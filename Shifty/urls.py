@@ -15,12 +15,11 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.contrib.auth import views as django_views
-from log import views as log_views
-from log.forms import LoginForm
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^core/', include('core.urls')),
     url(r'', include('log.urls')),
 ]
+
+admin.site.site_header = 'Shifty Administration'

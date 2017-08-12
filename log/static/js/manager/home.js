@@ -1,15 +1,28 @@
-/**
- * Created by rsegev on 02/07/2017.
- */
 
-setTimeout(function(){
-  $('.alert-success').hide()
-}, 60000);
 
 $(document).ready(function() {
+
+    setTimeout(function(){
+      $('.alert').hide()
+    }, 3000);
+
     if (location.hash) {
         $("a[href='" + location.hash + "']").tab("show");
     }
+    $.ajax({
+      url: next_slots_url, //from template
+      type: "get", //send it through get method,
+      success: display_cal,
+      error: function(xhr) {
+        //Do Something to handle error
+      }
+    });
+
+    $('.edit-slot').click(function () {
+        var shiftId = $('#putShiftId').text();
+        window.location.href = getUpdateShiftUrl(shiftId);
+    });
+
     $(document.body).on("click", "a[data-toggle]", function(event) {
         location.hash = this.getAttribute("href");
     });
@@ -24,6 +37,14 @@ $(document).ready(function() {
         spin_instead_of_btn($(this));
         handle_request("R", request_id);
     });
+
+    $('#finishSlots').click(function () {
+       $('#calDiv').addClass("disabledbutton");
+        $(this).hide();
+        populateTimerDiv();
+        $('#timerDiv').show();
+    });
+
 });
 $(window).on("popstate", function() {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
@@ -51,4 +72,109 @@ function handle_request(new_status, request_id) {
                 window.location.reload();
             }
     });
+}
+
+function display_cal(event_list){
+
+    var id_to_constraint_json = JSON.parse(event_list.pop());
+
+    var r_list = [];
+    for (var i=0; i < event_list.length; i++){
+        r_list.push(JSON.parse(event_list[i]));
+    }
+
+     $('#calDiv').easycal({
+
+        minTime : '06:00:00',
+        maxTime : '23:59:00',
+        timeGranularity: 30,
+        slotDuration : 60,
+        startDate : start_date,
+        dayClick : function(el, startTime){
+            var dateStr = el.parent().attr('data-date');
+            var d = toDate(dateStr);
+            window.location.href = getNewShiftUrl(d.getDay(), startTime);
+        },
+        eventClick : function(shiftId){
+            showSlotDetails(shiftId, JSON.parse(id_to_constraint_json[shiftId]));
+        },
+        events : r_list
+     });
+}
+
+function showSlotDetails(shiftId, constraints_json){
+
+    $('#constraintModal').find('.modal-body').html(listifyConstraintJson(constraints_json));
+    // $('#constraintModal').find('.modal-body').html(constraints_json);
+    $('#constraintModal').find('.modal-title').html('Shift #' + shiftId + ' constraints');
+
+    $('#putShiftId').text(shiftId);
+    $('#constraintModal').modal('show');
+}
+
+function listifyConstraintJson(constraints_json) {
+    var $div = '<div>';
+    console.log('root constraints are ' + JSON.stringify(constraints_json));
+    $.each(constraints_json, function (role, constraints) {
+        var $roleDiv = '<div>';
+        $roleDiv += '<h3>' + role + ' - ' + constraints.num + ' employee/s' + '</h3>';
+        var $conList = '<ul class="list-group">';
+        console.log('curr constraints are ' + JSON.stringify(constraints));
+        $.each(constraints, function (field, field_json) {
+            console.log('field before is ' + field);
+            if(field != 'num') {
+                console.log('field is '+ field);
+                $conList += '<li class="list-group-item">' + make_sentence(field, field_json) + '</li>';
+            }
+        });
+        $conList += '</ul>';
+
+        $roleDiv += $conList + '<hr>' + '</div>';
+
+        $div += $roleDiv;
+    });
+    $div += '</div>';
+    return $div;
+}
+
+function make_sentence(field, field_json) {
+    var sentence_dict = {'lte': 'less than ', 'gte': 'more than ', 'eq': 'equals to '};
+    var gender_dict = {'M': 'Male', 'F': 'Female'};
+    var val = '';
+    if (field !='gender') {
+        val = field_json['val'];
+    }else{
+         val = gender_dict[field_json['val']];
+        }
+    return 'The ' + field + ' of at least ' + field_json['apply_on'] + ' employees needs to be ' +
+        sentence_dict[field_json['op']] + val;
+}
+
+function getNewShiftUrl(day, startTime) {
+    var params = {"day": day + 1, "startTime": startTime.replace(/:/g, "-")};
+    return new_slot_url + "?" + $.param(params);
+}
+
+function getUpdateShiftUrl(id) {
+    return update_slot_url.replace(/\/[^\/]*$/, '/' + id);
+}
+
+function toDate(dateStr) {
+    var parts = dateStr.split("-");
+    return new Date(parts[2], parts[1] - 1, parts[0]);
+}
+
+function populateTimerDiv() {
+    if (deadline_date != "None") {
+        $('#timerH').countdown(deadline_date, function (event) {
+            $(this).html(event.strftime('Timeout in: '
+                + '<span>%d</span> days '
+                + '<span>%H</span> hr '
+                + '<span>%M</span> min '
+                + '<span>%S</span> sec ')
+            );
+        });
+    }else{
+        $('#timerH').text('Time is over !');
+    }
 }

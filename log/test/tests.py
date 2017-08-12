@@ -2,6 +2,8 @@ import datetime
 from django.contrib.auth.models import User, Group
 from django.test import TestCase, override_settings
 
+from log.test.test_utils import make_data
+
 
 class AddEmployeesTest(TestCase):
     def setUp(self):
@@ -18,24 +20,11 @@ class AddEmployeesTest(TestCase):
 
         self.client.post('/login/', self.credentials, follow=True)
 
-    @staticmethod
-    def make_data(n):
-        data = {}
-        for i in range(n):
-            data['employee_%s_firstName' % i] = 'Roni'
-            data['employee_%s_lastName' % i] = 'L' + str(i)
-            data['employee_%s_email' % i] = 'emaohi@gmail.com'
-            data['employee_%s_role' % i] = 'WA'
-            data['employee_%s_dateJoined' % i] = datetime.date.today()
-        data['dummy'] = 'dummy'
-
-        return data
-
     @override_settings(DEBUG=True)
     def test_check_new_employee_group(self):
 
         try:
-            self.client.post('/manager/add_employees/', self.make_data(1), follow=True)
+            self.client.post('/manager/add_employees/', make_data(1), follow=True)
         except Exception as e:
             print str(e)
 
@@ -47,7 +36,7 @@ class AddEmployeesTest(TestCase):
 
     def test_check_same_username_appends(self):
 
-        self.client.post('/manager/add_employees/', self.make_data(2), follow=True)
+        self.client.post('/manager/add_employees/', make_data(2), follow=True)
 
         num_results = User.objects.filter(username__contains='RoniL').count()
 
@@ -66,6 +55,6 @@ class AddEmployeesTest(TestCase):
 
         self.client.post('/login/', new_credentials, follow=True)
 
-        self.client.post('/manager/add_employees/', self.make_data(1), follow=True)
+        self.client.post('/manager/add_employees/', make_data(1), follow=True)
 
         self.assertEqual(User.objects.filter(username__contains='RoniL').count(), 0)
