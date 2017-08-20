@@ -3,6 +3,7 @@ import itertools
 import datetime
 import json
 
+import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
@@ -10,26 +11,30 @@ from core.date_utils import get_date, get_curr_year
 from core.models import ManagerMessage, EmployeeRequest, Holiday
 from Shifty.utils import send_multiple_mails_with_html
 
+logger = logging.getLogger('cool')
 
-def create_manager_msg(recipients, subject, text):
+
+def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
     curr_business = recipients.first().business
     manager_msg = ManagerMessage(business=curr_business, sent_time=timezone.now(),
                                  subject=subject, text=text)
     manager_msg.save()
 
+    recipients = recipients.exclude(user=curr_business.manager)
     manager_msg.recipients = recipients
     manager_msg.save()
 
-    # # send emails
+    # send emails
     recipient_users = [r.user for r in recipients]
-    recipient_to_context_dict = dict(zip(recipient_users,
-                                         itertools.repeat({'manager': curr_business.manager.username})))
+    recipient_to_context_dict = {user: {'manager': curr_business.manager.username, 'username': user.first_name}
+                                 for user in recipient_users}
     template = 'html_msgs/new_manager_message_email_msg.html'
-    subject = 'New message in Shifty app'
-    text = 'you\'ve got new message from your manger'
+    mail_subject = 'New message in Shifty app'
+    mail_text = 'you\'ve got new message from your manger'
 
-    send_multiple_mails_with_html(subject=subject, text=text,
-                                  template=template, r_2_c_dict=recipient_to_context_dict)
+    send_multiple_mails_with_html(subject=mail_subject, text=mail_text,
+                                  template=template, r_2_c_dict=recipient_to_context_dict,
+                                  wait_for_results=wait_for_mail_results)
 
 
 def get_manger_msgs_of_employee(employee):
