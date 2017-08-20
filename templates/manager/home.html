@@ -52,6 +52,9 @@
             opacity: 0.5;
 
         }
+        .btn-group, h3 {
+            display: inline-block;
+        }
     </style>
 {% endblock %}
 
@@ -165,10 +168,21 @@
                 <div id="next" class="tab-pane fade" style="margin-top: 20px">
                     <div class="container">
                         <div class="row">
-                            <div class="col-md-4 col-md-offset-4">
-                                <div id="timerDiv" style="display: none"><h3 id="timerH"></h3></div>
+                            <div class="col-md-7 col-md-offset-2">
+
                                 <button id="finishSlots" type="submit" class="btn btn-xl btn-primary">
                                     Finish and start countdown</button>
+
+                                <div id="slotMsg" style="display: none">
+                                    <h3>Employees shift requests submission is <strong style="color: green">enabled</strong> </h3>
+                                    <span class="btn-group">
+                                        <button class="btn btn-warning" id="resetSlots">Reset slots</button>
+                                    </span>
+                                </div>
+
+                            </div>
+                            <div class="col-md-2">
+                                <small id="timerH"></small>
                             </div>
                         </div>
                         <div class="row" style="margin-top: 20px">
@@ -214,6 +228,7 @@
         var update_slot_url = "{% url 'update_shift_slot' 0%}";
         var delete_slot_url = "{% url 'delete_shift_slot'%}";
         var next_slots_url = "{% url 'get_next_slots' %}";
+        var finish_slots_url = "{% url 'finish_slots' %}";
         var start_date = "{{ start_date }}";
         var deadline_date = "{{ deadline_date }}";
     </script>

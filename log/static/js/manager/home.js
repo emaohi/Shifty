@@ -6,6 +6,8 @@ $(document).ready(function() {
       $('.alert').hide()
     }, 3000);
 
+    getSlotsStatus();
+
     if (location.hash) {
         $("a[href='" + location.hash + "']").tab("show");
     }
@@ -44,17 +46,60 @@ $(document).ready(function() {
     });
 
     $('#finishSlots').click(function () {
-       $('#calDiv').addClass("disabledbutton");
-        $(this).hide();
-        populateTimerDiv();
-        $('#timerDiv').show();
+        updateFinishedSlots(true);
     });
 
+
+    $('#resetSlots').click(function () {
+        updateFinishedSlots(false);
+    });
 });
 $(window).on("popstate", function() {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
     $("a[href='" + anchor + "']").tab("show");
 });
+
+function updateFinishedSlots(isFinished){
+    $.ajax({
+      url: finish_slots_url, //from template
+      type: "post", //send it through get method,
+      data: {
+          isFinished: isFinished
+      },
+      headers: {
+          'X-CSRFToken': csrf_token
+      },
+      success: getSlotsStatus,
+      error: function(xhr) {
+          alert("something fishy: " + xhr);
+      }
+    });
+}
+
+function getSlotsStatus(){
+    $.ajax({
+      url: finish_slots_url, //from template
+      type: "get",
+      success: finishSlots,
+      error: function(xhr) {
+          alert("something fishy: " + xhr);
+      }
+    });
+}
+
+function finishSlots(isFinished) {
+    var isTrueSet = (isFinished == 'True');
+    if (isTrueSet) {
+        $('#calDiv').addClass("disabledbutton");
+        $('#finishSlots').hide();
+        populateTimerDiv();
+        $('#slotMsg').show();
+    } else{
+        $('#calDiv').removeClass("disabledbutton");
+        $('#finishSlots').show();
+        $('#slotMsg').hide();
+    }
+}
 
 function spin_instead_of_btn($btn) {
     $btn.hide();
@@ -188,14 +233,14 @@ function toDate(dateStr) {
 function populateTimerDiv() {
     if (deadline_date != "None") {
         $('#timerH').countdown(deadline_date, function (event) {
-            $(this).html(event.strftime('Timeout in: '
-                + '<span>%d</span> days '
-                + '<span>%H</span> hr '
-                + '<span>%M</span> min '
-                + '<span>%S</span> sec ')
+            $(this).html(event.strftime('Deadline in: '
+                + '<span>%d</span> days, '
+                + '<span>%H</span> hours, '
+                + '<span>%M</span> minutes, '
+                + '<span>%S</span> seconds ')
             );
         });
     }else{
-        $('#timerH').text('Time is over !');
+        $('#timerH').text('Time for shift requests is over !');
     }
 }

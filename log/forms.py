@@ -95,6 +95,7 @@ class EditProfileForm(forms.ModelForm):
         }
         help_texts = {
             'phone_num': 'in form of 05x-xxxxxxx',
+            'enable_mailing': 'It is strictly recommended to enable mailing from Shifty'
         }
 
     def __init__(self, *args, **kwargs):
