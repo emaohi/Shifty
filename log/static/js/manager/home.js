@@ -6,7 +6,8 @@ $(document).ready(function() {
       $('.alert').hide()
     }, 3000);
 
-    getSlotsStatus();
+    getSlotsStatus(); // this will whether populate or not the next week div
+    populateTimerDiv();
 
     if (location.hash) {
         $("a[href='" + location.hash + "']").tab("show");
@@ -92,7 +93,6 @@ function finishSlots(isFinished) {
     if (isTrueSet) {
         $('#calDiv').addClass("disabledbutton");
         $('#finishSlots').hide();
-        populateTimerDiv();
         $('#slotMsg').show();
     } else{
         $('#calDiv').removeClass("disabledbutton");

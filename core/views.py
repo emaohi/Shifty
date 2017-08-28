@@ -185,11 +185,11 @@ def delete_slot(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def get_next_week_slots(request):
     shifts_json = []
-
+    curr_business = request.user.profile.business
     slot_id_to_constraints_dict = {}
 
     next_week_no = get_next_week_num()
-    next_week_slots = ShiftSlot.objects.filter(week=next_week_no)
+    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=curr_business)
     for slot in next_week_slots:
         jsoned_shifts = json.dumps({'id': str(slot.id), 'title': 'Shift Slot %s' % str(slot.id),
                                     'start': slot.start_time_str(),

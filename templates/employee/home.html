@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block comp_name %}
-    <b>{{ user.profile.business.business_name }}</b>
+    <b>{{ user.profile.business.business_name }}</b> employee dashboard
 {% endblock %}
 
 {% block style %}
@@ -26,18 +26,17 @@
 
 <div class="container">
   <ul class="nav nav-tabs">
-    <li class="active"><a data-toggle="tab" href="#home">Notifications</a></li>
-    <li><a data-toggle="tab" href="#menu1">Shift request</a></li>
+    <li class="active"><a data-toggle="tab" href="#current">Current shifts</a></li>
+    <li><a data-toggle="tab" href="#menu1">Shift Requests</a></li>
     <li><a data-toggle="tab" href="#menu2">Previous shifts</a></li>
-    <li><a data-toggle="tab" href="#menu3">Manager Messages</a></li>
+    <li class="pull-right"><a data-toggle="tab" href="#menu3">Manager Messages</a></li>
   </ul>
   <div class="tab-content">
-    <div id="home" class="tab-pane fade in active">
+    <div id="current" class="tab-pane fade in active">
       <h3>Current shifts</h3>
-      <p>Lorem ipsum dolor sit amet, consectetur.</p>
     </div>
     <div id="menu1" class="tab-pane fade">
-        <h3>Menu 1</h3>
+        <h3>Next Week Shifts Requestssd</h3>
     </div>
     <div id="menu2" class="tab-pane fade">
       <h3>Menu 2</h3>
