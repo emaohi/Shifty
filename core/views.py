@@ -2,19 +2,16 @@ import json
 import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
 
-from core.date_utils import get_next_week_num, get_date, get_next_week_string, get_curr_year
-from core.models import EmployeeRequest, Holiday
+from core.date_utils import get_next_week_num, get_next_week_string, get_curr_year
+from core.models import EmployeeRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError
-from log.models import Business
 from .forms import *
 
 logger = logging.getLogger('cool')
@@ -132,49 +129,67 @@ def add_shift_slot(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
-def update_shift_slot(request, shift_id):
+def update_shift_slot(request, slot_id):
 
-    updated_slot = get_object_or_404(ShiftSlot, id=shift_id)
+    updated_slot = get_object_or_404(ShiftSlot, id=slot_id)
 
     if not updated_slot.is_next_week():
         return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
 
     if request.method == 'POST':
-        logger.info('in post, is is %s' % shift_id)
+        logger.info('in post, is is %s' % slot_id)
         slot_form = ShiftSlotForm(request.POST)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             slot_constraint_json = create_constraint_json_from_form(data)
 
             logger.info('new end hour is %s' % str(data['end_hour']))
-            ShiftSlot.objects.filter(id=shift_id).update(business=request.user.profile.business, day=data['day'],
-                                                         start_hour=data['start_hour'], end_hour=data['end_hour'],
-                                                         constraints=json.dumps(slot_constraint_json),
-                                                         week=get_next_week_num())
+            ShiftSlot.objects.filter(id=slot_id).update(business=request.user.profile.business, day=data['day'],
+                                                        start_hour=data['start_hour'], end_hour=data['end_hour'],
+                                                        constraints=json.dumps(slot_constraint_json),
+                                                        week=get_next_week_num())
             messages.success(request, 'slot updated')
             return HttpResponseRedirect('/')
         else:
             return render(request, 'manager/new_shift.html', {'form': slot_form})
-    else:
-        logger.info('in get, is is %s' % shift_id)
+    else:  # GET
+        logger.info('in get, ID is %s' % slot_id)
         day = int(updated_slot.day)
         start_hour = str(updated_slot.start_hour)
         end_hour = str(updated_slot.end_hour)
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':'),
                                       'end_hour': end_hour.replace('-', ':')})
         return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
-                                                             'id': shift_id, 'holiday': updated_slot.holiday})
+                                                             'id': slot_id, 'holiday': updated_slot.holiday})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def delete_slot(request):
+
+    if request.method == 'POST':
+        slot_id = request.POST.get('slot_id')
+        updated_slot = get_object_or_404(ShiftSlot, id=slot_id)
+        if not updated_slot.is_next_week():
+            return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
+
+        updated_slot.delete()
+        logger.info('shift slow id %s was deleted' % slot_id)
+        messages.success(request, 'slot was deleted successfully')
+        return HttpResponse('ok')
+
+    return HttpResponseBadRequest('cannot delete with GET')
 
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def get_next_week_slots(request):
     shifts_json = []
-
+    curr_business = request.user.profile.business
     slot_id_to_constraints_dict = {}
 
     next_week_no = get_next_week_num()
-    next_week_slots = ShiftSlot.objects.filter(week=next_week_no)
+    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=curr_business)
     for slot in next_week_slots:
         jsoned_shifts = json.dumps({'id': str(slot.id), 'title': 'Shift Slot %s' % str(slot.id),
                                     'start': slot.start_time_str(),
@@ -186,3 +201,24 @@ def get_next_week_slots(request):
     shifts_json.append(json.dumps(slot_id_to_constraints_dict))
     logger.debug('jsoned shifts are %s' % shifts_json)
     return JsonResponse(shifts_json, safe=False)
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+def is_finish_slots(request):
+    curr_business = request.user.profile.business
+    if request.method == 'POST':
+        action = request.POST.get('isFinished')
+        curr_business.start_slot_countdown = True if action == 'true' else False
+        curr_business.save()
+
+        recp = curr_business.get_employees()
+        is_enabled = 'enabled' if curr_business.start_slot_countdown else 'disabled'
+        text = 'Your manager has %s shifts requests for next week.' % is_enabled
+        create_manager_msg(recipients=recp, subject='Shift requests are now %s' % is_enabled, text=text,
+                           wait_for_mail_results=False)
+
+        logger.info('saved business finished slots status to: %s' % curr_business.start_slot_countdown)
+        return HttpResponse('ok')
+    logger.info('returning the business finished slots status which is: %s' % curr_business.start_slot_countdown)
+    return HttpResponse(curr_business.start_slot_countdown)

@@ -7,7 +7,7 @@ from Shifty import tasks
 logger = logging.getLogger('cool')
 
 
-def send_multiple_mails_with_html(subject, text, template, r_2_c_dict):
+def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_results=True):
     def now_millis():
         """returns current timestamp in millis"""
         return int(round(time() * 1000))
@@ -22,8 +22,8 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict):
         task_results.append(tasks.send_mail.delay(*send_mail_params) if is_celery else
                             tasks.send_mail(*send_mail_params))
 
-    if is_celery:
-        timeout_millis = 25000
+    if is_celery and wait_for_results:
+        timeout_millis = settings.CELERY_MAIL_TIMEOUT
         time_to_stop = now_millis() + timeout_millis
         while time_to_stop > now_millis():
             if all([result.status == 'SUCCESS' for result in task_results]):

@@ -2,7 +2,7 @@ import traceback
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
@@ -37,6 +37,9 @@ def manager_home(request):
 
     deadline_date = get_current_deadline_date(curr_manager.business.deadline_day)
     logger.info('deadline date is %s' % deadline_date)
+
+    is_finish_slots = curr_manager.business.start_slot_countdown
+    logger.info('are slot adding is finished? %s' % is_finish_slots)
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
                'curr_week_str': curr_week_string, 'start_date': next_week_date,
@@ -248,3 +251,5 @@ def home_or_login(request):
         return redirect("login_success")
     else:
         return redirect("login")
+
+
