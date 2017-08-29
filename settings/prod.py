@@ -15,6 +15,6 @@ DATABASES = {
     }
 }
 
-CELERY = False
+CELERY = True
 CELERY_BROKER_URL =\
     'amqp://d87vKR49:ho9_EJMxh3QTnWyJAdKR4-mHM0ofNF1q@angry-vervain-61.bigwig.lshift.net:10468/h3SbfJQeMSid'
