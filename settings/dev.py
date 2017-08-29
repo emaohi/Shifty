@@ -16,3 +16,4 @@ DATABASES = {
 }
 
 CELERY = True
+CELERY_BROKER_URL = 'pyamqp://guest@localhost//'

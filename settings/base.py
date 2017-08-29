@@ -155,8 +155,6 @@ LOGGING = {
 
 HOLIDAY_FETCH_MONTHS = 'all'
 
-CELERY_BROKER_URL = 'pyamqp://guest@localhost//'
-
 #: Only add pickle to this list if your broker is secured
 #: from unwanted access (see userguide/security.html)
 CELERY_ACCEPT_CONTENT = ['json']
