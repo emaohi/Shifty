@@ -104,7 +104,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 
 EMAIL_HOST_USER = 'shifty.moti'
 
-EMAIL_HOST_PASSWORD = 'lucky12345'
+EMAIL_HOST_PASSWORD = 'Lucky123'
 
 EMAIL_PORT = 587
 
