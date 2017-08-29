@@ -1,0 +1,18 @@
+from base import *
+
+DEBUG = True
+
+ALLOWED_HOSTS = ['shifty-app.herokuapp.com']
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'heroku_ab2a741886e22c8',
+        'USER': 'b0b83db77ed36d',
+        'PASSWORD': 'dbe5049c',
+        'HOST': 'mysql://b0b83db77ed36d:dbe5049c@us-cdbr-iron-east-05.cleardb.net/heroku_ab2a741886e22c8',
+        'PORT': '3306',
+    }
+}
+
+CELERY = False
