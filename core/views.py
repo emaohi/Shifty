@@ -11,13 +11,14 @@ from core.date_utils import get_next_week_num, get_next_week_string, get_curr_ye
 from core.models import EmployeeRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none
 
-from Shifty.utils import must_be_manager_callback, EmailWaitError
+from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback
 from .forms import *
 
 logger = logging.getLogger('cool')
 
 
 @login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback, login_url='/manager')
 def report_incorrect_detail(request):
     if request.method == 'POST':
         reporting_profile = request.user.profile
@@ -105,12 +106,10 @@ def add_shift_slot(request):
 
             slot_holiday = get_holiday_or_none(get_curr_year(), data['day'], get_next_week_num())
 
-            holiday = slot_holiday if slot_holiday else None
-
             new_slot = ShiftSlot(business=request.user.profile.business, day=data['day'],
                                  start_hour=data['start_hour'], end_hour=data['end_hour'],
                                  constraints=json.dumps(slot_constraint_json),
-                                 week=get_next_week_num(), holiday=holiday)
+                                 week=get_next_week_num(), holiday=slot_holiday)
             new_slot.save()
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')

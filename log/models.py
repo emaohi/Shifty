@@ -106,6 +106,10 @@ class EmployeeProfile(models.Model):
                 return profile
         return None
 
+    def get_manager_user(self):
+        if self.get_manager():
+            return self.get_manager().user
+
     @staticmethod
     def get_filtered_upon_fields():
         return ['birth_date', 'started_work_date', 'gender', 'avg_rate']

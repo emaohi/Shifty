@@ -42,3 +42,10 @@ def must_be_manager_callback(user):
         return True
     logger.error('cant proceed - not manager')
     return False
+
+
+def must_be_employee_callback(user):
+    if user.groups.filter(name='Employees').exists():
+        return True
+    logger.error('cant proceed - you are a manager !')
+    return False
