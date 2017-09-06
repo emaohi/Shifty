@@ -1,3 +1,9 @@
 machine:
   environment:
     DJANGO_SETTINGS_MODULE: settings.circle
+
+deployment:
+  staging:
+    branch: master
+    heroku:
+      appname: shifty-app
