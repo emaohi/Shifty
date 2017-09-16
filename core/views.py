@@ -190,12 +190,12 @@ def get_next_week_slots(request):
     next_week_no = get_next_week_num()
     next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=curr_business)
     for slot in next_week_slots:
-        jsoned_shifts = json.dumps({'id': str(slot.id), 'title': 'Shift Slot %s' % str(slot.id),
-                                    'start': slot.start_time_str(),
-                                    'end': slot.end_time_str(),
-                                    'backgroundColor': '#205067',
-                                    'textColor': '#f5dd5d' if not slot.holiday else '#ff7100'})
-        shifts_json.append(jsoned_shifts)
+        jsoned_shift = json.dumps({'id': str(slot.id), 'title': 'Shift Slot %s' % str(slot.id),
+                                   'start': slot.start_time_str(),
+                                   'end': slot.end_time_str(),
+                                   'backgroundColor': '#205067',
+                                   'textColor': '#f5dd5d' if not slot.holiday else '#ff7100'})
+        shifts_json.append(jsoned_shift)
         slot_id_to_constraints_dict[slot.id] = slot.constraints
     shifts_json.append(json.dumps(slot_id_to_constraints_dict))
     logger.debug('jsoned shifts are %s' % shifts_json)

@@ -86,6 +86,9 @@ class ShiftSlot(models.Model):
 
     holiday = models.ForeignKey(Holiday, blank=True, null=True)
 
+    def __str__(self):
+        return 'Shift slot - day: %s, start: %s, end: %s' % (self.day, str(self.start_hour), str(self.end_hour))
+
     def start_time_str(self):
         return '%s %s' % (self.get_date(), self.start_hour)
 
