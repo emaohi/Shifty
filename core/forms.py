@@ -109,7 +109,8 @@ class ShiftSlotForm(forms.Form):
             raise forms.ValidationError(msg)
     # TODO if value has added - apply_on&op mustn't be empty and vice versa
         for group in self.get_constraint_groups():
-            group_list = [val for key, val in clean_data.iteritems() if group in key and 'desc' not in key]
+            group_list = [val for key, val in clean_data.iteritems() if group in key and 'desc' not in key and
+                          'gender__operation' not in key]
             if not self.validate_all_none_or_not_none(group_list):
                 msg = 'you cannot leave parts of %s constraint empty' % group
                 raise forms.ValidationError(msg)
