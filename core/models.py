@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 import datetime
 from django.db import models
 
+from core.date_utils import get_next_week_num
 from log.models import Business, EmployeeProfile
 
 
@@ -101,12 +102,7 @@ class ShiftSlot(models.Model):
         return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
 
     def is_next_week(self):
-        base_week_no = datetime.date.today().isocalendar()[1] + 1
-
-        is_sunday = True if datetime.datetime.today().weekday() == 6 else False
-        week_no = base_week_no if not is_sunday else base_week_no + 1
-
-        return self.week == week_no
+        return self.week == get_next_week_num()
 
 
 # class Shift(models.Model):

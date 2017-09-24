@@ -84,6 +84,14 @@ class ShiftSlotForm(forms.Form):
         seen_add = seen.add
         return [x for x in seq if not (x in seen or seen_add(x))]
 
+    @staticmethod
+    def validate_all_none_or_not_none(elements):
+        print elements
+
+        none_list = [None, '']
+        return all([(elem in none_list) for elem in elements]) or\
+            all([(elem not in none_list) for elem in elements])
+
     def clean(self):
         clean_data = super(ShiftSlotForm, self).clean()
 
@@ -100,4 +108,9 @@ class ShiftSlotForm(forms.Form):
             msg = 'end hour (%s) is not later than start_hour (%s)' % (end_hour, start_hour)
             raise forms.ValidationError(msg)
     # TODO if value has added - apply_on&op mustn't be empty and vice versa
+        for group in self.get_constraint_groups():
+            group_list = [val for key, val in clean_data.iteritems() if group in key and 'desc' not in key]
+            if not self.validate_all_none_or_not_none(group_list):
+                msg = 'you cannot leave parts of %s constraint empty' % group
+                raise forms.ValidationError(msg)
     # TODO also it's possible to check emp values to identify bigger than max / smaller than min cases

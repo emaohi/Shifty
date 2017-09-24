@@ -103,6 +103,8 @@ def save_holidays(holiday_json):
 
 
 def get_holiday_or_none(year, day, week):
+    if day == '':
+        return None
     try:
         slot_holiday = Holiday.objects.get(date=get_date(year, day, week))
     except ObjectDoesNotExist:

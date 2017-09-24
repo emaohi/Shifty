@@ -55,7 +55,7 @@
                                 <strong>Notice - {{ holiday }} holiday is on this date</strong>
                             </div>
                         {% endif %}
-                        <form action="." method="post" id="theForm">
+                        <form action="." method="post" id="theForm" novalidate>
                             {% csrf_token %}
                             {% for field in form %}
                                 {% if 'constraint' not in field.name %}

@@ -114,7 +114,10 @@ def add_shift_slot(request):
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')
         else:
-            return render(request, 'manager/new_shift.html', {'form': slot_form})
+            day = request.POST.get('day')
+            slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
+            return render(request, 'manager/new_shift.html', {'form': slot_form, 'week_range': get_next_week_string(),
+                                                              'holiday': slot_holiday}, status=400)
     else:
         day = request.GET.get('day', '')
         start_hour = request.GET.get('startTime', '')

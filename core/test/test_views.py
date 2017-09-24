@@ -1,13 +1,11 @@
 import urllib
 
-from django.contrib.auth.models import User, Group
 from django.test import TestCase
 from django.urls import reverse
 
-from core.models import ManagerMessage, EmployeeRequest, ShiftSlot
-from core.test.test_helpers import set_employee, create_new_manager, create_new_employee,\
+from core.models import EmployeeRequest, ShiftSlot
+from core.test.test_helpers import create_new_manager, create_new_employee,\
     create_manager_and_employee_groups
-from log.test.test_utils import make_data
 
 
 class EmployeeRequestViewTest(TestCase):
