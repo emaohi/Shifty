@@ -98,8 +98,12 @@ def broadcast_message(request):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_shift_slot(request):
+
+    business = request.user.profile.business
+
     if request.method == 'POST':
-        slot_form = ShiftSlotForm(request.POST)
+
+        slot_form = ShiftSlotForm(request.POST, business=business)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             slot_constraint_json = create_constraint_json_from_form(data)
@@ -124,7 +128,7 @@ def add_shift_slot(request):
 
         slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
 
-        form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')})
+        form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business)
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                           'holiday': slot_holiday})
 
@@ -138,9 +142,11 @@ def update_shift_slot(request, slot_id):
     if not updated_slot.is_next_week():
         return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
 
+    business = request.user.profile.business
+
     if request.method == 'POST':
         logger.info('in post, is is %s' % slot_id)
-        slot_form = ShiftSlotForm(request.POST)
+        slot_form = ShiftSlotForm(request.POST, business=business)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             slot_constraint_json = create_constraint_json_from_form(data)
@@ -160,7 +166,7 @@ def update_shift_slot(request, slot_id):
         start_hour = str(updated_slot.start_hour)
         end_hour = str(updated_slot.end_hour)
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':'),
-                                      'end_hour': end_hour.replace('-', ':')})
+                                      'end_hour': end_hour.replace('-', ':')}, business=business)
         return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                              'id': slot_id, 'holiday': updated_slot.holiday})
 

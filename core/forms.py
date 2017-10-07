@@ -1,10 +1,16 @@
 import time
 
 import datetime
+
+import logging
 from django import forms
 from django.forms import TextInput
 
+from core.date_utils import get_birth_day_from_age
 from core.models import ManagerMessage, ShiftSlot
+from log.models import EmployeeProfile
+
+logger = logging.getLogger('cool')
 
 
 class BroadcastMessageForm(forms.ModelForm):
@@ -42,7 +48,11 @@ class ShiftSlotForm(forms.Form):
 
     roles = ['waiter', 'bartender', 'cook']
 
+    business = None
+
     def __init__(self, *args, **kwargs):
+
+        self.business = kwargs.pop('business')
 
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 
@@ -75,43 +85,104 @@ class ShiftSlotForm(forms.Form):
                                            'class': 'form-control attach-con'})
         self.field_order = sorted(self.fields)
 
-    def get_constraint_groups(self):
-        return self.remove_duplicates([f.split('__')[0] for f in self.fields if '__' in f])
-
-    @staticmethod
-    def remove_duplicates(seq):
-        seen = set()
-        seen_add = seen.add
-        return [x for x in seq if not (x in seen or seen_add(x))]
-
-    @staticmethod
-    def validate_all_none_or_not_none(elements):
-        print elements
-
-        none_list = [None, '']
-        return all([(elem in none_list) for elem in elements]) or\
-            all([(elem not in none_list) for elem in elements])
-
     def clean(self):
         clean_data = super(ShiftSlotForm, self).clean()
 
+        self.validate_apply_less_than_role_num(clean_data)
+        self.validate_end_after_start(clean_data)
+        self.validate_no_partial_empty_constraints(clean_data)
+        self.validate_constraints_can_be_fulfilled(clean_data)
+
+    def validate_no_partial_empty_constraints(self, clean_data):
+        for group in self.get_constraint_groups():
+            group_list = [val for key, val in clean_data.iteritems() if group in key and 'desc' not in key and
+                          'gender__operation' not in key]
+            if not self.validate_all_none_or_not_none(group_list):
+                msg = 'you cannot leave parts of %s constraint empty' % group
+                logger.error(msg)
+                raise forms.ValidationError(msg)
+
+    def get_constraint_groups(self):
+        return self.remove_duplicates([f.split('__')[0] for f in self.fields if '__' in f])
+
+    def validate_apply_less_than_role_num(self, clean_data):
         for role in self.roles:
             num_of_role = clean_data['num_of_' + role + 's']
             for clean_field in clean_data:
                 if role in clean_field and 'apply' in clean_field:
                     if clean_data[clean_field] > num_of_role:
                         msg = 'you must not apply rule of %ss more than the num you declared they will be' % role
+                        logger.error(msg)
                         raise forms.ValidationError(msg)
+
+    def validate_constraints_can_be_fulfilled(self, clean_data):
+        for group in self.get_constraint_groups():
+            role = group.split('_')[0]
+            field = group.split('_')[1]
+            operation = clean_data[group + '__operation_constraint']
+            value = clean_data[group + '__value_constraint']
+            apply_on = clean_data[group + '__applyOn_constraint']
+            if not self.validate_constraint_group(role, field, operation, value, apply_on):
+                msg = 'There are not %s or more %ss whose %s are %s than/to %s' %\
+                      (apply_on, role, field, operation, value)
+                logger.error(msg)
+                raise forms.ValidationError(msg)
+
+    def validate_constraint_group(self, role, field, operation, value, apply_on):
+        if not value:
+            return True
+        if field == 'age':
+            field = 'birth_date'
+            try:
+                value = get_birth_day_from_age(int(value))
+            except OverflowError as e:
+                msg = 'age is not valid: ' + e.message
+                logger.error(msg)
+                raise forms.ValidationError(msg)
+            operation = self.swap_op(operation)
+        if operation == 'eq':
+            operation = 'exact'
+        lookup = '%s__%s' % (field, operation)
+        role_reverse = dict((v, k) for k, v in EmployeeProfile.ROLE_CHOICES)
+        filtered_emps = EmployeeProfile.objects\
+            .filter(**{'business__business_name': self.business.business_name, 'role': role_reverse[role.title()],
+                       lookup: value})
+        return len(filtered_emps) >= apply_on
+
+    @staticmethod
+    def swap_op(op):
+        if op == 'lte':
+            return 'gte'
+        elif op == 'gte':
+            return 'lte'
+        return op
+
+    @staticmethod
+    def extract_constraint_parts(constraint_data):
+        constraint_splitted = constraint_data.split('__')
+        role_and_field = constraint_splitted[0]
+        part = constraint_splitted[1].split('_')[0]
+        role = role_and_field.split('_')[0]
+        field = role_and_field.split('_')[1]
+        return role, field, part
+
+    @staticmethod
+    def validate_end_after_start(clean_data):
         end_hour = clean_data['end_hour']
         start_hour = clean_data['start_hour']
         if end_hour < start_hour:
             msg = 'end hour (%s) is not later than start_hour (%s)' % (end_hour, start_hour)
             raise forms.ValidationError(msg)
-    # TODO if value has added - apply_on&op mustn't be empty and vice versa
-        for group in self.get_constraint_groups():
-            group_list = [val for key, val in clean_data.iteritems() if group in key and 'desc' not in key and
-                          'gender__operation' not in key]
-            if not self.validate_all_none_or_not_none(group_list):
-                msg = 'you cannot leave parts of %s constraint empty' % group
-                raise forms.ValidationError(msg)
-    # TODO also it's possible to check emp values to identify bigger than max / smaller than min cases
+
+    @staticmethod
+    def validate_all_none_or_not_none(elements):
+
+        none_list = [None, '']
+        return all([(elem in none_list) for elem in elements]) or\
+            all([(elem not in none_list) for elem in elements])
+
+    @staticmethod
+    def remove_duplicates(seq):
+        seen = set()
+        seen_add = seen.add
+        return [x for x in seq if not (x in seen or seen_add(x))]

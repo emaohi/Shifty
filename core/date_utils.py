@@ -46,6 +46,10 @@ def get_date(year, day, week):
     return date
 
 
+def get_birth_day_from_age(age):
+    return datetime.datetime.now() - datetime.timedelta(days=age*365)
+
+
 def get_current_deadline_date(day_of_week):
     is_sunday = True if day_of_week == 1 else False
     r_date = get_date(get_curr_year(), day_of_week,
