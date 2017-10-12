@@ -50,6 +50,10 @@ def get_birth_day_from_age(age):
     return datetime.datetime.now() - datetime.timedelta(days=age*365)
 
 
+def get_started_month_from_month_amount(month_cnt):
+    return datetime.date.today() - datetime.timedelta(month_cnt*365/12)
+
+
 def get_current_deadline_date(day_of_week):
     is_sunday = True if day_of_week == 1 else False
     r_date = get_date(get_curr_year(), day_of_week,

@@ -6,7 +6,7 @@ import logging
 from django import forms
 from django.forms import TextInput
 
-from core.date_utils import get_birth_day_from_age
+from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount
 from core.models import ManagerMessage, ShiftSlot
 from log.models import EmployeeProfile
 
@@ -139,6 +139,10 @@ class ShiftSlotForm(forms.Form):
                 msg = 'age is not valid: ' + e.message
                 logger.error(msg)
                 raise forms.ValidationError(msg)
+            operation = self.swap_op(operation)
+        if field == 'months':
+            field = 'started_work_date'
+            value = get_started_month_from_month_amount(int(value))
             operation = self.swap_op(operation)
         if operation == 'eq':
             operation = 'exact'
