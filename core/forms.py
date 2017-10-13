@@ -50,6 +50,8 @@ class ShiftSlotForm(forms.Form):
 
     business = None
 
+    mandatory = forms.BooleanField(initial=False, help_text='Is this slot mandatory for your employees', required=False)
+
     def __init__(self, *args, **kwargs):
 
         self.business = kwargs.pop('business')
@@ -83,6 +85,8 @@ class ShiftSlotForm(forms.Form):
             if 'num' in name:
                 field.widget.attrs.update({'style': 'width: 450px; display: inline',
                                            'class': 'form-control attach-con'})
+            if 'mandatory' in name:
+                field.widget.attrs.update({'style': 'width: 50px; display: inline'})
         self.field_order = sorted(self.fields)
 
     def clean(self):

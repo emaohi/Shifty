@@ -9,7 +9,8 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 
 from core.date_utils import get_next_week_num, get_next_week_string, get_curr_year
 from core.models import EmployeeRequest
-from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none
+from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
+    get_color_and_title_from_slot
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback
 from .forms import *
@@ -113,7 +114,7 @@ def add_shift_slot(request):
             new_slot = ShiftSlot(business=request.user.profile.business, day=data['day'],
                                  start_hour=data['start_hour'], end_hour=data['end_hour'],
                                  constraints=json.dumps(slot_constraint_json),
-                                 week=get_next_week_num(), holiday=slot_holiday)
+                                 week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'])
             new_slot.save()
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')
@@ -155,7 +156,7 @@ def update_shift_slot(request, slot_id):
             ShiftSlot.objects.filter(id=slot_id).update(business=request.user.profile.business, day=data['day'],
                                                         start_hour=data['start_hour'], end_hour=data['end_hour'],
                                                         constraints=json.dumps(slot_constraint_json),
-                                                        week=get_next_week_num())
+                                                        is_mandatory=data['mandatory'])
             messages.success(request, 'slot updated')
             return HttpResponseRedirect('/')
         else:
@@ -165,8 +166,10 @@ def update_shift_slot(request, slot_id):
         day = int(updated_slot.day)
         start_hour = str(updated_slot.start_hour)
         end_hour = str(updated_slot.end_hour)
+        is_mandatory = updated_slot.is_mandatory
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':'),
-                                      'end_hour': end_hour.replace('-', ':')}, business=business)
+                                      'end_hour': end_hour.replace('-', ':'), 'mandatory': is_mandatory},
+                             business=business)
         return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                              'id': slot_id, 'holiday': updated_slot.holiday})
 
@@ -199,11 +202,12 @@ def get_next_week_slots(request):
     next_week_no = get_next_week_num()
     next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=curr_business)
     for slot in next_week_slots:
-        jsoned_shift = json.dumps({'id': str(slot.id), 'title': 'Shift Slot %s' % str(slot.id),
+        text_color, title = get_color_and_title_from_slot(slot)
+        jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
                                    'start': slot.start_time_str(),
                                    'end': slot.end_time_str(),
                                    'backgroundColor': '#205067',
-                                   'textColor': '#f5dd5d' if not slot.holiday else '#ff7100'})
+                                   'textColor': text_color})
         shifts_json.append(jsoned_shift)
         slot_id_to_constraints_dict[slot.id] = slot.constraints
     shifts_json.append(json.dumps(slot_id_to_constraints_dict))

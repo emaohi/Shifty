@@ -37,7 +37,7 @@
 {% block content %}
     {% if form.errors %}
         <div class="alert alert-danger">
-            <strong>{{ form.non_field_errors }}</strong>
+            <strong>{{ form.errors }}</strong>
         </div>
     {% endif %}
 
@@ -61,6 +61,7 @@
                                 {% if 'constraint' not in field.name %}
                                     <p>
                                         <label><b>{{ field.label }}</b></label> {{ field }}
+                                        <small>{{ field.help_text }}</small>
                                     </p>
                                 {% endif %}
                             {% endfor %}

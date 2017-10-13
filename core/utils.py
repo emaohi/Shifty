@@ -110,3 +110,13 @@ def get_holiday_or_none(year, day, week):
     except ObjectDoesNotExist:
         slot_holiday = None
     return slot_holiday
+
+
+def get_color_and_title_from_slot(slot):
+    is_regular = 'Regular' if not (slot.is_mandatory or slot.holiday) else ''
+    mandatory = 'Mandatory' if slot.is_mandatory else ''
+    is_holiday = 'holiday' if slot.holiday else ''
+    title = '%s%s%s Shift slot (%s)' % (is_regular, mandatory, is_holiday, slot.id)
+    text_color = '#f5dd5d' if not (slot.is_mandatory or slot.holiday) else '#ff0000'
+
+    return text_color, title
