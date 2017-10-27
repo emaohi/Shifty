@@ -113,8 +113,8 @@ def add_shift_slot(request):
             start_hour = data['start_hour']
             end_hour = data['end_hour']
 
-            if data['save_as']:
-                name = data['save_as']
+            if not data['name']:
+                name = data.get('save_as', None)
 
                 slot_constraint_json = create_constraint_json_from_form(data)
 
@@ -123,11 +123,12 @@ def add_shift_slot(request):
                 new_slot = ShiftSlot(business=request.user.profile.business, day=day,
                                      start_hour=start_hour, end_hour=end_hour,
                                      constraints=json.dumps(slot_constraint_json),
-                                     week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'],
-                                     name=name)
+                                     week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'])
+                if name:
+                    new_slot.name = name
                 new_slot.save()
 
-                if name != 'Custom':
+                if name and name != 'Custom':
                     handle_named_slot(business, name)
             else:
                 new_name = data['name']

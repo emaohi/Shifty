@@ -29,7 +29,7 @@ class ShiftSlotForm(forms.Form):
     start_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
     end_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
 
-    name = forms.ChoiceField(choices=('', 'Choose name'))
+    name = forms.ChoiceField(choices=('', 'Choose name'), required=False)
 
     # constraints
     num_of_waiters = forms.IntegerField(initial=1)
@@ -59,7 +59,7 @@ class ShiftSlotForm(forms.Form):
     def __init__(self, *args, **kwargs):
 
         self.business = kwargs.pop('business')
-        self.slot_names = kwargs.pop('names')
+        self.slot_names = kwargs.pop('names', (()))
 
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 

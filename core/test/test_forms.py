@@ -32,6 +32,8 @@ class ShiftSlotFormTest(TestCase):
 
     def test_no_constraints_should_be_valid(self):
         form = ShiftSlotForm(self.dummy_slot, business=Business.objects.get(business_name='dummy'))
+        if not form.is_valid():
+            print form.errors
         self.assertTrue(form.is_valid())
 
     def test_enough_males_should_success(self):
