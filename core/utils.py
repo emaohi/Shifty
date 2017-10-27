@@ -7,8 +7,8 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
-from core.date_utils import get_date, get_curr_year
-from core.models import ManagerMessage, EmployeeRequest, Holiday
+from core.date_utils import get_date, get_curr_week_num
+from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot
 from Shifty.utils import send_multiple_mails_with_html
 
 logger = logging.getLogger('cool')
@@ -110,3 +110,26 @@ def get_holiday_or_none(year, day, week):
     except ObjectDoesNotExist:
         slot_holiday = None
     return slot_holiday
+
+
+def get_color_and_title_from_slot(slot):
+    is_regular = 'Regular' if not (slot.is_mandatory or slot.holiday) else ''
+    mandatory = 'Mandatory' if slot.is_mandatory else ''
+    is_holiday = 'holiday' if slot.holiday else ''
+    title = '%s%s%s Shift slot (%s)' % (is_regular, mandatory, is_holiday, slot.id)
+    text_color = '#f5dd5d' if not (slot.is_mandatory or slot.holiday) else '#ff0000'
+
+    return text_color, title
+
+
+def duplicate_favorite_slot(business, name):
+    template_slot = ShiftSlot.objects.filter(business=business, name=name).first()
+    template_slot.id = None
+    template_slot.save()
+    return template_slot
+
+
+def handle_named_slot(business, name):
+    pinned_slot = duplicate_favorite_slot(business, name)
+    pinned_slot.week = get_curr_week_num() - 5
+    pinned_slot.save()

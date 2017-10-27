@@ -1,9 +1,7 @@
+$(document).ready(function () {
 
-
-$(document).ready(function() {
-
-    setTimeout(function(){
-      $('.alert').hide()
+    setTimeout(function () {
+        $('.alert').hide()
     }, 3000);
 
     getSlotsStatus(); // this will whether populate or not the next week div
@@ -13,12 +11,12 @@ $(document).ready(function() {
         $("a[href='" + location.hash + "']").tab("show");
     }
     $.ajax({
-      url: next_slots_url, //from template
-      type: "get", //send it through get method,
-      success: display_cal,
-      error: function(xhr) {
-        //Do Something to handle error
-      }
+        url: next_slots_url, //from template
+        type: "get", //send it through get method,
+        success: display_cal,
+        error: function (xhr) {
+            //Do Something to handle error
+        }
     });
 
     $('.edit-slot').click(function () {
@@ -31,7 +29,7 @@ $(document).ready(function() {
         deleteSlot(shiftId);
     });
 
-    $(document.body).on("click", "a[data-toggle]", function(event) {
+    $(document.body).on("click", "a[data-toggle]", function (event) {
         location.hash = this.getAttribute("href");
     });
 
@@ -55,36 +53,36 @@ $(document).ready(function() {
         updateFinishedSlots(false);
     });
 });
-$(window).on("popstate", function() {
+$(window).on("popstate", function () {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
     $("a[href='" + anchor + "']").tab("show");
 });
 
-function updateFinishedSlots(isFinished){
+function updateFinishedSlots(isFinished) {
     $.ajax({
-      url: finish_slots_url, //from template
-      type: "post", //send it through get method,
-      data: {
-          isFinished: isFinished
-      },
-      headers: {
-          'X-CSRFToken': csrf_token
-      },
-      success: getSlotsStatus,
-      error: function(xhr) {
-          alert("something fishy: " + xhr);
-      }
+        url: finish_slots_url, //from template
+        type: "post", //send it through get method,
+        data: {
+            isFinished: isFinished
+        },
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: getSlotsStatus,
+        error: function (xhr) {
+            alert("something fishy: " + xhr);
+        }
     });
 }
 
-function getSlotsStatus(){
+function getSlotsStatus() {
     $.ajax({
-      url: finish_slots_url, //from template
-      type: "get",
-      success: finishSlots,
-      error: function(xhr) {
-          alert("something fishy: " + xhr);
-      }
+        url: finish_slots_url, //from template
+        type: "get",
+        success: finishSlots,
+        error: function (xhr) {
+            alert("something fishy: " + xhr);
+        }
     });
 }
 
@@ -94,7 +92,7 @@ function finishSlots(isFinished) {
         $('#calDiv').addClass("disabledbutton");
         $('#finishSlots').hide();
         $('#slotMsg').show();
-    } else{
+    } else {
         $('#calDiv').removeClass("disabledbutton");
         $('#finishSlots').show();
         $('#slotMsg').hide();
@@ -109,50 +107,50 @@ function spin_instead_of_btn($btn) {
 
 function handle_request(new_status, request_id) {
     $.ajax({
-      url: handle_emp_request_url,
-      type: "post", //send it through get method
-      data: {
-        emp_request_id: request_id,
-        new_status: new_status
-      },
-      headers: {
-          'X-CSRFToken': csrf_token
-      },
-      success: function(response){
-                window.location.reload();
-            }
+        url: handle_emp_request_url,
+        type: "post", //send it through get method
+        data: {
+            emp_request_id: request_id,
+            new_status: new_status
+        },
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: function (response) {
+            window.location.reload();
+        }
     });
 }
 
 function deleteSlot(shiftId) {
     $.ajax({
-      url: delete_slot_url,
-      type: "post", //send it through get method
-      data: {
-          slot_id: shiftId
-      },
-      headers: {
-          'X-CSRFToken': csrf_token
-      },
-      success: function(response){
-                window.location.reload();
-            }
+        url: delete_slot_url,
+        type: "post", //send it through get method
+        data: {
+            slot_id: shiftId
+        },
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: function (response) {
+            window.location.reload();
+        }
     });
 }
 
-function display_cal(event_list){
+function display_cal(event_list) {
 
     var id_to_constraint_json = JSON.parse(event_list.pop());
 
     var r_list = [];
-    for (var i=0; i < event_list.length; i++){
+    for (var i = 0; i < event_list.length; i++) {
         r_list.push(JSON.parse(event_list[i]));
     }
 
-     $('#calDiv').easycal({
+    $('#calDiv').easycal({
 
-        minTime : '06:00:00',
-        maxTime : '23:59:00',
+        minTime: '06:00:00',
+        maxTime: '23:59:00',
         timeGranularity: 30,
         slotDuration : 60,
         startDate : start_date,
@@ -161,11 +159,11 @@ function display_cal(event_list){
             var d = toDate(dateStr);
             window.location.href = getNewShiftUrl(d.getDay(), startTime);
         },
-        eventClick : function(shiftId){
+        eventClick: function (shiftId) {
             showSlotDetails(shiftId, JSON.parse(id_to_constraint_json[shiftId]));
         },
-        events : r_list
-     });
+        events: r_list
+    });
 }
 
 function showSlotDetails(shiftId, constraints_json){
@@ -188,8 +186,8 @@ function listifyConstraintJson(constraints_json) {
         console.log('curr constraints are ' + JSON.stringify(constraints));
         $.each(constraints, function (field, field_json) {
             console.log('field before is ' + field);
-            if(field != 'num') {
-                console.log('field is '+ field);
+            if (field != 'num') {
+                console.log('field is ' + field);
                 $conList += '<li class="list-group-item">' + make_sentence(field, field_json) + '</li>';
             }
         });
@@ -207,11 +205,11 @@ function make_sentence(field, field_json) {
     var sentence_dict = {'lte': 'less than ', 'gte': 'more than ', 'eq': 'equals to '};
     var gender_dict = {'M': 'Male', 'F': 'Female'};
     var val = '';
-    if (field !='gender') {
+    if (field != 'gender') {
         val = field_json['val'];
-    }else{
-         val = gender_dict[field_json['val']];
-        }
+    } else {
+        val = gender_dict[field_json['val']];
+    }
     return 'The ' + field + ' of at least ' + field_json['apply_on'] + ' employees needs to be ' +
         sentence_dict[field_json['op']] + val;
 }
@@ -240,7 +238,7 @@ function populateTimerDiv() {
                 + '<span>%S</span> seconds ')
             );
         });
-    }else{
+    } else {
         $('#timerH').text('Time for shift requests is over !');
     }
 }

@@ -51,14 +51,12 @@ class Business(models.Model):
         return self.employeeprofile_set.all()
 
 
-# noinspection PyTypeChecker
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     phone_regex = RegexValidator(regex=r'^05\d{1}-\d{7}$',
                                  message="Wrong phone number format.")
     phone_num = models.CharField(validators=[phone_regex], blank=True, max_length=16)  # validators should be a list
-    # phone_num = models.CharField(max_length=30, blank=True)
     home_address = models.CharField(max_length=30, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     started_work_date = models.DateField(null=True, blank=True)

@@ -2,6 +2,10 @@ machine:
   environment:
     DJANGO_SETTINGS_MODULE: settings.circle
 
+test:
+  pre:
+    - python manage.py migrate
+
 deployment:
   staging:
     branch: master

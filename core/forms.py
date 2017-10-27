@@ -6,7 +6,7 @@ import logging
 from django import forms
 from django.forms import TextInput
 
-from core.date_utils import get_birth_day_from_age
+from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount
 from core.models import ManagerMessage, ShiftSlot
 from log.models import EmployeeProfile
 
@@ -29,6 +29,8 @@ class ShiftSlotForm(forms.Form):
     start_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
     end_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
 
+    name = forms.ChoiceField(choices=('', 'Choose name'), required=False)
+
     # constraints
     num_of_waiters = forms.IntegerField(initial=1)
     num_of_bartenders = forms.IntegerField(initial=1)
@@ -48,13 +50,22 @@ class ShiftSlotForm(forms.Form):
 
     roles = ['waiter', 'bartender', 'cook']
 
-    business = None
+    # slot_name = None
+    # business = None
+
+    mandatory = forms.BooleanField(initial=False, help_text='Is this slot mandatory for your employees', required=False)
+    save_as = forms.CharField(required=False, help_text=' Optional: save this slot with name')
 
     def __init__(self, *args, **kwargs):
 
         self.business = kwargs.pop('business')
+        self.slot_names = kwargs.pop('names', (()))
 
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
+
+        self.fields["name"].choices = self.slot_names
+        self.fields["name"].choices.append(('Custom', '---'))
+        self.fields["name"].initial = 'Custom'
 
         field_to_vals = {'age': forms.IntegerField(required=False,
                                                    widget=forms.NumberInput(attrs={'placeholder': 'Age'})),
@@ -83,6 +94,8 @@ class ShiftSlotForm(forms.Form):
             if 'num' in name:
                 field.widget.attrs.update({'style': 'width: 450px; display: inline',
                                            'class': 'form-control attach-con'})
+            if 'mandatory' in name:
+                field.widget.attrs.update({'style': 'width: 50px; display: inline'})
         self.field_order = sorted(self.fields)
 
     def clean(self):
@@ -139,6 +152,10 @@ class ShiftSlotForm(forms.Form):
                 msg = 'age is not valid: ' + e.message
                 logger.error(msg)
                 raise forms.ValidationError(msg)
+            operation = self.swap_op(operation)
+        if field == 'months':
+            field = 'started_work_date'
+            value = get_started_month_from_month_amount(int(value))
             operation = self.swap_op(operation)
         if operation == 'eq':
             operation = 'exact'

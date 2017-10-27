@@ -31,13 +31,19 @@
         .modal-body .form-horizontal .col-sm-offset-2 {
             margin-left: 15px;
         }
+
+        .hideDiv {
+            display: none;
+            margin-top: 20px;
+        }
+
     </style>
 {% endblock %}
 
 {% block content %}
     {% if form.errors %}
         <div class="alert alert-danger">
-            <strong>{{ form.non_field_errors }}</strong>
+            <strong>{{ form.errors }}</strong>
         </div>
     {% endif %}
 
@@ -58,12 +64,44 @@
                         <form action="." method="post" id="theForm" novalidate>
                             {% csrf_token %}
                             {% for field in form %}
-                                {% if 'constraint' not in field.name %}
+                                {% if 'day' in field.name or 'hour' in field.name %}
                                     <p>
                                         <label><b>{{ field.label }}</b></label> {{ field }}
+                                        <small>{{ field.help_text }}</small>
                                     </p>
+                                    {% if 'end_' in field.name %}
+                                        <hr>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
+                            <div class="row">
+                                <div class="col-sm-4 col-sm-offset-2">
+                                    <button id="savedBtn" type="button" class="btn btn-primary btn-lg btn-block">Saved shift slot</button>
+                                </div>
+                                <div class="col-sm-4">
+                                    <button id="customBtn" type="button" class="btn btn-success btn-lg btn-block">Custom shift slot</button>
+                                </div>
+                            </div>
+                            <div id="customShiftDiv" class="hideDiv">
+                                {% for field in form %}
+                                    {% if 'num' in field.name or 'mandatory' in field.name or 'save' in field.name %}
+                                        <p>
+                                            <label><b>{{ field.label }}</b></label> {{ field }}
+                                            <small>{{ field.help_text }}</small>
+                                        </p>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div id="savedShiftDiv" class="hideDiv">
+                                {% for field in form %}
+                                    {% if 'name' in field.name %}
+                                        <p>
+                                            <label><b>{{ field.label }}</b></label> {{ field }}
+                                            <small>{{ field.help_text }}</small>
+                                        </p>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                             <hr>
                             <div class="text-center">
                                 <input type="submit" class="btn btn-info btn-lg" value="Submit">
@@ -93,37 +131,37 @@
 
                 <!-- Modal Body -->
                 <div class="modal-body">
-                {% for group in form.get_constraint_groups %}
+                    {% for group in form.get_constraint_groups %}
                         <div class="row">
                             <p>
-                                <div class="form-group modal-form-here">
-                                    {% for cont_field in form %}
-                                        {% if group in cont_field.name  %}
-                                            <div class="col-sm-3">
-                                                {{ cont_field }}
-                                            </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
+                            <div class="form-group modal-form-here">
+                                {% for cont_field in form %}
+                                    {% if group in cont_field.name %}
+                                        <div class="col-sm-3">
+                                            {{ cont_field }}
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
                             </p>
                         </div>
-                {% endfor %}
+                    {% endfor %}
                 </div>
 
-                    <!-- Modal Footer -->
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" id="removeModalFields"
-                                data-dismiss="modal">
-                            Close
-                        </button>
-                        <button type="button" class="btn btn-primary"
-                                data-dismiss="modal">
-                            Save changes
-                        </button>
-                    </div>
+                <!-- Modal Footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="removeModalFields"
+                            data-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="button" class="btn btn-primary"
+                            data-dismiss="modal">
+                        Save changes
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
     </div>
 {% endblock %}
 

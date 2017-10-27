@@ -87,6 +87,10 @@ class ShiftSlot(models.Model):
 
     holiday = models.ForeignKey(Holiday, blank=True, null=True)
 
+    is_mandatory = models.BooleanField(default=False)
+
+    name = models.CharField(blank=True, null=True, default='Custom', max_length=30)
+
     def __str__(self):
         return 'Shift slot - day: %s, start: %s, end: %s' % (self.day, str(self.start_hour), str(self.end_hour))
 
