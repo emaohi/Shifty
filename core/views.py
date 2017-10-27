@@ -10,7 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from core.date_utils import get_next_week_num, get_next_week_string, get_curr_year
 from core.models import EmployeeRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot
+    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback
 from .forms import *
@@ -101,21 +101,39 @@ def broadcast_message(request):
 def add_shift_slot(request):
 
     business = request.user.profile.business
+    slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
+                  .values('name').distinct() if t['name'] != 'Custom']
 
     if request.method == 'POST':
 
-        slot_form = ShiftSlotForm(request.POST, business=business)
+        slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
         if slot_form.is_valid():
             data = slot_form.cleaned_data
-            slot_constraint_json = create_constraint_json_from_form(data)
+            day = data['day']
+            start_hour = data['start_hour']
+            end_hour = data['end_hour']
 
-            slot_holiday = get_holiday_or_none(get_curr_year(), data['day'], get_next_week_num())
+            if data['save_as']:
+                name = data['save_as']
 
-            new_slot = ShiftSlot(business=request.user.profile.business, day=data['day'],
-                                 start_hour=data['start_hour'], end_hour=data['end_hour'],
-                                 constraints=json.dumps(slot_constraint_json),
-                                 week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'])
-            new_slot.save()
+                slot_constraint_json = create_constraint_json_from_form(data)
+
+                slot_holiday = get_holiday_or_none(get_curr_year(), data['day'], get_next_week_num())
+
+                new_slot = ShiftSlot(business=request.user.profile.business, day=day,
+                                     start_hour=start_hour, end_hour=end_hour,
+                                     constraints=json.dumps(slot_constraint_json),
+                                     week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'],
+                                     name=name)
+                new_slot.save()
+
+                if name != 'Custom':
+                    handle_named_slot(business, name)
+            else:
+                new_name = data['name']
+                cloned_slot = duplicate_favorite_slot(business, new_name)
+                ShiftSlot.objects.filter(id=cloned_slot.id).update(day=day, week=get_next_week_num(),
+                                                                   start_hour=start_hour, end_hour=end_hour)
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')
         else:
@@ -129,7 +147,8 @@ def add_shift_slot(request):
 
         slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
 
-        form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business)
+        form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
+                             names=((name, name) for name in slot_names))
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                           'holiday': slot_holiday})
 

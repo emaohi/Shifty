@@ -9,6 +9,6 @@ admin.site.register(Business, BusinessAdmin)
 
 
 class EmployeeProfileAdmin(admin.ModelAdmin):
-    list_display = ("user", "business", "role", "phone_num")
+    list_display = ("user", "business", "role", "phone_num", "enable_mailing")
 
 admin.site.register(EmployeeProfile, EmployeeProfileAdmin)

@@ -29,6 +29,8 @@ class ShiftSlotForm(forms.Form):
     start_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
     end_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
 
+    name = forms.ChoiceField(choices=('', 'Choose name'))
+
     # constraints
     num_of_waiters = forms.IntegerField(initial=1)
     num_of_bartenders = forms.IntegerField(initial=1)
@@ -48,15 +50,22 @@ class ShiftSlotForm(forms.Form):
 
     roles = ['waiter', 'bartender', 'cook']
 
-    business = None
+    # slot_name = None
+    # business = None
 
     mandatory = forms.BooleanField(initial=False, help_text='Is this slot mandatory for your employees', required=False)
+    save_as = forms.CharField(required=False, help_text=' Optional: save this slot with name')
 
     def __init__(self, *args, **kwargs):
 
         self.business = kwargs.pop('business')
+        self.slot_names = kwargs.pop('names')
 
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
+
+        self.fields["name"].choices = self.slot_names
+        self.fields["name"].choices.append(('Custom', '---'))
+        self.fields["name"].initial = 'Custom'
 
         field_to_vals = {'age': forms.IntegerField(required=False,
                                                    widget=forms.NumberInput(attrs={'placeholder': 'Age'})),

@@ -47,11 +47,13 @@
         .tab-content > .active {
             display: block;
         }
+
         .disabledbutton {
             pointer-events: none;
             opacity: 0.5;
 
         }
+
         .btn-group, h3 {
             display: inline-block;
         }
@@ -171,10 +173,12 @@
                             <div class="col-md-7 col-md-offset-2">
 
                                 <button id="finishSlots" type="submit" class="btn btn-xl btn-primary">
-                                    Finish and start countdown</button>
+                                    Finish and notify employees
+                                </button>
 
                                 <div id="slotMsg" style="display: none">
-                                    <h3>Employees shift requests submission is <strong style="color: green">enabled</strong> </h3>
+                                    <h3>Employees shift requests submission is <strong
+                                            style="color: green">enabled</strong></h3>
                                     <span class="btn-group">
                                         <button class="btn btn-warning" id="resetSlots">Reset slots</button>
                                     </span>
@@ -197,7 +201,7 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Constraints Modal -->
     <div class="modal fade" id="constraintModal" role="dialog">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">

@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group
 
 from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date
+from core.models import ShiftSlot
 from core.utils import *
 from forms import *
 from log.models import EmployeeProfile
