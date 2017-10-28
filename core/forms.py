@@ -6,7 +6,7 @@ import logging
 from django import forms
 from django.forms import TextInput
 
-from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount
+from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount, get_next_week_num
 from core.models import ManagerMessage, ShiftSlot
 from log.models import EmployeeProfile
 
@@ -105,6 +105,7 @@ class ShiftSlotForm(forms.Form):
         self.validate_end_after_start(clean_data)
         self.validate_no_partial_empty_constraints(clean_data)
         self.validate_constraints_can_be_fulfilled(clean_data)
+        self.validate_slot_not_overlaping(clean_data)
 
     def validate_no_partial_empty_constraints(self, clean_data):
         for group in self.get_constraint_groups():
@@ -165,6 +166,38 @@ class ShiftSlotForm(forms.Form):
             .filter(**{'business__business_name': self.business.business_name, 'role': role_reverse[role.title()],
                        lookup: value})
         return len(filtered_emps) >= apply_on
+
+    @staticmethod
+    def validate_slot_not_overlaping(clean_data):
+        next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), day=clean_data['day'])\
+            .order_by('start_hour')
+        if not next_week_slots:
+            return
+        ordered_start_time = next_week_slots.order_by('start_hour')
+        ordered_end_time = next_week_slots.order_by('end_hour')
+        if list(ordered_start_time) != list(ordered_end_time):
+            raise forms.ValidationError('weird error: slot not ok even before your slot :( check them')
+
+        sorted_start_times = [slot.start_hour for slot in ordered_start_time]
+        sorted_end_times = [slot.end_hour for slot in ordered_end_time]
+        if clean_data['start_hour'] in sorted_start_times or clean_data['end_hour'] in sorted_end_times:
+            raise forms.ValidationError('slot overlap')
+
+        sorted_start_times.append(clean_data['start_hour'])
+        sorted_start_times.sort()
+        sorted_end_times.append(clean_data['end_hour'])
+        sorted_end_times.sort()
+
+        curr_start_index = sorted_start_times.index(clean_data['start_hour'])
+        curr_end_index = sorted_end_times.index(clean_data['end_hour'])
+        if curr_start_index != curr_end_index:
+            raise forms.ValidationError('slot overlap')
+
+        curr_index = curr_start_index
+        if (curr_index != 0 and sorted_start_times[curr_index] < sorted_end_times[curr_index - 1])\
+                or (curr_index != len(sorted_start_times) - 1 and
+                    sorted_end_times[curr_index] > sorted_start_times[curr_index + 1]):
+                raise forms.ValidationError('slot overlap')
 
     @staticmethod
     def swap_op(op):

@@ -18,21 +18,21 @@ class ShiftSlotModelTest(TestCase):
                                  start_hour='12:00:00', end_hour='13:00:00')
 
     def test_slot_to_string_looks_correctly(self):
-        slot = ShiftSlot.objects.get(id=1)
+        slot = ShiftSlot.objects.get(year='2016')
         expected_to_str = 'Shift slot - day: 1, start: 12:00:00, end: 13:00:00'
         self.assertEqual(expected_to_str, str(slot))
 
     def test_should_return_correct_date_string(self):
-        slot = ShiftSlot.objects.get(id=1)
+        slot = ShiftSlot.objects.get(year='2016')
         expected_date_str = '03-01-2016'
         self.assertEqual(expected_date_str, slot.get_date())
 
     def test_should_fail_if_slot_is_not_next_week(self):
-        slot = ShiftSlot.objects.get(id=1)
+        slot = ShiftSlot.objects.get(year='2016')
         self.assertFalse(slot.is_next_week())
 
     def test_should_succeed_if_slot_is_next_week(self):
         ShiftSlot.objects.create(business=self.test_business, year=get_curr_year(), week=get_next_week_num(),
-                                 day='1', start_hour='12:00:00', end_hour='13:00:00')
-        slot = ShiftSlot.objects.get(id=2)
+                                 day='1', start_hour='12:30:00', end_hour='13:00:00')
+        slot = ShiftSlot.objects.get(start_hour='12:30:00')
         self.assertTrue(slot.is_next_week())

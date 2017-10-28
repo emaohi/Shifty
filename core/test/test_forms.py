@@ -1,7 +1,11 @@
 import datetime
+
+from django.contrib.auth.models import User
 from django.test import TestCase
 
+from core.date_utils import get_next_week_num
 from core.forms import ShiftSlotForm
+from core.models import ShiftSlot
 from core.test.test_helpers import create_new_employee, create_manager_and_employee_groups
 from log.models import Business, EmployeeProfile
 
@@ -63,3 +67,8 @@ class ShiftSlotFormTest(TestCase):
         form = ShiftSlotForm(self.dummy_slot, business=Business.objects.get(business_name='dummy'))
         self.assertFalse(form.is_valid())
 
+    def test_overlap_slots_should_fail(self):
+        ShiftSlot.objects.create(business=Business.objects.get(business_name='dummy'), week=get_next_week_num(),
+                                 day='3', start_hour='12:00:00', end_hour='13:00:00')
+        form = ShiftSlotForm(self.dummy_slot, business=Business.objects.get(business_name='dummy'))
+        self.assertFalse(form.is_valid())
