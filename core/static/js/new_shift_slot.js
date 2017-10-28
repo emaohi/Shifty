@@ -29,10 +29,14 @@ $(document).ready(function () {
     $("#savedBtn").click(function () {
         $("#savedShiftDiv").show();
         $("#customShiftDiv").hide();
+
+        $("#submitSlot").show();
     });
     $("#customBtn").click(function () {
         $("#customShiftDiv").show();
         $("#savedShiftDiv").hide();
+
+        $("#submitSlot").show();
     });
 });
 
