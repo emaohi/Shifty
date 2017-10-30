@@ -57,6 +57,18 @@
         .btn-group, h3 {
             display: inline-block;
         }
+        .legend {
+            background-color: #205067;
+            padding: 3px;
+            border-radius: 5px;
+        }
+        .legend1 {
+            color: #ff0000;
+        }
+        .legend2 {
+            color: #f5dd5d;
+        }
+
     </style>
 {% endblock %}
 
@@ -170,23 +182,30 @@
                 <div id="next" class="tab-pane fade" style="margin-top: 20px">
                     <div class="container">
                         <div class="row">
-                            <div class="col-md-7 col-md-offset-2">
+                            <div class="col-sm-5 col-sm-offset-4">
 
-                                <button id="finishSlots" type="submit" class="btn btn-xl btn-primary">
+                                <button id="finishSlots" type="submit" class="btn btn-lg btn-success">
                                     Finish and notify employees
                                 </button>
 
                                 <div id="slotMsg" style="display: none">
-                                    <h3>Employees shift requests submission is <strong
-                                            style="color: green">enabled</strong></h3>
-                                    <span class="btn-group">
+                                    <h4>shift requests submission is <strong
+                                            style="color: green">enabled</strong>
                                         <button class="btn btn-warning" id="resetSlots">Reset slots</button>
-                                    </span>
+                                    </h4>
                                 </div>
 
                             </div>
                             <div class="col-md-2">
                                 <small id="timerH"></small>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-top: 20px">
+                            <div class="col-sm-2 col-sm-offset-4">
+                                <span class="legend legend1">Mandatory / Holiday slot</span>
+                            </div>
+                            <div class="col-sm-2">
+                                <span class="legend legend2">Regular slot</span>
                             </div>
                         </div>
                         <div class="row" style="margin-top: 20px">
