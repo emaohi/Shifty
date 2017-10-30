@@ -26,8 +26,8 @@ class BroadcastMessageForm(forms.ModelForm):
 
 class ShiftSlotForm(forms.Form):
     day = forms.ChoiceField(choices=ShiftSlot.DAYS_OF_WEEK)
-    start_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
-    end_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}))
+    start_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}), initial='06:00')
+    end_hour = forms.TimeField(widget=forms.DateInput(attrs={'type': 'time'}), initial='23:59')
 
     name = forms.ChoiceField(choices=('', 'Choose name'), required=False)
 
@@ -64,8 +64,8 @@ class ShiftSlotForm(forms.Form):
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 
         self.fields["name"].choices = self.slot_names
-        self.fields["name"].choices.append(('Custom', '---'))
-        self.fields["name"].initial = 'Custom'
+        self.fields["name"].choices.append(('init', '---'))
+        self.fields["name"].initial = 'init'
 
         field_to_vals = {'age': forms.IntegerField(required=False,
                                                    widget=forms.NumberInput(attrs={'placeholder': 'Age'})),

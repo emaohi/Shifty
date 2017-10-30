@@ -113,7 +113,7 @@ def add_shift_slot(request):
             start_hour = data['start_hour']
             end_hour = data['end_hour']
 
-            if data['name'] is not 'Custom':
+            if data['name'] == '':
                 name = data.get('save_as', None)
 
                 slot_constraint_json = create_constraint_json_from_form(data)
