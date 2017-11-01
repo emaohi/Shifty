@@ -1,155 +1,204 @@
-
 {% load static %}
 
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        {% block title %}
-        {% endblock %}
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+    {% endblock %}
 
-        <!-- Core CSS - Include with every page -->
-{#        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">#}
-        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-        <link href="{% static 'css/easycal.css' %}" rel="stylesheet">
-        <link rel="shortcut icon" href="{% static 'imgs/favicon.ico' %} }"/>
-
-
-        <!-- Core Scripts - Include with every page -->
-{#        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
-        <script src = "{% static 'js/jquery.min.js' %}"></script>
-        <script src="https://code.jquery.com/ui/1.12.0-rc.2/jquery-ui.min.js"></script>
-{#        <script src = "{% static 'js/bootstrap.min.js' %}"></script>#}
-        <script src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-        <script src="https://use.fontawesome.com/f24a4ddffc.js"></script>
-
-        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
-        {% block javascript %}
-        {% endblock %}
+    <!-- Core CSS - Include with every page -->
+    {#        <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">#}
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/easycal.css' %}" rel="stylesheet">
+    <link rel="shortcut icon" href="{% static 'imgs/favicon.ico' %} }"/>
 
 
-        <style>
-            body{
-                background-color: #e8e8e8;
-            }
-            .panel{
-                border-width: 2px;
-            }
-            .head-custom{
-                background-color: lightblue !important;
-            }
-            a{
-                color: #1c699d;
-            }
-            .navbar-default, .navbar-brand, .dropdown-toggle{
-                    background-color: #4285F4;
-                    border-color: #4285F4;
-                    color: white !important;
-            }
-            .dateclass.placeholderclass::before{
-                width: 100%;
-                content:attr(placeholder);
-                background-color:#FFFFFF;
-            }
+    <!-- Core Scripts - Include with every page -->
+    {#        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="https://code.jquery.com/ui/1.12.0-rc.2/jquery-ui.min.js"></script>
+    {#        <script src = "{% static 'js/bootstrap.min.js' %}"></script>#}
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://use.fontawesome.com/f24a4ddffc.js"></script>
 
-            .dateclass.placeholderclass:hover::before{
-                width:0%;
-                content:"";
-            }
-            input[type=submit] {width: 15em;}
-            hr {border-width: 4px}
-            .modal-header{
-                background-color: lightcoral;
-            }
-            .paging-nav {
-              text-align: right;
-              padding-top: 2px;
-            }
+    <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "{% url 'duration_data' %}", //from template
+                type: "get", //send it through get method,
+                data: {
+                    walking: 'True',
+                    driving: 'True'
+                },
+                success: display_duration,
+                error: function (xhr) {
+                    //Do Something to handle error
+                }
+            });
+        });
+        function display_duration(durationData) {
+            var walkingText = durationData.walking;
+            var drivingText = durationData.driving;
 
-            .paging-nav a {
-              margin: auto 1px;
-              text-decoration: none;
-              display: inline-block;
-              padding: 1px 7px;
-              background: #91b9e6;
-              color: white;
-              border-radius: 3px;
-            }
-
-            .paging-nav .selected-page {
-              background: #187ed5;
-              font-weight: bold;
-            }
-
-            .paging-nav,
-            #tableData {
-              width: 400px;
-              margin: 0 auto;
-              font-family: Arial, sans-serif;
-            }
-        </style>
-        {% block style %}
-        {% endblock %}
-    </head>
-    <body>
-
-    <nav class="navbar navbar-default">
-        <div class="container-fluid">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
-                        data-target="#bs-example-navbar-collapse-1">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown">
-                        <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            {{ user.username }}
-                            <span class="caret"></span>
-                        </a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <a href="{% url 'edit_profile' %}">Edit Profile</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
-                                <a href="{% url 'edit_business' %}">Edit Business</a>
-                            </li>
-                            <li class="divider"></li>
-                            <li>
-                                <a href="{% url 'logout' %}">Logout</a>
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </nav>
-
-    {% if messages %}
-        {% for msg in messages%}
-            {% if msg.tags == 'error' %}
-                <div class="alert alert-danger">
-                    <strong>{{ msg| escape }}</strong>
-                </div>
-            {% else %}
-                <div class="alert alert-success">
-                    <strong>{{ msg| escape }}</strong>
-                </div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
-
-    {% block content %}
+            $("#duration-drive").text(drivingText);
+            $("#duration-walk").text(walkingText);
+        }
+    </script>
+    {% block javascript %}
     {% endblock %}
 
 
-    </body>
+    <style>
+        body {
+            background-color: #e8e8e8;
+        }
+
+        .panel {
+            border-width: 2px;
+        }
+
+        .head-custom {
+            background-color: lightblue !important;
+        }
+
+        a {
+            color: #1c699d;
+        }
+
+        .navbar-default, .navbar-brand, .dropdown-toggle {
+            background-color: #4285F4;
+            border-color: #4285F4;
+            color: white !important;
+        }
+
+        .dateclass.placeholderclass::before {
+            width: 100%;
+            content: attr(placeholder);
+            background-color: #FFFFFF;
+        }
+
+        .dateclass.placeholderclass:hover::before {
+            width: 0%;
+            content: "";
+        }
+
+        input[type=submit] {
+            width: 15em;
+        }
+
+        hr {
+            border-width: 4px
+        }
+
+        .modal-header {
+            background-color: lightcoral;
+        }
+
+        .paging-nav {
+            text-align: right;
+            padding-top: 2px;
+        }
+
+        .paging-nav a {
+            margin: auto 1px;
+            text-decoration: none;
+            display: inline-block;
+            padding: 1px 7px;
+            background: #91b9e6;
+            color: white;
+            border-radius: 3px;
+        }
+
+        .paging-nav .selected-page {
+            background: #187ed5;
+            font-weight: bold;
+        }
+
+        .paging-nav,
+        #tableData {
+            width: 400px;
+            margin: 0 auto;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar-text {
+            padding-right: 20px;
+        }
+
+        .duration-text {
+            color: lightgreen;
+        }
+    </style>
+    {% block style %}
+    {% endblock %}
+</head>
+<body>
+
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+                    data-target="#bs-example-navbar-collapse-1">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
+        </div>
+        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+            <ul class="nav navbar-nav navbar-right">
+                <li class="dropdown">
+                    <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        {{ user.username }}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a href="{% url 'edit_profile' %}">Edit Profile</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="{% url 'edit_business' %}">Edit Business</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="{% url 'logout' %}">Logout</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <span class="navbar-text navbar-right"><i class="fa fa-blind fa-walk fa-lg fa-inverse"></i>
+                <strong id="duration-walk" class="duration-text"></strong>
+            </span>
+            <span class="navbar-text navbar-right"><i class="fa fa-car fa-lg fa-inverse"></i>
+                <strong id="duration-drive" class="duration-text"></strong>
+            </span>
+        </div>
+    </div>
+</nav>
+
+{% if messages %}
+    {% for msg in messages %}
+        {% if msg.tags == 'error' %}
+            <div class="alert alert-danger">
+                <strong>{{ msg| escape }}</strong>
+            </div>
+        {% else %}
+            <div class="alert alert-success">
+                <strong>{{ msg| escape }}</strong>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
+
+{% block content %}
+{% endblock %}
+
+
+</body>
 </html>

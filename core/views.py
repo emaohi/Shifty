@@ -10,7 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from core.date_utils import get_next_week_num, get_next_week_string, get_curr_year
 from core.models import EmployeeRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot
+    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback
 from .forms import *
@@ -254,3 +254,28 @@ def is_finish_slots(request):
         return HttpResponse('ok')
     logger.info('returning the business finished slots status which is: %s' % curr_business.start_slot_countdown)
     return HttpResponse(curr_business.start_slot_countdown)
+
+
+@login_required(login_url='/login')
+def get_work_duration_data(request):
+    if request.method == 'GET':
+        home_address = request.user.profile.home_address
+        work_address = request.user.profile.business.address
+
+        if not home_address or not work_address:
+            return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
+
+        is_walk = request.GET.get('walking')
+        is_drive = request.GET.get('driving')
+
+        is_drive = eval(is_drive) if is_drive else True
+        is_walk = eval(is_walk) if is_walk else False
+
+        raw_distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
+
+        parsed_data = get_parsed_duration_data(raw_distance_data)
+
+        logger.info('found distance data: ' + str(parsed_data))
+        return JsonResponse(parsed_data)
+
+    return HttpResponseBadRequest('cannot get distance data with ' + request.method)
