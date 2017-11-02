@@ -150,35 +150,37 @@
             </button>
             <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
         </div>
-        <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav navbar-right">
-                <li class="dropdown">
-                    <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                        {{ user.username }}
-                        <span class="caret"></span>
-                    </a>
-                    <ul class="dropdown-menu" role="menu">
-                        <li>
-                            <a href="{% url 'edit_profile' %}">Edit Profile</a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="{% url 'edit_business' %}">Edit Business</a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="{% url 'logout' %}">Logout</a>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-            <span class="navbar-text navbar-right"><i class="fa fa-blind fa-walk fa-lg fa-inverse"></i>
-                <strong id="duration-walk" class="duration-text"></strong>
-            </span>
-            <span class="navbar-text navbar-right"><i class="fa fa-car fa-lg fa-inverse"></i>
-                <strong id="duration-drive" class="duration-text"></strong>
-            </span>
-        </div>
+        {% if user.is_authenticated %}
+            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown">
+                        <a href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                            {{ user.username }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li>
+                                <a href="{% url 'edit_profile' %}">Edit Profile</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="{% url 'edit_business' %}">Edit Business</a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="{% url 'logout' %}">Logout</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+                <span class="navbar-text navbar-right"><i class="fa fa-blind fa-walk fa-lg fa-inverse"></i>
+                    <strong id="duration-walk" class="duration-text"></strong>
+                </span>
+                <span class="navbar-text navbar-right"><i class="fa fa-car fa-lg fa-inverse"></i>
+                    <strong id="duration-drive" class="duration-text"></strong>
+                </span>
+            </div>
+        {% endif %}
     </div>
 </nav>
 
