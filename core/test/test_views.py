@@ -137,7 +137,6 @@ class AddShiftSlotViewTest(TestCase):
         self.client.login(**self.manager_credentials)
         resp = self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.assertEqual(str(resp.context['user']), self.manager_credentials['username'])
-        s = ShiftSlot.objects.get(day=self.dummy_slot['day'])
         self.assertEqual(resp.status_code, 200)
 
     def test_initial_form_exist_and_contain_initial_day_and_start_hour(self):

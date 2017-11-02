@@ -1,6 +1,5 @@
 import datetime
 
-from django.contrib.auth.models import User
 from django.test import TestCase
 
 from core.date_utils import get_next_week_num

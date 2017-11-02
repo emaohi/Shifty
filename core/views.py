@@ -7,13 +7,13 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
 
-from core.date_utils import get_next_week_num, get_next_week_string, get_curr_year
-from core.models import EmployeeRequest
+from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
+from core.forms import BroadcastMessageForm, ShiftSlotForm
+from core.models import EmployeeRequest, ShiftSlot
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback
-from .forms import *
 
 logger = logging.getLogger('cool')
 
@@ -166,13 +166,13 @@ def update_shift_slot(request, slot_id):
     business = request.user.profile.business
 
     if request.method == 'POST':
-        logger.info('in post, is is %s' % slot_id)
+        logger.info('in post, is is %s', slot_id)
         slot_form = ShiftSlotForm(request.POST, business=business)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             slot_constraint_json = create_constraint_json_from_form(data)
 
-            logger.info('new end hour is %s' % str(data['end_hour']))
+            logger.info('new end hour is %s', str(data['end_hour']))
             ShiftSlot.objects.filter(id=slot_id).update(business=request.user.profile.business, day=data['day'],
                                                         start_hour=data['start_hour'], end_hour=data['end_hour'],
                                                         constraints=json.dumps(slot_constraint_json),
@@ -182,7 +182,7 @@ def update_shift_slot(request, slot_id):
         else:
             return render(request, 'manager/new_shift.html', {'form': slot_form})
     else:  # GET
-        logger.info('in get, ID is %s' % slot_id)
+        logger.info('in get, ID is %s', slot_id)
         day = int(updated_slot.day)
         start_hour = str(updated_slot.start_hour)
         end_hour = str(updated_slot.end_hour)
@@ -205,7 +205,7 @@ def delete_slot(request):
             return HttpResponseBadRequest('<h3>this shift is not at next week</h3>')
 
         updated_slot.delete()
-        logger.info('shift slow id %s was deleted' % slot_id)
+        logger.info('shift slow id %s was deleted', slot_id)
         messages.success(request, 'slot was deleted successfully')
         return HttpResponse('ok')
 
@@ -231,7 +231,7 @@ def get_next_week_slots(request):
         shifts_json.append(jsoned_shift)
         slot_id_to_constraints_dict[slot.id] = slot.constraints
     shifts_json.append(json.dumps(slot_id_to_constraints_dict))
-    logger.debug('jsoned shifts are %s' % shifts_json)
+    logger.debug('jsoned shifts are %s', shifts_json)
     return JsonResponse(shifts_json, safe=False)
 
 
@@ -250,9 +250,9 @@ def is_finish_slots(request):
         create_manager_msg(recipients=recp, subject='Shift requests are now %s' % is_enabled, text=text,
                            wait_for_mail_results=False)
 
-        logger.info('saved business finished slots status to: %s' % curr_business.start_slot_countdown)
+        logger.info('saved business finished slots status to: %s', curr_business.start_slot_countdown)
         return HttpResponse('ok')
-    logger.info('returning the business finished slots status which is: %s' % curr_business.start_slot_countdown)
+    logger.info('returning the business finished slots status which is: %s', curr_business.start_slot_countdown)
     return HttpResponse(curr_business.start_slot_countdown)
 
 
@@ -268,8 +268,8 @@ def get_work_duration_data(request):
         is_walk = request.GET.get('walking')
         is_drive = request.GET.get('driving')
 
-        is_drive = eval(is_drive) if is_drive else True
-        is_walk = eval(is_walk) if is_walk else False
+        is_drive = is_drive == 'True' if is_drive else True
+        is_walk = is_walk == 'True' if is_walk else False
 
         raw_distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
 

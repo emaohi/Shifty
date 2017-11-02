@@ -1,20 +1,21 @@
 import traceback
 
+import logging
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
-from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, User
+from kombu.exceptions import OperationalError
 
 from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date
-from core.models import ShiftSlot
-from core.utils import *
-from forms import *
+from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
+from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
-from utils import *
 
 from Shifty.utils import must_be_manager_callback
+from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger('cool')
 
@@ -37,10 +38,10 @@ def manager_home(request):
     logger.info(next_week_date)
 
     deadline_date = get_current_deadline_date(curr_manager.business.deadline_day)
-    logger.info('deadline date is %s' % deadline_date)
+    logger.info('deadline date is %s', deadline_date)
 
     is_finish_slots = curr_manager.business.start_slot_countdown
-    logger.info('are slot adding is finished? %s' % is_finish_slots)
+    logger.info('are slot adding is finished? %s', is_finish_slots)
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
                'curr_week_str': curr_week_string, 'start_date': next_week_date,
@@ -141,7 +142,7 @@ def add_employees(request):
             mail_dics = []
             new_employee_handler = None
 
-            logger.info('Going to create %d employees' % num_of_employees)
+            logger.info('Going to create %d employees', num_of_employees)
             for i in range(num_of_employees):
                 new_employee_handler = NewEmployeeHandler(data['employee_%s_firstName' % str(i)],
                                                           data['employee_%s_lastName' % str(i)],
@@ -162,7 +163,7 @@ def add_employees(request):
                 new_employee_handler.send_new_employees_mails(mail_dics)
                 messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                      curr_business))
-            except Exception as e:
+            except OperationalError as e:
                 logger.error('sending emails failed ' + str(e.message) + str(traceback.format_exc()))
                 messages.error(request, 'failed to send mails to employees')
 

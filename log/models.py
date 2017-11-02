@@ -115,6 +115,7 @@ class EmployeeProfile(models.Model):
         return ['birth_date', 'started_work_date', 'gender', 'avg_rate']
 
 
+# pylint: disable=unused-argument,unused-variable
 @receiver(post_save, sender=User)
 def update_employee(sender, instance, created, **kwargs):
     if created:
