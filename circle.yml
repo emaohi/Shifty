@@ -5,9 +5,6 @@ machine:
 test:
   pre:
     - python manage.py migrate
-  override:
-    -pylint --disable=R,C,no-member
-    -python manage.py test
 
 deployment:
   staging:
