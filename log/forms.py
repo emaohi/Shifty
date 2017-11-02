@@ -15,7 +15,7 @@ class LoginForm(AuthenticationForm):
 class BusinessRegistrationForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('business_name', 'business_type', 'tip_method', 'deadline_day')
+        fields = ('business_name', 'business_type', 'address', 'tip_method', 'deadline_day')
 
     def __init__(self, *args, **kwargs):
         super(BusinessRegistrationForm, self).__init__(*args, **kwargs)
@@ -26,7 +26,7 @@ class BusinessRegistrationForm(forms.ModelForm):
 class BusinessEditForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('business_type', 'tip_method', 'deadline_day')
+        fields = ('address', 'business_type', 'tip_method', 'deadline_day')
         help_texts = {
             'tip_method': 'Whether your employees get their tips personally or share group tips',
             'deadline_day': 'The day until which shift requests must be submitted by your employees'
@@ -34,14 +34,8 @@ class BusinessEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BusinessEditForm, self).__init__(*args, **kwargs)
-        self.fields['business_type'].widget.attrs \
-            .update({
-            'class': 'form-control'
-        })
-        self.fields['tip_method'].widget.attrs \
-            .update({
-            'class': 'form-control'
-        })
+        for name, field in self.fields.iteritems():
+            field.widget.attrs.update({'class': 'form-control'})
 
 
 class ManagerSignUpForm(UserCreationForm):
