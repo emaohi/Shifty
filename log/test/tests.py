@@ -1,4 +1,3 @@
-import datetime
 from django.contrib.auth.models import User, Group
 from django.test import TestCase, override_settings
 
@@ -23,10 +22,7 @@ class AddEmployeesTest(TestCase):
     @override_settings(DEBUG=True)
     def test_check_new_employee_group(self):
 
-        try:
-            self.client.post('/manager/add_employees/', make_data(1), follow=True)
-        except Exception as e:
-            print str(e)
+        self.client.post('/manager/add_employees/', make_data(1), follow=True)
 
         num_results = User.objects.filter(username='RoniL').count()
 

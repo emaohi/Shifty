@@ -34,13 +34,13 @@ class BusinessEditForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BusinessEditForm, self).__init__(*args, **kwargs)
-        for name, field in self.fields.iteritems():
+        for _, field in self.fields.iteritems():
             field.widget.attrs.update({'class': 'form-control'})
 
 
 class ManagerSignUpForm(UserCreationForm):
     def __init__(self, *args, **kwargs):
-        super(UserCreationForm, self).__init__(*args, **kwargs)
+        super(ManagerSignUpForm, self).__init__(*args, **kwargs)
 
         for fieldname in ['username', 'password1', 'password2']:
             self.fields[fieldname].help_text = None

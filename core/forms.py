@@ -1,7 +1,3 @@
-import time
-
-import datetime
-
 import logging
 from django import forms
 from django.forms import TextInput
@@ -195,9 +191,9 @@ class ShiftSlotForm(forms.Form):
 
         curr_index = curr_start_index
         if (curr_index != 0 and sorted_start_times[curr_index] < sorted_end_times[curr_index - 1])\
-                or (curr_index != len(sorted_start_times) - 1 and
-                    sorted_end_times[curr_index] > sorted_start_times[curr_index + 1]):
-                raise forms.ValidationError('slot overlap')
+            or (curr_index != len(sorted_start_times) - 1 and
+                sorted_end_times[curr_index] > sorted_start_times[curr_index + 1]):
+            raise forms.ValidationError('slot overlap')
 
     @staticmethod
     def swap_op(op):
