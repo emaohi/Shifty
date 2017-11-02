@@ -5,7 +5,7 @@ machine:
 test:
   pre:
     - python manage.py migrate
-    - pylint --disable=R,C,no-member
+    - pylint --disable=R,C,no-member core log
 
 deployment:
   staging:
