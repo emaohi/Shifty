@@ -64,8 +64,8 @@ class ShiftSlotForm(forms.Form):
         super(ShiftSlotForm, self).__init__(*args, **kwargs)
 
         self.fields["name"].choices = self.slot_names
-        self.fields["name"].choices.append(('init', '---'))
-        self.fields["name"].initial = 'init'
+        self.fields["name"].choices.append(('', '---'))
+        self.fields["name"].initial = ''
 
         field_to_vals = {'age': forms.IntegerField(required=False,
                                                    widget=forms.NumberInput(attrs={'placeholder': 'Age'})),
