@@ -44,6 +44,7 @@
             var walkingText = durationData.walking;
             var drivingText = durationData.driving;
 
+            $("#etaText").text("ETAs to business:");
             $("#duration-drive").text(drivingText);
             $("#duration-walk").text(walkingText);
         }
@@ -132,6 +133,9 @@
         .duration-text {
             color: lightgreen;
         }
+        #etaText {
+            color: white;
+        }
     </style>
     {% block style %}
     {% endblock %}
@@ -178,6 +182,9 @@
                 </span>
                 <span class="navbar-text navbar-right"><i class="fa fa-car fa-lg fa-inverse"></i>
                     <strong id="duration-drive" class="duration-text"></strong>
+                </span>
+                <span class="navbar-text navbar-right">
+                    <p id="etaText"></p>
                 </span>
             </div>
         {% endif %}
