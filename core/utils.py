@@ -4,12 +4,15 @@ import datetime
 import json
 
 import logging
+
+import requests
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from core.date_utils import get_date, get_curr_week_num
 from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot
 from Shifty.utils import send_multiple_mails_with_html
+from django.conf import settings
 
 logger = logging.getLogger('cool')
 
@@ -132,3 +135,43 @@ def handle_named_slot(business, name):
     pinned_slot = duplicate_favorite_slot(business, name)
     pinned_slot.week = get_curr_week_num() - 5
     pinned_slot.save()
+
+
+def get_dist_data(home_address, work_address, is_drive, is_walk):
+    json_res = {}
+    if is_drive:
+        driving_api_url = settings.DISTANCE_URL % (home_address, work_address, 'driving', settings.DISTANCE_API_KEY)
+        json_res['driving'] = requests.get(driving_api_url)
+    if is_walk:
+        walking_api_url = settings.DISTANCE_URL % (home_address, work_address, 'walking', settings.DISTANCE_API_KEY)
+        json_res['walking'] = requests.get(walking_api_url)
+
+    return json_res
+
+
+def get_parsed_duration_data(raw_distance_response):
+    parsed_durations = {}
+    driving_duration = None
+    walking_duration = None
+    if 'driving' in raw_distance_response:
+        try:
+            driving_duration = json.loads(raw_distance_response.get('driving').text).get('rows')[0].get(
+                'elements')[0].get('duration').get('text')
+        except KeyError as e:
+            logger.warning('couldn\'t get driving duration: ' + str(e))
+            driving_duration = ''
+        finally:
+            parsed_durations['driving'] = driving_duration
+    if 'walking' in raw_distance_response:
+        try:
+            walking_duration = json.loads(raw_distance_response.get('walking').text).get('rows')[0].get(
+                'elements')[0].get('duration').get('text')
+        except KeyError as e:
+            logger.warning('couldn\'t get walking duration: ' + str(e))
+            walking_duration = ''
+        finally:
+            parsed_durations['walking'] = walking_duration
+
+    return parsed_durations
+
+
