@@ -1,0 +1,31 @@
+<form action="{{ url }}" method="post">
+    <div class="form-group">
+        {% csrf_token %}
+        {% for field in form %}
+        {{ field }}
+        {% endfor %}
+        <input type="submit" class="btn btn-info btn-lg" type="submit" value="Submit" style="margin-top: 30px"/>
+    </div>
+</form>
+
+{#{% for slot in slots %}#}
+{#    <div id=slot.id class="row" style="margin-top: 20px">#}
+{#        <div class="col-md-12">#}
+{#            <div class="panel panel-default" style="text-align: center">#}
+{#                <div class="panel-heading">#}
+{#                    <h3 class="panel-title" style="display: inline">{{ slot.name }} - {{ slot.id }}</h3>#}
+{#                    <div class="btn-group pull-right">#}
+{#                        <button type="button" class="btn btn-xs btn-primary addToRequest">#}
+{#                            <span class="glyphicon glyphicon-plus"></span>#}
+{#                        </button>#}
+{#                    </div>#}
+{#                </div>#}
+{#                <div class="panel-body">#}
+{#                    <strong>{{ slot.get_day_str }}</strong> | {{ slot.start_hour }} to {{ slot.end_hour }}#}
+{#                </div>#}
+{#                <div class="panel-footer">#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
+{#    </div>#}
+{#{% endfor %}#}

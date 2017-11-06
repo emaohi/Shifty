@@ -92,7 +92,9 @@ class ShiftSlot(models.Model):
     name = models.CharField(blank=True, null=True, default='Custom', max_length=30)
 
     def __str__(self):
-        return 'Shift slot - day: %s, start: %s, end: %s' % (self.day, str(self.start_hour), str(self.end_hour))
+        return '%s slot - %s, %s to %s' %\
+               (self.name, self.get_day_str(), str(self.start_hour),
+                str(self.end_hour) + ' MANDATORY' if self.is_mandatory else '')
 
     def start_time_str(self):
         return '%s %s' % (self.get_date(), self.start_hour)
@@ -105,6 +107,9 @@ class ShiftSlot(models.Model):
         d = '%s-W%s' % (str(self.year), str(correct_week))
         return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
 
+    def get_day_str(self):
+        return self.get_day_display()
+
     def is_next_week(self):
         return self.week == get_next_week_num()
 
@@ -113,7 +118,13 @@ class ShiftSlot(models.Model):
 #     pass
 #
 #
-# class ShiftRequest(models.Model):
-#     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
-#     first_priority_slots = models.ManyToManyField(ShiftSlot)
-#     second_priority_slots = models.ManyToManyField(ShiftSlot)
+class ShiftRequest(models.Model):
+    employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
+    requested_slots = models.ManyToManyField(ShiftSlot)
+    submission_time = models.DateTimeField(default=datetime.datetime.now())
+
+    def __str__(self):
+        return 'request in: ' + str(self.submission_time)
+
+    def get_slots(self):
+        return ", ".join([str(slot) for slot in self.requested_slots.all()])
