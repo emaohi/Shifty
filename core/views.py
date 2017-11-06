@@ -10,7 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
+from core.models import EmployeeRequest, ShiftSlot
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data
 
@@ -238,12 +238,12 @@ def get_next_week_slots_calendar(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback, login_url='/manager')
-def get_next_week_slots_list(request):
+def submit_slots_request(request):
     next_week_no = get_next_week_num()
     curr_business = request.user.profile.business
     if request.method == 'GET':
         form = SelectSlotsForm(business=curr_business, week=next_week_no)
-        url = reverse('get_next_slots_list')
+        url = reverse('slots_request')
         return render(request, 'employee/slot_list.html', {'form': form, 'url': url})
 
     else:
