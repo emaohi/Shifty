@@ -1,5 +1,7 @@
 import json
 import logging
+
+import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404
@@ -250,6 +252,7 @@ def submit_slots_request(request):
         form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no)
         slots_request = form.save(commit=False)
         slots_request.employee = request.user.profile
+        slots_request.submission_time = datetime.datetime.now()
         slots_request.save()
         form.save_m2m()
 

@@ -238,6 +238,9 @@ class SelectSlotsForm(forms.ModelForm):
     class Meta:
         model = ShiftRequest
         exclude = ('employee', 'submission_time')
+        labels = {
+            'requested_slots': 'Hold CMD button to select multiple. Hold CMD also to deselect'
+        }
 
     def __init__(self, *args, **kwargs):
         business = kwargs.pop('business')
