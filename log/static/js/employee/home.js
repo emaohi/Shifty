@@ -6,6 +6,8 @@ $(document).ready(function () {
 
     showNextWeekSlotsList();
 
+    // $('a[href="#requests"]').on('show.bs.tab', function() {
+    // });
 
 });
 // $(document).on('click', '.addToRequest', function () {
@@ -32,6 +34,7 @@ function showNextWeekSlotsList() {
 
 function displaySlotList(slotsData) {
     $(".slotRows").html(slotsData);
+    $('.selectpicker').selectpicker();
 }
 //
 // function addToRequest(slotText) {
