@@ -11,20 +11,15 @@
 
 {% block style %}
     <style>
-        .employee_button {
-            margin-top: 30px;
-        }
 
-        .employee_button_row {
+        h3, h4, p, .slotRows {
             text-align: center;
         }
 
-        h3 {
-            text-align: center;
-        }
-        .slot-selected {
-            background-color: #0e6f5c !important;
-            color: white !important;
+        .not-active {
+            pointer-events: none;
+            cursor: default;
+
         }
     </style>
 {% endblock %}
@@ -37,7 +32,11 @@
     <div class="container">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#current">Current shifts</a></li>
-            <li><a data-toggle="tab" href="#requests">Shift Requests</a></li>
+            <li><a data-toggle="tab" href="#requests"
+                   {% if not request_enabled %}class="not-active"{% endif %}>Shift Requests
+            {% if request_enabled %}<span class="label label-success">Enabled</span>
+            {% else %}<span class="label label-danger">Disabled</span>{% endif %}
+            </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li><a data-toggle="tab" href="#swaps">Shift swaps</a></li>
             <li class="pull-right"><a data-toggle="tab" href="#messages">Manager Messages</a></li>
@@ -48,21 +47,27 @@
             </div>
             <div id="requests" class="tab-pane fade">
                 <div class="container">
-                    <h3>Choose shifts for next week</h3>
-                    <div class="row">
-                        <div class="col-md-5 col-md-offset-4">
-                            {% if got_request_slots%}
+                    <h3>Request for next week</h3>
+                    <div class="row" style="margin-top: 30px">
+                        <div class="col-md-5">
+                            <h4>
+                                New Request
+                                <small>This will override existing request</small>
+                            </h4>
+                            <div class="slotRows"></div>
+                        </div>
+                        <div class="col-md-5 col-md-offset-2">
+                            <h4>
+                                Current request
+                                <small>Mandatory slots will be added automatically</small>
+                            </h4>
+                            {% if got_request_slots %}
                                 <ul class="list-group">
-                                    {% for sl in got_request_slots %}
-                                        <li class="list-group-item">{{ sl }}</li>
+                                    {% for slot in got_request_slots %}
+                                        <li class="list-group-item">{{ slot }}</li>
                                     {% endfor %}
                                 </ul>
                             {% endif %}
-                        </div>
-                    </div>
-                    <div class="row" style="margin-top: 50px">
-                        <div class="col-md-5 col-md-offset-4">
-                            <div class="slotRows"></div>
                         </div>
                     </div>
                 </div>

@@ -94,7 +94,7 @@ class ShiftSlot(models.Model):
     def __str__(self):
         return '%s slot - %s, %s to %s%s' %\
                (self.name, self.get_day_str(), str(self.start_hour),
-                str(self.end_hour), ' --MANDATORY--' if self.is_mandatory else '')
+                str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
 
     def start_time_str(self):
         return '%s %s' % (self.get_date(), self.start_hour)

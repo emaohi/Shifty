@@ -265,19 +265,19 @@ def is_finish_slots(request):
     curr_business = request.user.profile.business
     if request.method == 'POST':
         action = request.POST.get('isFinished')
-        curr_business.start_slot_countdown = True if action == 'true' else False
+        curr_business.slot_request_enabled = True if action == 'true' else False
         curr_business.save()
 
         recp = curr_business.get_employees()
-        is_enabled = 'enabled' if curr_business.start_slot_countdown else 'disabled'
+        is_enabled = 'enabled' if curr_business.slot_request_enabled else 'disabled'
         text = 'Your manager has %s shifts requests for next week.' % is_enabled
         create_manager_msg(recipients=recp, subject='Shift requests are now %s' % is_enabled, text=text,
                            wait_for_mail_results=False)
 
-        logger.info('saved business finished slots status to: %s', curr_business.start_slot_countdown)
+        logger.info('saved business finished slots status to: %s', curr_business.slot_request_enabled)
         return HttpResponse('ok')
-    logger.info('returning the business finished slots status which is: %s', curr_business.start_slot_countdown)
-    return HttpResponse(curr_business.start_slot_countdown)
+    logger.info('returning the business finished slots status which is: %s', curr_business.slot_request_enabled)
+    return HttpResponse(curr_business.slot_request_enabled)
 
 
 @login_required(login_url='/login')
