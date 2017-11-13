@@ -1,6 +1,8 @@
 import traceback
 
 import logging
+
+import datetime
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect, HttpResponse
@@ -9,12 +11,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
 from kombu.exceptions import OperationalError
 
-from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date
+from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string, get_next_week_num
+from core.models import ShiftRequest
 from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
 
-from Shifty.utils import must_be_manager_callback
+from Shifty.utils import must_be_manager_callback, get_curr_profile
 from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger('cool')
@@ -37,7 +40,7 @@ def manager_home(request):
     next_week_date = get_next_week_string().split(' --')[0].replace('/', '-')
     logger.info(next_week_date)
 
-    deadline_date = get_current_deadline_date(curr_manager.business.deadline_day)
+    deadline_date = get_current_deadline_date_string(curr_manager.business.deadline_day)
     logger.info('deadline date is %s', deadline_date)
 
     is_finish_slots = curr_manager.business.start_slot_countdown
@@ -53,7 +56,14 @@ def manager_home(request):
 @user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
 def emp_home(request):
     manager_messages = get_manger_msgs_of_employee(request.user.profile)
-    return render(request, "employee/home.html", {'manager_msgs': manager_messages})
+
+    date = datetime.date.today()
+    start_week = date - datetime.timedelta((date.weekday() + 1) % 7)
+    end_week = start_week + datetime.timedelta(6)
+    existing_request = ShiftRequest.objects.filter(employee=get_curr_profile(request),
+                                                   submission_time__range=[start_week, end_week])
+    return render(request, "employee/home.html", {'manager_msgs': manager_messages,
+                                                  'got_request_slots': existing_request.first().requested_slots.all()})
 
 
 def register(request):

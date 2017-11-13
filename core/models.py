@@ -2,6 +2,7 @@ from __future__ import unicode_literals
 
 import datetime
 from django.db import models
+from django.utils import timezone
 
 from core.date_utils import get_next_week_num
 from log.models import Business, EmployeeProfile
@@ -120,8 +121,8 @@ class ShiftSlot(models.Model):
 #
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
-    requested_slots = models.ManyToManyField(ShiftSlot)
-    submission_time = models.DateTimeField(default=datetime.datetime.now())
+    requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests')
+    submission_time = models.DateTimeField()
 
     def __str__(self):
         return 'request in: ' + str(self.submission_time)

@@ -12,11 +12,13 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data
+    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data, \
+    save_shifts_request, delete_other_requests
 
-from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback
+from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
+    get_curr_business
 
 logger = logging.getLogger('cool')
 
@@ -25,7 +27,7 @@ logger = logging.getLogger('cool')
 @user_passes_test(must_be_employee_callback, login_url='/manager')
 def report_incorrect_detail(request):
     if request.method == 'POST':
-        reporting_profile = request.user.profile
+        reporting_profile = get_curr_profile(request)
         incorrect_field = request.POST.get('incorrect_field')
         fix_suggestion = request.POST.get('fix_suggestion')
         curr_val = request.POST.get('curr_val')
@@ -78,7 +80,7 @@ def broadcast_message(request):
         broadcast_form = BroadcastMessageForm(request.POST)
 
         if broadcast_form.is_valid():
-            recipients = request.user.profile.business.get_employees()
+            recipients = get_curr_business(request).get_employees()
 
             new_manager_msg = broadcast_form.save(commit=False)
 
@@ -103,7 +105,7 @@ def broadcast_message(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_shift_slot(request):
 
-    business = request.user.profile.business
+    business = get_curr_business(request)
     slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
                   .values('name').distinct() if t['name'] != 'Custom']
 
@@ -219,7 +221,7 @@ def delete_slot(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def get_next_week_slots_calendar(request):
     shifts_json = []
-    curr_business = request.user.profile.business
+    curr_business = get_curr_business(request)
     slot_id_to_constraints_dict = {}
 
     next_week_no = get_next_week_num()
@@ -242,7 +244,7 @@ def get_next_week_slots_calendar(request):
 @user_passes_test(must_be_employee_callback, login_url='/manager')
 def submit_slots_request(request):
     next_week_no = get_next_week_num()
-    curr_business = request.user.profile.business
+    curr_business = get_curr_business(request)
     if request.method == 'GET':
         form = SelectSlotsForm(business=curr_business, week=next_week_no)
         url = reverse('slots_request')
@@ -250,13 +252,10 @@ def submit_slots_request(request):
 
     else:
         form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no)
-        slots_request = form.save(commit=False)
-        slots_request.employee = request.user.profile
-        slots_request.submission_time = datetime.datetime.now()
-        slots_request.save()
-        form.save_m2m()
+        shifts_request = save_shifts_request(form, request)
+        delete_other_requests(request, shifts_request)
 
-        logger.info('slots chosen are: ' + str(slots_request.requested_slots))
+        logger.info('slots chosen are: ' + str(shifts_request.requested_slots))
         messages.success(request, 'request saved')
         return HttpResponseRedirect('/')
 

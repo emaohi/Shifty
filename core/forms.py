@@ -238,14 +238,12 @@ class SelectSlotsForm(forms.ModelForm):
     class Meta:
         model = ShiftRequest
         exclude = ('employee', 'submission_time')
-        labels = {
-            'requested_slots': 'Hold CMD button to select multiple. Hold CMD also to deselect'
-        }
 
     def __init__(self, *args, **kwargs):
         business = kwargs.pop('business')
         week = kwargs.pop('week')
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
-        self.fields['requested_slots'].queryset = ShiftSlot.objects.filter(week=week, business=business)
+        self.fields['requested_slots'].queryset = ShiftSlot.objects.filter(week=week, business=business).\
+            exclude(is_mandatory=True)
         logger.info("query set is %s", self.fields['requested_slots'].queryset)
-        self.fields['requested_slots'].widget.attrs['class'] = 'form-control'
+        self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'

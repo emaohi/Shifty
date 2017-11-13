@@ -49,3 +49,11 @@ def must_be_employee_callback(user):
         return True
     logger.error('cant proceed - you are a manager !')
     return False
+
+
+def get_curr_profile(request):
+    return request.user.profile
+
+
+def get_curr_business(request):
+    return get_curr_profile(request).business
