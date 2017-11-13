@@ -19,7 +19,7 @@ class ShiftSlotModelTest(TestCase):
 
     def test_slot_to_string_looks_correctly(self):
         slot = ShiftSlot.objects.get(year='2016')
-        expected_to_str = 'Shift slot - day: 1, start: 12:00:00, end: 13:00:00'
+        expected_to_str = 'Custom slot - Sunday, 12:00:00 to 13:00:00'
         self.assertEqual(expected_to_str, str(slot))
 
     def test_should_return_correct_date_string(self):
