@@ -7,9 +7,9 @@ import requests
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
-from core.date_utils import get_date, get_curr_week_num
-from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot
-from Shifty.utils import send_multiple_mails_with_html
+from core.date_utils import get_date, get_curr_week_num, get_next_week_num
+from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest
+from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
 from django.conf import settings
 
 logger = logging.getLogger('cool')
@@ -173,3 +173,27 @@ def get_parsed_duration_data(raw_distance_response):
     return parsed_durations
 
 
+def save_shifts_request(form, request):
+    slots_request = form.save(commit=False)
+    slots_request.employee = request.user.profile
+    slots_request.submission_time = timezone.localtime(timezone.now())
+    slots_request.save()
+    form.save_m2m()
+    add_mandatory_slots(slots_request)
+    return slots_request
+
+
+def add_mandatory_slots(slot_request):
+    mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, week=get_next_week_num())
+    slot_request.requested_slots.add(*list(mandatory_slots))
+
+
+def delete_other_requests(request, slots_request):
+    date = datetime.date.today()
+    start_week = date - datetime.timedelta((date.weekday() + 1) % 7)
+    end_week = start_week + datetime.timedelta(6)
+    existing_requests = ShiftRequest.objects \
+        .filter(employee=get_curr_profile(request),
+                submission_time__range=[start_week, end_week]). \
+        exclude(submission_time=slots_request.submission_time)
+    existing_requests.delete()

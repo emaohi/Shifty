@@ -3,7 +3,7 @@ from django import forms
 from django.forms import TextInput
 
 from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount, get_next_week_num
-from core.models import ManagerMessage, ShiftSlot
+from core.models import ManagerMessage, ShiftSlot, ShiftRequest
 from log.models import EmployeeProfile
 
 logger = logging.getLogger('cool')
@@ -232,3 +232,18 @@ class ShiftSlotForm(forms.Form):
         seen = set()
         seen_add = seen.add
         return [x for x in seq if not (x in seen or seen_add(x))]
+
+
+class SelectSlotsForm(forms.ModelForm):
+    class Meta:
+        model = ShiftRequest
+        exclude = ('employee', 'submission_time')
+
+    def __init__(self, *args, **kwargs):
+        business = kwargs.pop('business')
+        week = kwargs.pop('week')
+        super(SelectSlotsForm, self).__init__(*args, **kwargs)
+        self.fields['requested_slots'].queryset = ShiftSlot.objects.filter(week=week, business=business).\
+            exclude(is_mandatory=True)
+        logger.info("query set is %s", self.fields['requested_slots'].queryset)
+        self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'

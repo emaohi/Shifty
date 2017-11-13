@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday
+from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday, ShiftRequest
 
 
 class EmployeeRequestAdmin(admin.ModelAdmin):
@@ -23,3 +23,8 @@ admin.site.register(ShiftSlot, ShiftSlotAdmin)
 class HolidayAdmin(admin.ModelAdmin):
     list_display = ('name', 'date')
 admin.site.register(Holiday, HolidayAdmin)
+
+
+class ShiftRequestAdmin(admin.ModelAdmin):
+    list_display = ('id', 'get_slots', )
+admin.site.register(ShiftRequest, ShiftRequestAdmin)

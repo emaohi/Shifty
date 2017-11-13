@@ -54,10 +54,17 @@ def get_started_month_from_month_amount(month_cnt):
     return datetime.date.today() - datetime.timedelta(month_cnt*365/12)
 
 
+def get_current_deadline_date_string(day_of_week):
+    date = get_current_deadline_date(day_of_week)
+    if date:
+        return date.strftime('%Y/%m/%d')
+    return None
+
+
 def get_current_deadline_date(day_of_week):
     is_sunday = True if day_of_week == 1 else False
     r_date = get_date(get_curr_year(), day_of_week,
                       get_curr_week_num() if not is_sunday else get_curr_week_num() - 1)
     if r_date.date() > datetime.date.today():
-        return r_date.strftime('%Y/%m/%d')
+        return r_date
     return None
