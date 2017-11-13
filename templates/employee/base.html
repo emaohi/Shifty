@@ -92,19 +92,6 @@
     {% endblock %}
 </head>
 <body>
-{% if messages %}
-    {% for msg in messages %}
-        {% if msg.tags == 'error' %}
-            <div class="alert alert-danger">
-                <strong>{{ msg| escape }}</strong>
-            </div>
-        {% else %}
-            <div class="alert alert-success">
-                <strong>{{ msg| escape }}</strong>
-            </div>
-        {% endif %}
-    {% endfor %}
-{% endif %}
 <nav class="navbar navbar-default">
     <div class="container-fluid">
         <div class="navbar-header">
@@ -147,6 +134,20 @@
         </div>
     </div>
 </nav>
+
+{% if messages %}
+    {% for msg in messages %}
+        {% if msg.tags == 'error' %}
+            <div class="alert alert-danger">
+                <strong>{{ msg| escape }}</strong>
+            </div>
+        {% else %}
+            <div class="alert alert-success">
+                <strong>{{ msg| escape }}</strong>
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% block content %}
 {% endblock %}
