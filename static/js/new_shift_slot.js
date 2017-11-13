@@ -24,7 +24,20 @@ $(document).ready(function () {
                 $(this).val("");
             }
         })
-    })
+    });
+
+    $("#savedBtn").click(function () {
+        $("#savedShiftDiv").show();
+        $("#customShiftDiv").hide();
+
+        $("#submitSlot").show();
+    });
+    $("#customBtn").click(function () {
+        $("#customShiftDiv").show();
+        $("#savedShiftDiv").hide();
+
+        $("#submitSlot").show();
+    });
 });
 
 function getRoleBtn($btnClicked) {
