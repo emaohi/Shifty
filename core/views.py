@@ -1,7 +1,6 @@
 import json
 import logging
 
-import datetime
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404
@@ -12,7 +11,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
+from core.models import EmployeeRequest, ShiftSlot
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data, \
     save_shifts_request, delete_other_requests

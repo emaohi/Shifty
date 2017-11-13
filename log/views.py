@@ -11,7 +11,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
 from kombu.exceptions import OperationalError
 
-from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string, get_next_week_num
+from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string
 from core.models import ShiftRequest
 from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm

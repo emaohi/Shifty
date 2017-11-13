@@ -2,7 +2,6 @@ from __future__ import unicode_literals
 
 import datetime
 from django.db import models
-from django.utils import timezone
 
 from core.date_utils import get_next_week_num
 from log.models import Business, EmployeeProfile
