@@ -34,8 +34,8 @@
             <li class="active"><a data-toggle="tab" href="#current">Current shifts</a></li>
             <li><a data-toggle="tab" href="#requests"
                    {% if not request_enabled %}class="not-active"{% endif %}>Shift Requests
-            {% if request_enabled %}<span class="label label-success">Enabled</span>
-            {% else %}<span class="label label-danger">Disabled</span>{% endif %}
+                {% if request_enabled %}<span class="label label-success">Enabled</span>
+                {% else %}<span class="label label-danger">Disabled</span>{% endif %}
             </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li><a data-toggle="tab" href="#swaps">Shift swaps</a></li>
@@ -57,6 +57,11 @@
                             <div class="slotRows"></div>
                         </div>
                         <div class="col-md-5 col-md-offset-2">
+                                <select class="selectpicker">
+                                    <option>Mustard</option>
+                                    <option>Ketchup</option>
+                                    <option>Relish</option>
+                                </select>
                             <h4>
                                 Current request
                                 <small>Mandatory slots will be added automatically</small>

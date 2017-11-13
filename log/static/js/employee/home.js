@@ -6,8 +6,8 @@ $(document).ready(function () {
 
     showNextWeekSlotsList();
 
-});
 
+});
 // $(document).on('click', '.addToRequest', function () {
 //     $(this).hide();
 //     addToRequest($(this).parent().prev().text());
