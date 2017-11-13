@@ -61,9 +61,11 @@ def emp_home(request):
     start_week = date - datetime.timedelta((date.weekday() + 1) % 7)
     end_week = start_week + datetime.timedelta(6)
     existing_request = ShiftRequest.objects.filter(employee=get_curr_profile(request),
-                                                   submission_time__range=[start_week, end_week])
+                                                   submission_time__range=[start_week, end_week]).first()
+
     return render(request, "employee/home.html", {'manager_msgs': manager_messages,
-                                                  'got_request_slots': existing_request.first().requested_slots.all()})
+                                                  'got_request_slots': existing_request.requested_slots.all()
+                                                  if existing_request else None})
 
 
 def register(request):
