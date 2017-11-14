@@ -155,7 +155,7 @@ def get_parsed_duration_data(raw_distance_response):
         try:
             driving_duration = json.loads(raw_distance_response.get('driving').text).get('rows')[0].get(
                 'elements')[0].get('duration').get('text')
-        except KeyError as e:
+        except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get driving duration: ' + str(e))
             driving_duration = ''
         finally:
@@ -164,7 +164,7 @@ def get_parsed_duration_data(raw_distance_response):
         try:
             walking_duration = json.loads(raw_distance_response.get('walking').text).get('rows')[0].get(
                 'elements')[0].get('duration').get('text')
-        except KeyError as e:
+        except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get walking duration: ' + str(e))
             walking_duration = ''
         finally:
