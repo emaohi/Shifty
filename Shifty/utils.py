@@ -17,6 +17,8 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_
 
     recp_list = {recip: value for recip, value in r_2_c_dict.iteritems() if recip.profile.enable_mailing}
 
+    logger.info('recp list is: %s', str(recp_list))
+
     for recp, context in recp_list.iteritems():
         send_mail_params = [recp.email, subject, text, template, context]
         task_results.append(tasks.send_mail.delay(*send_mail_params) if is_celery else
