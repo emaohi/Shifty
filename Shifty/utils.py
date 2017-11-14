@@ -15,9 +15,9 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_
     is_celery = settings.CELERY
     task_results = []
 
-    recp_list = {recip: value for recip, value in r_2_c_dict.iteritems() if recip.profile.enable_mailing}
+    logger.info('recp list is: %s', str(r_2_c_dict))
 
-    logger.info('recp list is: %s', str(recp_list))
+    recp_list = {recip: value for recip, value in r_2_c_dict.iteritems() if recip.profile.enable_mailing}
 
     for recp, context in recp_list.iteritems():
         send_mail_params = [recp.email, subject, text, template, context]
