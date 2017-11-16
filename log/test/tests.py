@@ -25,6 +25,8 @@ class AddEmployeesTest(TestCase):
     @override_settings(DEBUG=True)
     def test_check_new_employee_group(self, email_mock):
 
+        email_mock.return_value = True
+
         self.client.post('/manager/add_employees/', make_data(1), follow=True)
 
         num_results = User.objects.filter(username='RoniL').count()
@@ -35,6 +37,8 @@ class AddEmployeesTest(TestCase):
 
     def test_check_same_username_appends(self, email_mock):
 
+        email_mock.return_value = True
+
         self.client.post('/manager/add_employees/', make_data(2), follow=True)
 
         num_results = User.objects.filter(username__contains='RoniL').count()
@@ -44,6 +48,8 @@ class AddEmployeesTest(TestCase):
         self.assertGreater(num_results, 1)
 
     def test_should_not_permit_for_regular_employee(self, email_mock):
+
+        email_mock.return_value = True
 
         self.client.post('/logout/', follow=True)
 

@@ -298,6 +298,9 @@ def get_work_duration_data(request):
         raw_distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
 
         parsed_data = get_parsed_duration_data(raw_distance_data)
+        if not parsed_data['walking'] and not parsed_data['driving']:
+            return HttpResponseBadRequest('cant find home to work durations - make sure both business'
+                                          'and home addresses are available')
 
         logger.info('found distance data: ' + str(parsed_data))
         return JsonResponse(parsed_data)
