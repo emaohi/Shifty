@@ -1,3 +1,4 @@
+mock==2.0.0
 amqp==2.1.4
 apiclient==1.0.3
 appnope==0.1.0

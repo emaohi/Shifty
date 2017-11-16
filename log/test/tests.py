@@ -3,7 +3,10 @@ from django.test import TestCase, override_settings
 
 from log.test.test_utils import make_data
 
+from mock import patch
 
+
+@patch('log.utils.send_multiple_mails_with_html')
 class AddEmployeesTest(TestCase):
     def setUp(self):
         self.credentials = {
@@ -20,7 +23,7 @@ class AddEmployeesTest(TestCase):
         self.client.post('/login/', self.credentials, follow=True)
 
     @override_settings(DEBUG=True)
-    def test_check_new_employee_group(self):
+    def test_check_new_employee_group(self, email_mock):
 
         self.client.post('/manager/add_employees/', make_data(1), follow=True)
 
@@ -30,7 +33,7 @@ class AddEmployeesTest(TestCase):
 
         self.assertGreater(num_results, 0)
 
-    def test_check_same_username_appends(self):
+    def test_check_same_username_appends(self, email_mock):
 
         self.client.post('/manager/add_employees/', make_data(2), follow=True)
 
@@ -40,7 +43,7 @@ class AddEmployeesTest(TestCase):
 
         self.assertGreater(num_results, 1)
 
-    def test_should_not_permit_for_regular_employee(self):
+    def test_should_not_permit_for_regular_employee(self, email_mock):
 
         self.client.post('/logout/', follow=True)
 
