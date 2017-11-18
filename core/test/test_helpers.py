@@ -35,3 +35,25 @@ def create_new_employee(cred_dict):
 def disable_mailing(user):
     user.profile.enable_mailing = False
     user.profile.save()
+
+
+def add_fields_to_slot(slot):
+    for role in ['waiter', 'bartender', 'cook']:
+        for field in ['gender', 'age', 'average_rate', 'months_working']:
+            slot[role + '_' + field + '__value_constraint'] = ''
+            slot[role + '_' + field + '__applyOn_constraint'] = ''
+            slot[role + '_' + field + '__operation_constraint'] = ''
+
+
+def set_address_to_business(username, address):
+    user = User.objects.get(username=username)
+    business = user.profile.business
+    business.address = address
+    business.save()
+
+
+def set_address_to_employee(username, address):
+    user = User.objects.get(username=username)
+    profile = user.profile
+    profile.home_address = address
+    profile.save()

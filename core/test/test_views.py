@@ -4,8 +4,8 @@ from django.test import TestCase
 from django.urls import reverse
 
 from core.models import EmployeeRequest, ShiftSlot
-from core.test.test_helpers import create_new_manager, create_new_employee,\
-    create_manager_and_employee_groups
+from core.test.test_helpers import create_new_manager, create_new_employee, \
+    create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee
 
 
 class EmployeeRequestViewTest(TestCase):
@@ -121,11 +121,8 @@ class AddShiftSlotViewTest(TestCase):
         create_manager_and_employee_groups()
 
     def setUp(self):
-        for role in ['waiter', 'bartender', 'cook']:
-            for field in ['gender', 'age', 'average_rate', 'months_working']:
-                self.dummy_slot[role + '_' + field + '__value_constraint'] = ''
-                self.dummy_slot[role + '_' + field + '__applyOn_constraint'] = ''
-                self.dummy_slot[role + '_' + field + '__operation_constraint'] = ''
+        add_fields_to_slot(self.dummy_slot)
+
         self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
         self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
         create_new_manager(self.manager_credentials)
@@ -172,11 +169,7 @@ class DeleteShiftSlotViewTest(TestCase):
         create_manager_and_employee_groups()
 
     def setUp(self):
-        for role in ['waiter', 'bartender', 'cook']:
-            for field in ['gender', 'age', 'average_rate', 'months_working']:
-                self.dummy_slot[role + '_' + field + '__value_constraint'] = ''
-                self.dummy_slot[role + '_' + field + '__applyOn_constraint'] = ''
-                self.dummy_slot[role + '_' + field + '__operation_constraint'] = ''
+        add_fields_to_slot(self.dummy_slot)
 
         self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
         self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
@@ -206,3 +199,31 @@ class DeleteShiftSlotViewTest(TestCase):
         self.client.login(**self.emp_credentials)
         resp = self.client.post(reverse('delete_shift_slot'), data=self.dummy_slot, follow=True)
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('delete_shift_slot'), ""))
+
+
+class GetDurationDataViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+
+    def setUp(self):
+        self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+        create_new_manager(self.manager_credentials)
+        set_address_to_business(username=self.manager_credentials['username'], address='Tel-Aviv')
+
+    def test_view_should_succeed(self):
+        set_address_to_employee(username=self.manager_credentials['username'], address='Haifa')
+        self.client.login(**self.manager_credentials)
+        resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
+        self.assertEqual(resp.status_code, 200)
+
+    def test_view_should_bad_request_when_no_emp_address(self):
+        self.client.login(**self.manager_credentials)
+        resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_view_should_bad_request_when_not_valid_emp_address(self):
+        set_address_to_employee(username=self.manager_credentials['username'], address='Blabla')
+        self.client.login(**self.manager_credentials)
+        resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
+        self.assertEqual(resp.status_code, 400)

@@ -13,7 +13,7 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
 from core.models import EmployeeRequest, ShiftSlot
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, get_parsed_duration_data, \
+    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
     save_shifts_request, delete_other_requests
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
@@ -295,14 +295,14 @@ def get_work_duration_data(request):
         is_drive = is_drive == 'True' if is_drive else True
         is_walk = is_walk == 'True' if is_walk else False
 
-        raw_distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
+        distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
 
-        parsed_data = get_parsed_duration_data(raw_distance_data)
-        if not parsed_data['walking'] and not parsed_data['driving']:
+        parse_duration_data(distance_data)
+        if not distance_data['walking'] and not distance_data['driving']:
             return HttpResponseBadRequest('cant find home to work durations - make sure both business'
                                           'and home addresses are available')
 
-        logger.info('found distance data: ' + str(parsed_data))
-        return JsonResponse(parsed_data)
+        logger.info('found distance data: ' + str(distance_data))
+        return JsonResponse(distance_data)
 
     return HttpResponseBadRequest('cannot get distance data with ' + request.method)

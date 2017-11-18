@@ -162,6 +162,7 @@ CELERY_RESULT_BACKEND = 'rpc://'
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_MAIL_TIMEOUT = 45000
 
-# Google distance matrix API
+# Google APIs
 DISTANCE_API_KEY = 'AIzaSyBuVvbfu_0nMgFmagXaWdIsVyXrL41OV-U'
 DISTANCE_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json?origins=%s&destinations=%s&mode=%s&key=%s'
+DIRECTIONS_URL = 'https://maps.google.com/maps/dir/?api=1&origin=%s&destination=%s&travelmode=%s'

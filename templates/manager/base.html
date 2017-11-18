@@ -42,10 +42,14 @@
         function display_duration(durationData) {
             var walkingText = durationData.walking;
             var drivingText = durationData.driving;
+            var walkingUrl = durationData.walking_url;
+            var drivingUrl = durationData.driving_url;
 
             $("#etaText").text("ETAs to business:");
-            $("#duration-drive").text(drivingText);
-            $("#duration-walk").text(walkingText);
+            $("#duration-drive").html('<a class= "duration-text" target="_blank" href="' + drivingUrl + '">' +
+                drivingText + '</a>');
+            $("#duration-walk").html('<a class= "duration-text" target="_blank" href="' + walkingUrl + '">' +
+                walkingText + '</a>');
         }
     </script>
     {% block javascript %}

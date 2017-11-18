@@ -140,15 +140,18 @@ def get_dist_data(home_address, work_address, is_drive, is_walk):
     if is_drive:
         driving_api_url = settings.DISTANCE_URL % (home_address, work_address, 'driving', settings.DISTANCE_API_KEY)
         json_res['driving'] = requests.get(driving_api_url)
+        json_res['driving_url'] = settings.DIRECTIONS_URL %\
+            (home_address, work_address, 'driving')
     if is_walk:
         walking_api_url = settings.DISTANCE_URL % (home_address, work_address, 'walking', settings.DISTANCE_API_KEY)
         json_res['walking'] = requests.get(walking_api_url)
+        json_res['walking_url'] = settings.DIRECTIONS_URL %\
+            (home_address, work_address, 'walking')
 
     return json_res
 
 
-def get_parsed_duration_data(raw_distance_response):
-    parsed_durations = {}
+def parse_duration_data(raw_distance_response):
     driving_duration = None
     walking_duration = None
     if 'driving' in raw_distance_response:
@@ -159,7 +162,7 @@ def get_parsed_duration_data(raw_distance_response):
             logger.warning('couldn\'t get driving duration: ' + str(e))
             driving_duration = ''
         finally:
-            parsed_durations['driving'] = driving_duration
+            raw_distance_response['driving'] = driving_duration
     if 'walking' in raw_distance_response:
         try:
             walking_duration = json.loads(raw_distance_response.get('walking').text).get('rows')[0].get(
@@ -168,9 +171,7 @@ def get_parsed_duration_data(raw_distance_response):
             logger.warning('couldn\'t get walking duration: ' + str(e))
             walking_duration = ''
         finally:
-            parsed_durations['walking'] = walking_duration
-
-    return parsed_durations
+            raw_distance_response['walking'] = walking_duration
 
 
 def save_shifts_request(form, request):
