@@ -35,6 +35,13 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': "redis://127.0.0.1:6379/1",
+    },
+}
+
 ROOT_URLCONF = 'Shifty.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
