@@ -1,3 +1,5 @@
+import urlparse
+
 from base import *
 
 DEBUG = True
@@ -16,11 +18,17 @@ DATABASES = {
 }
 
 CELERY = True
-CELERY_BROKER_URL =\
+CELERY_BROKER_URL = \
     'amqp://d87vKR49:ho9_EJMxh3QTnWyJAdKR4-mHM0ofNF1q@angry-vervain-61.bigwig.lshift.net:10468/h3SbfJQeMSid'
 
+redis_url = urlparse.urlparse(os.environ.get('REDISCLOUD_URL'))
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '%s:%s' % (redis_url.hostname, redis_url.port),
+        'OPTIONS': {
+            'PASSWORD': redis_url.password,
+            'DB': 0,
+        }
     }
 }
