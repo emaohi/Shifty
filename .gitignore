@@ -8,3 +8,4 @@
 .pylintrc
 celerybeat-schedule
 Shifty/checking_calendar.py
+dump.rdb

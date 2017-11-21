@@ -16,3 +16,9 @@ DATABASES = {
 
 CELERY = True
 CELERY_BROKER_URL = 'pyamqp://guest@localhost//'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    }
+}

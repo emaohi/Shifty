@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
+from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
@@ -280,6 +282,8 @@ def is_finish_slots(request):
     return HttpResponse(curr_business.slot_request_enabled)
 
 
+@cache_page(60 * 15, key_prefix='shifty')
+@vary_on_cookie
 @login_required(login_url='/login')
 def get_work_duration_data(request):
     if request.method == 'GET':
@@ -289,11 +293,8 @@ def get_work_duration_data(request):
         if not home_address or not work_address:
             return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
 
-        is_walk = request.GET.get('walking')
-        is_drive = request.GET.get('driving')
-
-        is_drive = is_drive == 'True' if is_drive else True
-        is_walk = is_walk == 'True' if is_walk else False
+        is_walk = request.GET.get('walking', True)
+        is_drive = request.GET.get('driving', True)
 
         distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
 

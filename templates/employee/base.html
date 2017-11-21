@@ -26,10 +26,6 @@
             $.ajax({
                 url: "{% url 'duration_data' %}", //from template
                 type: "get", //send it through get method,
-                data: {
-                    walking: 'True',
-                    driving: 'True'
-                },
                 success: display_duration,
                 error: function (xhr) {
                     //Do Something to handle error
