@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
@@ -282,6 +283,7 @@ def is_finish_slots(request):
 
 
 @cache_page(60 * 15, key_prefix='shifty')
+@vary_on_cookie
 @login_required(login_url='/login')
 def get_work_duration_data(request):
     if request.method == 'GET':
