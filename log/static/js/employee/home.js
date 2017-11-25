@@ -6,20 +6,9 @@ $(document).ready(function () {
 
     showNextWeekSlotsList();
 
-    // $('a[href="#requests"]').on('show.bs.tab', function() {
-    // });
+    populateTimerDiv();
 
 });
-// $(document).on('click', '.addToRequest', function () {
-//     $(this).hide();
-//     addToRequest($(this).parent().prev().text());
-//     $(this).parent().parent().addClass("slot-selected");
-// });
-// $(document).on('click', '.removeFromRequest', function () {
-//     var slotId = getSlotIdFromListItem($(this).parent().attr("id"));
-//     restoreSlotPanel($("#panel_" + slotId));
-//     $(this).parent().remove();
-// });
 
 function showNextWeekSlotsList() {
     $.ajax({
@@ -36,18 +25,18 @@ function displaySlotList(slotsData) {
     $(".slotRows").html(slotsData);
     $('.selectpicker').selectpicker();
 }
-//
-// function addToRequest(slotText) {
-//     $("#requestList").append('<li id="' + slotText + '" class="list-group-item">' + slotText +
-//         '<button type="button" class="btn btn-xs btn-danger removeFromRequest pull-right">' +
-//         '<span class="glyphicon glyphicon-minus"></span></button>' + '</li>');
-// }
-//
-// function getSlotIdFromListItem(listItemId) {
-//     return listItemId.split("- ")[1];
-// }
-//
-// function restoreSlotPanel(panelToRestore) {
-//     panelToRestore.find(".addToRequest").show();
-//     panelToRestore.find(".panel-heading").removeClass("slot-selected");
-// }
+
+function populateTimerDiv() {
+    if (deadline_date != "None") {
+        $('#timerH').countdown(deadline_date, function (event) {
+            $(this).html(event.strftime('Deadline in: '
+                + '<span>%d</span> days, '
+                + '<span>%H</span> hours, '
+                + '<span>%M</span> minutes, '
+                + '<span>%S</span> seconds ')
+            );
+        });
+    } else {
+        $('#timerH').text('Time for shift requests is over !');
+    }
+}
