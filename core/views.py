@@ -16,7 +16,7 @@ from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
 from core.models import EmployeeRequest, ShiftSlot
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
-    save_shifts_request, delete_other_requests
+    save_shifts_request, delete_other_requests, validate_language
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business
@@ -33,7 +33,12 @@ def report_incorrect_detail(request):
         fix_suggestion = request.POST.get('fix_suggestion')
         curr_val = request.POST.get('curr_val')
 
-        logger.info('creating new employee request')
+        logger.info('checking language')
+        if not validate_language(fix_suggestion):
+            logger.info('bad language detected')
+            return HttpResponseBadRequest('NOT SENT - BAD LANGUAGE')
+
+        logger.info('msg OK, creating new employee request')
         new_request = EmployeeRequest(sent_time=timezone.now(),
                                       type='P',
                                       subject='Employee Change Request',
