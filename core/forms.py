@@ -97,11 +97,25 @@ class ShiftSlotForm(forms.Form):
     def clean(self):
         clean_data = super(ShiftSlotForm, self).clean()
 
+        self.validate_enough_of_role(clean_data)
         self.validate_apply_less_than_role_num(clean_data)
         self.validate_end_after_start(clean_data)
         self.validate_no_partial_empty_constraints(clean_data)
         self.validate_constraints_can_be_fulfilled(clean_data)
         self.validate_slot_not_overlaping(clean_data)
+
+    def validate_enough_of_role(self, clean_data):
+        for role in self.roles:
+            role_reverse = dict((v, k) for k, v in EmployeeProfile.ROLE_CHOICES)
+            requested_num_of_role = int(clean_data['num_of_' + role + 's'])
+            real_num_of_role = EmployeeProfile.objects.filter(business=self.business,
+                                                              role=role_reverse[role.title()]).count()
+
+            if requested_num_of_role > real_num_of_role:
+                msg = 'you cant request %s %ss, there are only %s' % (requested_num_of_role, role,
+                                                                      real_num_of_role)
+                logger.error(msg)
+                raise forms.ValidationError(msg)
 
     def validate_no_partial_empty_constraints(self, clean_data):
         for group in self.get_constraint_groups():
