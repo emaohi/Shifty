@@ -4,7 +4,6 @@ import logging
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404
-from django.urls import reverse
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
@@ -100,7 +99,7 @@ def broadcast_message(request):
         else:
             logger.error('broadcast form is not valid')
             form = BroadcastMessageForm()
-            messages.error(request, message='couldn\'t send broadcast message' % str(form.errors))
+            messages.error(request, message='couldn\'t send broadcast message: %s' % str(form.errors.as_text()))
             return HttpResponseRedirect('/')
     else:    # method is GET
         form = BroadcastMessageForm()
@@ -253,17 +252,19 @@ def submit_slots_request(request):
     curr_business = get_curr_business(request)
     if request.method == 'GET':
         form = SelectSlotsForm(business=curr_business, week=next_week_no)
-        url = reverse('slots_request')
-        return render(request, 'employee/slot_list.html', {'form': form, 'url': url})
-
+        return render(request, 'employee/slot_list.html', {'form': form})
     else:
         form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no)
-        shifts_request = save_shifts_request(form, request)
-        delete_other_requests(request, shifts_request)
+        if form.is_valid():
+            shifts_request = save_shifts_request(form, request)
+            delete_other_requests(request, shifts_request)
 
-        logger.info('slots chosen are: ' + str(shifts_request.requested_slots))
-        messages.success(request, 'request saved')
-        return HttpResponseRedirect('/')
+            logger.info('slots chosen are: ' + str(shifts_request.requested_slots))
+            messages.success(request, 'request saved')
+            return HttpResponseRedirect('/')
+        else:
+            messages.error(request, message='couldn\'t save slots request: %s' % str(form.errors.as_text()))
+            return render(request, 'employee/home.html', {'form': form})
 
 
 @login_required(login_url='/login')
