@@ -222,13 +222,29 @@
 
     <!-- Constraints Modal -->
     <div class="modal fade" id="constraintModal" role="dialog">
-        <div class="modal-dialog modal-sm">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal">&times;</button>
-                    <h4 class="modal-title">Shift constraints</h4>
-                </div>
-                <div class="modal-body">
+    <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Shift constraints</h4>
+    </div>
+    <div class="modal-body">
+        <div class="modal-body">
+            <div role="tabpanel">
+                <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist">
+                    <li role="presentation" class="active">
+                        <a href="#constraintTab" role="tab" data-toggle="tab">Slot Constraints</a>
+                    </li>
+                    <li role="presentation">
+                        <a href="#empsTab" role="tab" data-toggle="tab">Employees Requested</a>
+                    </li>
+                </ul>
+                <!-- Tab panes -->
+                <div class="tab-content">
+                    <div role="tabpanel" class="tab-pane active" id="constraintTab"></div>
+                    <div role="tabpanel" class="tab-pane" id="empsTab"></div>
+
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-info edit-slot">Edit Slot</button>
@@ -252,6 +268,7 @@
         var delete_slot_url = "{% url 'delete_shift_slot'%}";
         var next_slots_url = "{% url 'get_next_slots' %}";
         var finish_slots_url = "{% url 'finish_slots' %}";
+        var slot_request_employees = "{% url 'slot_request_employees' 0%}";
         var start_date = "{{ start_date }}";
         var deadline_date = "{{ deadline_date }}";
     </script>

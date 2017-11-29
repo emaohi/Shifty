@@ -52,6 +52,13 @@ class Business(models.Model):
     def get_employees(self):
         return self.employeeprofile_set.all()
 
+    def has_deadline_day_passed(self):
+        today_weekday = datetime.today().weekday() + 2
+        today_weekday = 1 if today_weekday == 8 else today_weekday
+        today_weekday = 2 if today_weekday == 9 else today_weekday
+
+        return today_weekday >= int(self.deadline_day)
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)

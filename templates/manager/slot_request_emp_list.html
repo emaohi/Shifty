@@ -1,0 +1,9 @@
+{% if emps|length > 0 %}
+<ul class="list-group">
+    {% for emp in emps %}
+    <li class="list-group-item">{{ emp }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+No employees chose this slot
+{% endif %}

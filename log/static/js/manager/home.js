@@ -139,7 +139,6 @@ function deleteSlot(shiftId) {
 }
 
 function display_cal(event_list) {
-
     var id_to_constraint_json = JSON.parse(event_list.pop());
 
     var r_list = [];
@@ -168,26 +167,34 @@ function display_cal(event_list) {
 
 function showSlotDetails(shiftId, constraints_json){
 
-    $('#constraintModal').find('.modal-body').html(listifyConstraintJson(constraints_json));
-    // $('#constraintModal').find('.modal-body').html(constraints_json);
+    $('#constraintTab').html(listifyConstraintJson(constraints_json));
     $('#constraintModal').find('.modal-title').html('Shift #' + shiftId + ' constraints');
+
+    getSlotEmpList(shiftId);
 
     $('#putShiftId').text(shiftId);
     $('#constraintModal').modal('show');
 }
+function getSlotEmpList(shiftId) {
+    $.ajax({
+        url: slot_request_employees.slice(0, -1) + shiftId, //from template
+        type: "get", //send it through get method,
+        success: function (res) {
+            $("#empsTab").html(res);
+        }
+    });
+}
 
 function listifyConstraintJson(constraints_json) {
-    var $div = '<div>';
-    console.log('root constraints are ' + JSON.stringify(constraints_json));
+    var $div = '<div class="container">';
+    $div += '<div class="row">';
+    $div += '<div class=col-md-8>';
     $.each(constraints_json, function (role, constraints) {
         var $roleDiv = '<div>';
         $roleDiv += '<h3>' + role + ' - ' + constraints.num + ' employee/s' + '</h3>';
         var $conList = '<ul class="list-group">';
-        console.log('curr constraints are ' + JSON.stringify(constraints));
         $.each(constraints, function (field, field_json) {
-            console.log('field before is ' + field);
             if (field != 'num') {
-                console.log('field is ' + field);
                 $conList += '<li class="list-group-item">' + make_sentence(field, field_json) + '</li>';
             }
         });
@@ -197,7 +204,7 @@ function listifyConstraintJson(constraints_json) {
 
         $div += $roleDiv;
     });
-    $div += '</div>';
+    $div += '</div></div></div>';
     return $div;
 }
 

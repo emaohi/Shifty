@@ -13,7 +13,7 @@ from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
     save_shifts_request, delete_other_requests
@@ -307,3 +307,18 @@ def get_work_duration_data(request):
         return JsonResponse(distance_data)
 
     return HttpResponseBadRequest('cannot get distance data with ' + request.method)
+
+
+def get_slot_request_employees(request, slot_id):
+    if request.method == 'GET':
+        business = get_curr_business(request)
+        if not business.has_deadline_day_passed():
+            return HttpResponse('Data will be available when deadline day is passed')
+        requested_slot = ShiftSlot.objects.get(id=slot_id)
+        if not requested_slot.is_next_week():
+            return HttpResponseBadRequest('slot is not next week')
+
+        slot_requests = ShiftRequest.objects.filter(requested_slots=requested_slot)
+
+        return render(request, 'manager/slot_request_emp_list.html',
+                      {'emps': [req.employee for req in slot_requests]})
