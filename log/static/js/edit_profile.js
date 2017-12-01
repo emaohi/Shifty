@@ -67,6 +67,12 @@ function report_incorrect($btn, field, fix, curr_val) {
                 $btn.remove();
                 $spinner.hide();
 
-            }
+      },
+      error: function (response) {
+                $btn.siblings('input[class="new_text"]').remove();
+                $btn.after('<p style="display: inline; margin-left: 10px"> <b> '+ response.responseText + '</b> </p>');
+                $btn.remove();
+                $spinner.hide();
+      }
     });
 }
