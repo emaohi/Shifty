@@ -258,7 +258,7 @@ class SelectSlotsForm(forms.ModelForm):
         self.business = kwargs.pop('business')
         week = kwargs.pop('week')
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
-        self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(business, week)
+        self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(self.business, week)
         logger.info("query set is %s", self.fields['requested_slots'].queryset)
         self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'
 
