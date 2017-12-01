@@ -2,6 +2,7 @@ import datetime
 import json
 
 import logging
+import urllib
 
 import requests
 from django.core.cache import cache
@@ -102,6 +103,14 @@ def save_holidays(holiday_json):
 
         new_holiday = Holiday(name=h_name, date=date)
         new_holiday.save()
+
+
+def validate_language(text):
+    url = settings.PROFANITY_SERVICE_URL % urllib.quote(text)
+    res = requests.get(url)
+    if res.text == 'true':
+        return False
+    return True
 
 
 def get_holiday_or_none(year, day, week):

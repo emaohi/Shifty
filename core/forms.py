@@ -255,9 +255,15 @@ class SelectSlotsForm(forms.ModelForm):
         exclude = ('employee', 'submission_time')
 
     def __init__(self, *args, **kwargs):
-        business = kwargs.pop('business')
+        self.business = kwargs.pop('business')
         week = kwargs.pop('week')
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
-        self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(business, week)
+        self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(self.business, week)
         logger.info("query set is %s", self.fields['requested_slots'].queryset)
         self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'
+
+    def clean(self):
+        super(SelectSlotsForm, self).clean()
+
+        if not self.business.slot_request_enabled:
+            raise forms.ValidationError('Slots request is currently unavailable')

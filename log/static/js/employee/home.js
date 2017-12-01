@@ -6,6 +6,7 @@ $(document).ready(function () {
 
     showNextWeekSlotsList();
 
+    populateTimerDiv();
 });
 
 function showNextWeekSlotsList() {
@@ -23,4 +24,18 @@ function displaySlotList(slotsData) {
     $(".slotRows").html(slotsData);
     $('.selectpicker').selectpicker();
 }
-// }
+
+function populateTimerDiv() {
+    if (deadline_date != "None") {
+        $('#timerH').countdown(deadline_date, function (event) {
+            $(this).html(event.strftime('Deadline in: '
+                + '<span>%d</span> days, '
+                + '<span>%H</span> hours, '
+                + '<span>%M</span> minutes, '
+                + '<span>%S</span> seconds ')
+            );
+        });
+    } else {
+        $('#timerH').text('Time for shift requests is over !');
+    }
+}

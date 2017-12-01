@@ -17,7 +17,7 @@ from core.utils import get_employee_requests_with_status, get_manger_msgs_of_emp
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
 
-from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business
+from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback
 from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger('cool')
@@ -53,7 +53,7 @@ def manager_home(request):
 
 
 @login_required(login_url="/login")
-@user_passes_test(lambda user: user.groups.filter(name='Employees').exists(), login_url='/')
+@user_passes_test(must_be_employee_callback, login_url='/')
 def emp_home(request):
     manager_messages = get_manger_msgs_of_employee(request.user.profile)
 
@@ -63,11 +63,14 @@ def emp_home(request):
     existing_request = ShiftRequest.objects.filter(employee=get_curr_profile(request),
                                                    submission_time__range=[start_week, end_week]).first()
 
-    request_enabled = get_curr_business(request).slot_request_enabled
+    deadline_date_str = get_current_deadline_date_string(get_curr_profile(request).business.deadline_day)
+
+    request_enabled = get_curr_business(request).slot_request_enabled and deadline_date_str
 
     return render(request, "employee/home.html", {'manager_msgs': manager_messages,
                                                   'got_request_slots': existing_request.requested_slots.all()
-                                                  if existing_request else None, 'request_enabled': request_enabled})
+                                                  if existing_request else None, 'request_enabled': request_enabled,
+                                                  'deadline_date': deadline_date_str})
 
 
 def register(request):
