@@ -112,8 +112,8 @@ class BroadcastMessageViewTest(TestCase):
 
 class AddShiftSlotViewTest(TestCase):
     dummy_slot = {
-        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
-        'num_of_bartenders': '1', 'num_of_cooks': '1'
+        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
 
     @classmethod
@@ -160,8 +160,8 @@ class AddShiftSlotViewTest(TestCase):
 
 class DeleteShiftSlotViewTest(TestCase):
     dummy_slot = {
-        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
-        'num_of_bartenders': '1', 'num_of_cooks': '1'
+        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
 
     @classmethod
