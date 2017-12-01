@@ -9,16 +9,17 @@ from core.test.test_helpers import create_new_manager, create_new_employee, \
 
 
 class EmployeeRequestViewTest(TestCase):
+    incorrect_data = {'incorrect_data': 'incorrect', 'fix_suggestion': 'fix'}
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
     @classmethod
     def setUpTestData(cls):
         create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
 
     def setUp(self):
-        self.incorrect_data = {'incorrect_data': 'incorrect', 'fix_suggestion': 'fix'}
-        self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
-        self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
-        create_new_manager(self.manager_credentials)
-        create_new_employee(self.emp_credentials)
 
         self.client.logout()
 
@@ -38,15 +39,16 @@ class EmployeeRequestViewTest(TestCase):
 
 
 class HandleRequestViewTest(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
     @classmethod
     def setUpTestData(cls):
         create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
 
     def setUp(self):
-        self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
-        self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
-        create_new_manager(self.manager_credentials)
-        create_new_employee(self.emp_credentials)
 
         self._create_incorrect_data()
         created_req_id = EmployeeRequest.objects.all().first().id
@@ -75,16 +77,18 @@ class HandleRequestViewTest(TestCase):
 
 
 class BroadcastMessageViewTest(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
     @classmethod
     def setUpTestData(cls):
         create_manager_and_employee_groups()
 
+        cls.broadcast_msg = {'subject': 'broadcast_subject', 'text': 'broadcast_text'}
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
+
     def setUp(self):
-        self.broadcast_msg = {'subject': 'broadcast_subject', 'text': 'broadcast_text'}
-        self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
-        self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
-        create_new_manager(self.manager_credentials)
-        create_new_employee(self.emp_credentials)
 
         self.client.logout()
 
@@ -115,18 +119,18 @@ class AddShiftSlotViewTest(TestCase):
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
         'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
     @classmethod
     def setUpTestData(cls):
         create_manager_and_employee_groups()
 
-    def setUp(self):
-        add_fields_to_slot(self.dummy_slot)
+        add_fields_to_slot(cls.dummy_slot)
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
 
-        self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
-        self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
-        create_new_manager(self.manager_credentials)
-        create_new_employee(self.emp_credentials)
+    def setUp(self):
 
         self.client.logout()
 
@@ -163,18 +167,17 @@ class DeleteShiftSlotViewTest(TestCase):
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
         'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
     @classmethod
     def setUpTestData(cls):
         create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
+        add_fields_to_slot(cls.dummy_slot)
 
     def setUp(self):
-        add_fields_to_slot(self.dummy_slot)
-
-        self.emp_credentials = {'username': 'testuser1', 'password': 'secret'}
-        self.manager_credentials = {'username': 'testuser2', 'password': 'secret'}
-        create_new_manager(self.manager_credentials)
-        create_new_employee(self.emp_credentials)
 
         self.client.login(**self.manager_credentials)
         self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
@@ -227,3 +230,25 @@ class GetDurationDataViewTest(TestCase):
         self.client.login(**self.manager_credentials)
         resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
         self.assertEqual(resp.status_code, 400)
+
+
+class GetSlotRequestersViewTest(TestCase):
+    dummy_slot = {
+        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
+    }
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        add_fields_to_slot(cls.dummy_slot)
+
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
+
+    def setUp(self):
+        self.client.login(**self.manager_credentials)
+        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        self.client.logout()
