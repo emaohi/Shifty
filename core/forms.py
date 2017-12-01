@@ -4,6 +4,7 @@ from django.forms import TextInput
 
 from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount, get_next_week_num
 from core.models import ManagerMessage, ShiftSlot, ShiftRequest
+from core.utils import get_cached_non_mandatory_slots
 from log.models import EmployeeProfile
 
 logger = logging.getLogger('cool')
@@ -77,11 +78,11 @@ class ShiftSlotForm(forms.Form):
                     forms.CharField(required=False, disabled=True,
                                     widget=forms.TextInput(
                                         attrs={'placeholder': (role + ' ' + field).replace('_', ' ').title()}))
-                self.fields[role + '_' + field + '__operation_constraint'] =\
+                self.fields[role + '_' + field + '__operation_constraint'] = \
                     forms.ChoiceField(choices=self.OP_CHOICES, disabled=True if field is 'gender' else False,
                                       required=False, initial='eq' if field is 'gender' else '')
                 self.fields[role + '_' + field + '__value_constraint'] = val
-                self.fields[role + '_' + field + '__applyOn_constraint'] =\
+                self.fields[role + '_' + field + '__applyOn_constraint'] = \
                     forms.IntegerField(min_value=0,
                                        widget=forms.NumberInput(attrs={'placeholder': 'Apply on'}), required=False)
 
@@ -97,11 +98,25 @@ class ShiftSlotForm(forms.Form):
     def clean(self):
         clean_data = super(ShiftSlotForm, self).clean()
 
+        self.validate_enough_of_role(clean_data)
         self.validate_apply_less_than_role_num(clean_data)
         self.validate_end_after_start(clean_data)
         self.validate_no_partial_empty_constraints(clean_data)
         self.validate_constraints_can_be_fulfilled(clean_data)
         self.validate_slot_not_overlaping(clean_data)
+
+    def validate_enough_of_role(self, clean_data):
+        for role in self.roles:
+            role_reverse = dict((v, k) for k, v in EmployeeProfile.ROLE_CHOICES)
+            requested_num_of_role = int(clean_data['num_of_' + role + 's'])
+            real_num_of_role = EmployeeProfile.objects.filter(business=self.business,
+                                                              role=role_reverse[role.title()]).count()
+
+            if requested_num_of_role > real_num_of_role:
+                msg = 'you cant request %s %ss, there are only %s' % (requested_num_of_role, role,
+                                                                      real_num_of_role)
+                logger.error(msg)
+                raise forms.ValidationError(msg)
 
     def validate_no_partial_empty_constraints(self, clean_data):
         for group in self.get_constraint_groups():
@@ -133,7 +148,7 @@ class ShiftSlotForm(forms.Form):
             value = clean_data[group + '__value_constraint']
             apply_on = clean_data[group + '__applyOn_constraint']
             if not self.validate_constraint_group(role, field, operation, value, apply_on):
-                msg = 'There are not %s or more %ss whose %s are %s than/to %s' %\
+                msg = 'There are not %s or more %ss whose %s are %s than/to %s' % \
                       (apply_on, role, field, operation, value)
                 logger.error(msg)
                 raise forms.ValidationError(msg)
@@ -158,14 +173,14 @@ class ShiftSlotForm(forms.Form):
             operation = 'exact'
         lookup = '%s__%s' % (field, operation)
         role_reverse = dict((v, k) for k, v in EmployeeProfile.ROLE_CHOICES)
-        filtered_emps = EmployeeProfile.objects\
+        filtered_emps = EmployeeProfile.objects \
             .filter(**{'business__business_name': self.business.business_name, 'role': role_reverse[role.title()],
                        lookup: value})
         return len(filtered_emps) >= apply_on
 
     @staticmethod
     def validate_slot_not_overlaping(clean_data):
-        next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), day=clean_data['day'])\
+        next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), day=clean_data['day']) \
             .order_by('start_hour')
         if not next_week_slots:
             return
@@ -190,9 +205,9 @@ class ShiftSlotForm(forms.Form):
             raise forms.ValidationError('slot overlap')
 
         curr_index = curr_start_index
-        if (curr_index != 0 and sorted_start_times[curr_index] < sorted_end_times[curr_index - 1])\
-            or (curr_index != len(sorted_start_times) - 1 and
-                sorted_end_times[curr_index] > sorted_start_times[curr_index + 1]):
+        if (curr_index != 0 and sorted_start_times[curr_index] < sorted_end_times[curr_index - 1]) \
+                or (curr_index != len(sorted_start_times) - 1 and
+                            sorted_end_times[curr_index] > sorted_start_times[curr_index + 1]):
             raise forms.ValidationError('slot overlap')
 
     @staticmethod
@@ -224,8 +239,8 @@ class ShiftSlotForm(forms.Form):
     def validate_all_none_or_not_none(elements):
 
         none_list = [None, '']
-        return all([(elem in none_list) for elem in elements]) or\
-            all([(elem not in none_list) for elem in elements])
+        return all([(elem in none_list) for elem in elements]) or \
+               all([(elem not in none_list) for elem in elements])
 
     @staticmethod
     def remove_duplicates(seq):
@@ -243,8 +258,7 @@ class SelectSlotsForm(forms.ModelForm):
         self.business = kwargs.pop('business')
         week = kwargs.pop('week')
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
-        self.fields['requested_slots'].queryset = ShiftSlot.objects.filter(week=week, business=self.business).\
-            exclude(is_mandatory=True)
+        self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(business, week)
         logger.info("query set is %s", self.fields['requested_slots'].queryset)
         self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'
 

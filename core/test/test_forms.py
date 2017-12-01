@@ -12,7 +12,7 @@ from log.models import Business, EmployeeProfile
 class ShiftSlotFormTest(TestCase):
     dummy_slot = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
-        'num_of_bartenders': '1', 'num_of_cooks': '1'
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
 
     @classmethod
@@ -69,5 +69,12 @@ class ShiftSlotFormTest(TestCase):
     def test_overlap_slots_should_fail(self):
         ShiftSlot.objects.create(business=Business.objects.get(business_name='dummy'), week=get_next_week_num(),
                                  day='3', start_hour='12:00:00', end_hour='13:00:00')
+        form = ShiftSlotForm(self.dummy_slot, business=Business.objects.get(business_name='dummy'))
+        self.assertFalse(form.is_valid())
+
+    def test_not_enough_total_waiters_should_fail(self):
+        test_emp = EmployeeProfile.objects.get(user__username=self.emp_credentials['username'])
+        test_emp.role = 'CO'
+        test_emp.save()
         form = ShiftSlotForm(self.dummy_slot, business=Business.objects.get(business_name='dummy'))
         self.assertFalse(form.is_valid())

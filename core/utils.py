@@ -5,6 +5,7 @@ import logging
 import urllib
 
 import requests
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
@@ -207,3 +208,16 @@ def delete_other_requests(request, slots_request):
                 submission_time__range=[start_week, end_week]). \
         exclude(submission_time=slots_request.submission_time)
     existing_requests.delete()
+
+
+def get_cached_non_mandatory_slots(business, week):
+
+    half_an_hour = 30 * 60
+
+    key = "next-week-slots-{0}-{1}".format(business, week)
+    if key not in cache:
+        slots = ShiftSlot.objects.filter(week=week, business=business). \
+            exclude(is_mandatory=True)
+        cache.set(key, slots, half_an_hour)
+        return slots
+    return cache.get(key)
