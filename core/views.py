@@ -315,11 +315,10 @@ def get_work_duration_data(request):
     return HttpResponseBadRequest('cannot get distance data with ' + request.method)
 
 
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
 def get_slot_request_employees(request, slot_id):
     if request.method == 'GET':
-        business = get_curr_business(request)
-        if not business.has_deadline_day_passed():
-            return HttpResponse('Data will be available when deadline day is passed')
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if not requested_slot.is_next_week():
             return HttpResponseBadRequest('slot is not next week')
@@ -328,3 +327,7 @@ def get_slot_request_employees(request, slot_id):
 
         return render(request, 'manager/slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests]})
+
+
+def get_menu_test(request):
+    pass
