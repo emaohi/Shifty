@@ -1,6 +1,48 @@
-webpackJsonp([2,4],{
+webpackJsonp(["styles"],{
 
-/***/ 201:
+/***/ "../../../../../src/styles.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__("../../../../css-loader/index.js?{\"sourceMap\":false,\"importLoaders\":1}!../../../../postcss-loader/lib/index.js?{\"ident\":\"postcss\",\"sourceMap\":false}!../../../../../src/styles.css");
+if(typeof content === 'string') content = [[module.i, content, '']];
+// add the styles to the DOM
+var update = __webpack_require__("../../../../style-loader/addStyles.js")(content, {});
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js??ref--7-1!../node_modules/postcss-loader/lib/index.js??postcss!./styles.css", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js??ref--7-1!../node_modules/postcss-loader/lib/index.js??postcss!./styles.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+
+/***/ "../../../../css-loader/index.js?{\"sourceMap\":false,\"importLoaders\":1}!../../../../postcss-loader/lib/index.js?{\"ident\":\"postcss\",\"sourceMap\":false}!../../../../../src/styles.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "/* You can add global styles to this file, and also import other style files */\n", ""]);
+
+// exports
+
+
+/***/ }),
+
+/***/ "../../../../css-loader/lib/css-base.js":
 /***/ (function(module, exports) {
 
 /*
@@ -8,21 +50,19 @@ webpackJsonp([2,4],{
 	Author Tobias Koppers @sokra
 */
 // css base code, injected by the css-loader
-module.exports = function() {
+module.exports = function(useSourceMap) {
 	var list = [];
 
 	// return the list of modules as css string
 	list.toString = function toString() {
-		var result = [];
-		for(var i = 0; i < this.length; i++) {
-			var item = this[i];
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
 			if(item[2]) {
-				result.push("@media " + item[2] + "{" + item[1] + "}");
+				return "@media " + item[2] + "{" + content + "}";
 			} else {
-				result.push(item[1]);
+				return content;
 			}
-		}
-		return result.join("");
+		}).join("");
 	};
 
 	// import a list of modules into the list
@@ -54,52 +94,38 @@ module.exports = function() {
 	return list;
 };
 
-
-/***/ }),
-
-/***/ 504:
-/***/ (function(module, exports, __webpack_require__) {
-
-// style-loader: Adds some css to the DOM by adding a <style> tag
-
-// load the styles
-var content = __webpack_require__(616);
-if(typeof content === 'string') content = [[module.i, content, '']];
-// add the styles to the DOM
-var update = __webpack_require__(636)(content, {});
-if(content.locals) module.exports = content.locals;
-// Hot Module Replacement
-if(false) {
-	// When the styles change, update the <style> tags
-	if(!content.locals) {
-		module.hot.accept("!!../node_modules/css-loader/index.js?{\"sourceMap\":false,\"importLoaders\":1}!../node_modules/postcss-loader/index.js!./styles.css", function() {
-			var newContent = require("!!../node_modules/css-loader/index.js?{\"sourceMap\":false,\"importLoaders\":1}!../node_modules/postcss-loader/index.js!./styles.css");
-			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-			update(newContent);
-		});
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
 	}
-	// When the module is disposed, remove the <style> tags
-	module.hot.dispose(function() { update(); });
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
 }
 
-/***/ }),
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
 
-/***/ 616:
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(201)();
-// imports
-
-
-// module
-exports.push([module.i, "h1{\n    color:#740808;\n    font-weight:normal;\n}\nh2{\n    font-weight:normal;\n}\n\nhr{\n    border:none;\n    border-top:1px solid #ddd;\n    background:none;\n    margin:8px 0;\n}\n\n.option{\n    background-color:#cadaee;\n    font-size:20px;\n    padding:10px;\n    margin:3px;\n}\n.option label{\n    font-weight:normal;\n}\n    #quiz .options input[type=checkbox] {\n        background-color:#eee;\n        border:1px solid #ccc;\n        height:22px;\n        width:22px;\n    }\n    \ndiv.review{\n    text-align:center;\n}\ndiv.review > div {\n    cursor:pointer;\n}\n\n.answered {\n    background-color:#ccffcc;\n    border:1px solid #aaeeaa;\n    margin:2px 0;\n    padding:12px;\n}\n\n.not-answered {\n    background-color:#ffcccc;\n    border:1px solid #eeaaaa;\n    margin:2px 0;\n    padding:12px;\n}\n\n.result-question{\n    background-color:#eee;\n    margin:4px;\n    padding:6px;\n}\n\n    \n/* Create Quiz Styles */\n.create-quiz .question {\n    text-align:left;\n}\n.create-quiz input[type=text]{\n    border:1px solid #ddd;\n    width:95%;\n}\n.create-quiz .tb-quiz-name{\n    background-color:#ccffcc;\n    text-align:center;\n}\n\n.create-quiz .tb-desc{\n    background-color:#fff;\n}\n\n.create-quiz .options > div{\n    margin-left:20px;\n}\n.create-quiz .options input[type=checkbox]{\n    border: 1px solid #262626;\n    display: inline-block;\n    height:20px;\n    margin-top:10px;\n    margin-bottom:0;\n    padding:0;\n    width:20px;\n    -webkit-appearance:checkbox;    \n}\n\n@media only screen and (max-width: 480px) {\n    h1,.h1{\n        font-size:22px;\n    }\n    h2,.h2{\n        font-size:20px;\n    }\n    h3,.h3{\n        font-size:18px;\n    }\n    .option {\n        font-size: 16px;\n        padding: 6px;\n    }\n}", ""]);
-
-// exports
+	return '/*# ' + data + ' */';
+}
 
 
 /***/ }),
 
-/***/ 636:
+/***/ "../../../../style-loader/addStyles.js":
 /***/ (function(module, exports) {
 
 /*
@@ -352,13 +378,13 @@ function updateLink(linkElement, obj) {
 
 /***/ }),
 
-/***/ 639:
+/***/ 2:
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(504);
+module.exports = __webpack_require__("../../../../../src/styles.css");
 
 
 /***/ })
 
-},[639]);
+},[2]);
 //# sourceMappingURL=styles.bundle.js.map

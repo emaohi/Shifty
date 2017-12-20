@@ -1,222 +1,143 @@
-webpackJsonp([1,4],{
+webpackJsonp(["main"],{
 
-/***/ 204:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_core_js_es6_symbol__ = __webpack_require__(270);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_core_js_es6_symbol___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_core_js_es6_symbol__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_core_js_es6_object__ = __webpack_require__(263);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_core_js_es6_object___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_core_js_es6_object__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_core_js_es6_function__ = __webpack_require__(259);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_core_js_es6_function___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_core_js_es6_function__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_core_js_es6_parse_int__ = __webpack_require__(265);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3_core_js_es6_parse_int___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_3_core_js_es6_parse_int__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_core_js_es6_parse_float__ = __webpack_require__(264);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4_core_js_es6_parse_float___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_4_core_js_es6_parse_float__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_core_js_es6_number__ = __webpack_require__(262);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5_core_js_es6_number___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_5_core_js_es6_number__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_core_js_es6_math__ = __webpack_require__(261);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6_core_js_es6_math___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_6_core_js_es6_math__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_core_js_es6_string__ = __webpack_require__(269);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7_core_js_es6_string___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_7_core_js_es6_string__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_core_js_es6_date__ = __webpack_require__(258);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8_core_js_es6_date___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_8_core_js_es6_date__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_core_js_es6_array__ = __webpack_require__(257);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9_core_js_es6_array___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_9_core_js_es6_array__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_core_js_es6_regexp__ = __webpack_require__(267);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_core_js_es6_regexp___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_10_core_js_es6_regexp__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_core_js_es6_map__ = __webpack_require__(260);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11_core_js_es6_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_11_core_js_es6_map__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_core_js_es6_set__ = __webpack_require__(268);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12_core_js_es6_set___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_12_core_js_es6_set__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_core_js_es6_reflect__ = __webpack_require__(266);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13_core_js_es6_reflect___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_13_core_js_es6_reflect__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_core_js_es7_reflect__ = __webpack_require__(271);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14_core_js_es7_reflect___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_14_core_js_es7_reflect__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone__ = __webpack_require__(412);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_15_zone_js_dist_zone__);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/polyfills.js.map
-
-/***/ }),
-
-/***/ 495:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Option; });
-var Option = (function () {
-    function Option(data) {
-        data = data || {};
-        this.id = data.id;
-        this.questionId = data.questionId;
-        this.name = data.name;
-        this.isAnswer = data.isAnswer;
-    }
-    return Option;
-}());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/option.js.map
-
-/***/ }),
-
-/***/ 496:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__option__ = __webpack_require__(495);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Question; });
-
-var Question = (function () {
-    function Question(data) {
-        var _this = this;
-        data = data || {};
-        this.id = data.id;
-        this.name = data.name;
-        this.questionTypeId = data.questionTypeId;
-        this.options = [];
-        data.options.forEach(function (o) {
-            _this.options.push(new __WEBPACK_IMPORTED_MODULE_0__option__["a" /* Option */](o));
-        });
-    }
-    return Question;
-}());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/question.js.map
-
-/***/ }),
-
-/***/ 497:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizConfig; });
-var QuizConfig = (function () {
-    function QuizConfig(data) {
-        data = data || {};
-        this.allowBack = data.allowBack;
-        this.allowReview = data.allowReview;
-        this.autoMove = data.autoMove;
-        this.duration = data.duration;
-        this.pageSize = data.pageSize;
-        this.requiredAll = data.requiredAll;
-        this.richText = data.richText;
-        this.shuffleQuestions = data.shuffleQuestions;
-        this.shuffleOptions = data.shuffleOptions;
-        this.showClock = data.showClock;
-        this.showPager = data.showPager;
-    }
-    return QuizConfig;
-}());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/quiz-config.js.map
-
-/***/ }),
-
-/***/ 502:
+/***/ "../../../../../src/$$_lazy_route_resource lazy recursive":
 /***/ (function(module, exports) {
 
-function webpackEmptyContext(req) {
-	throw new Error("Cannot find module '" + req + "'.");
+function webpackEmptyAsyncContext(req) {
+	// Here Promise.resolve().then() is used instead of new Promise() to prevent
+	// uncatched exception popping up in devtools
+	return Promise.resolve().then(function() {
+		throw new Error("Cannot find module '" + req + "'.");
+	});
 }
-webpackEmptyContext.keys = function() { return []; };
-webpackEmptyContext.resolve = webpackEmptyContext;
-module.exports = webpackEmptyContext;
-webpackEmptyContext.id = 502;
-
+webpackEmptyAsyncContext.keys = function() { return []; };
+webpackEmptyAsyncContext.resolve = webpackEmptyAsyncContext;
+module.exports = webpackEmptyAsyncContext;
+webpackEmptyAsyncContext.id = "../../../../../src/$$_lazy_route_resource lazy recursive";
 
 /***/ }),
 
-/***/ 503:
+/***/ "../../../../../src/app/app-routing.module.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__polyfills_ts__ = __webpack_require__(204);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__ = __webpack_require__(589);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_core__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__(615);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_app_module__ = __webpack_require__(610);
-
-
-
-
-
-if (__WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment */].production) {
-    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_2__angular_core__["a" /* enableProdMode */])();
-}
-__webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_4__app_app_module__["a" /* AppModule */]);
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/main.js.map
-
-/***/ }),
-
-/***/ 609:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(1);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppRoutingModule; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__ = __webpack_require__("../../../../../src/app/quiz/quiz.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__("../../../common/esm5/common.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+
+
+
+
+var routes = [
+    { path: '', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
+    { path: 'review', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
+    { path: 'submit', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
+];
+var AppRoutingModule = (function () {
+    function AppRoutingModule() {
+    }
+    AppRoutingModule = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgModule */])({
+            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */].forRoot(routes)],
+            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */]],
+            providers: [{ provide: __WEBPACK_IMPORTED_MODULE_3__angular_common__["a" /* APP_BASE_HREF */], useValue: '/menu/test' }]
+        })
+    ], AppRoutingModule);
+    return AppRoutingModule;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/app.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "/* AppComponent's private CSS styles */\nh1 {\n  font-size: 1.2em;\n  color: #999;\n  margin-bottom: 0;\n}\nh2 {\n  font-size: 2em;\n  margin-top: 0;\n  padding-top: 0;\n}\nnav a {\n  padding: 5px 10px;\n  text-decoration: none;\n  margin-top: 10px;\n  display: inline-block;\n  background-color: #eee;\n  border-radius: 4px;\n}\nnav a:visited, a:link {\n  color: #607D8B;\n}\nnav a:hover {\n  color: #039be5;\n  background-color: #CFD8DC;\n}\nnav a.active {\n  color: #039be5;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/app.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<router-outlet></router-outlet>\n\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/app.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 
 var AppComponent = (function () {
     function AppComponent() {
     }
     AppComponent = __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["U" /* Component */])({
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
             selector: 'app-root',
-            template: __webpack_require__(619),
-            styles: [__webpack_require__(617)]
-        }), 
-        __metadata('design:paramtypes', [])
+            template: __webpack_require__("../../../../../src/app/app.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/app.component.css")]
+        })
     ], AppComponent);
     return AppComponent;
 }());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/app.component.js.map
+
+
 
 /***/ }),
 
-/***/ 610:
+/***/ "../../../../../src/app/app.module.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__(249);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_forms__ = __webpack_require__(580);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_http__ = __webpack_require__(477);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_component__ = __webpack_require__(609);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__quiz_quiz_component__ = __webpack_require__(613);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return AppModule; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__ = __webpack_require__("../../../platform-browser/esm5/platform-browser.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_component__ = __webpack_require__("../../../../../src/app/app.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__quiz_quiz_component__ = __webpack_require__("../../../../../src/app/quiz/quiz.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__app_routing_module__ = __webpack_require__("../../../../../src/app/app-routing.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_6__angular_common_http__ = __webpack_require__("../../../common/esm5/http.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__in_memory_data_service__ = __webpack_require__("../../../../../src/app/in-memory-data.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__angular_forms__ = __webpack_require__("../../../forms/esm5/forms.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__ = __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
+
+
+
+
 
 
 
@@ -227,55 +148,129 @@ var AppModule = (function () {
     function AppModule() {
     }
     AppModule = __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_1__angular_core__["b" /* NgModule */])({
+        Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__["I" /* NgModule */])({
             declarations: [
-                __WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */],
-                __WEBPACK_IMPORTED_MODULE_5__quiz_quiz_component__["a" /* QuizComponent */]
+                __WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */],
+                __WEBPACK_IMPORTED_MODULE_3__quiz_quiz_component__["a" /* QuizComponent */],
+                __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
-                __WEBPACK_IMPORTED_MODULE_2__angular_forms__["a" /* FormsModule */],
-                __WEBPACK_IMPORTED_MODULE_3__angular_http__["a" /* HttpModule */]
+                __WEBPACK_IMPORTED_MODULE_8__angular_forms__["a" /* FormsModule */],
+                __WEBPACK_IMPORTED_MODULE_4__app_routing_module__["a" /* AppRoutingModule */],
+                __WEBPACK_IMPORTED_MODULE_6__angular_common_http__["b" /* HttpClientModule */],
             ],
-            providers: [],
-            bootstrap: [__WEBPACK_IMPORTED_MODULE_4__app_component__["a" /* AppComponent */]]
-        }), 
-        __metadata('design:paramtypes', [])
+            providers: [__WEBPACK_IMPORTED_MODULE_5__quiz_service__["a" /* QuizService */], __WEBPACK_IMPORTED_MODULE_7__in_memory_data_service__["a" /* InMemoryDataService */]],
+            bootstrap: [__WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */]]
+        })
     ], AppModule);
     return AppModule;
 }());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/app.module.js.map
+
+
 
 /***/ }),
 
-/***/ 611:
+/***/ "../../../../../src/app/in-memory-data.service.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__option__ = __webpack_require__(495);
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__question__ = __webpack_require__(496);
-/* unused harmony namespace reexport */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz__ = __webpack_require__(612);
-/* harmony namespace reexport (by used) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_2__quiz__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__quiz_config__ = __webpack_require__(497);
-/* unused harmony namespace reexport */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return InMemoryDataService; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+
+var InMemoryDataService = (function () {
+    function InMemoryDataService() {
+    }
+    InMemoryDataService.prototype.createDb = function () {
+        var test = [
+            { id: 'get_quiz', time_to_pass: 15, score_to_pass: 60, name: 'Waiters test', questions: this.createQuestions(10) },
+        ];
+        return { test: test };
+    };
+    InMemoryDataService.prototype.createQuestions = function (num) {
+        var questions = [];
+        var drinks = { 0: 'Rum', 1: 'Tapioca', 2: 'Whiskey', 3: 'Vodka' };
+        for (var i = 0; i < num; i++) {
+            questions.push({ id: i, name: 'What is the best ' + drinks[i % 4],
+                answers: this.createAnswers(i), answered: true });
+        }
+        return questions;
+    };
+    InMemoryDataService.prototype.createAnswers = function (num) {
+        var answers = [];
+        for (var i = 0; i < 4; i++) {
+            answers.push({ id: 1, questionId: 1, isAnswer: i == 1,
+                name: 'koko_' + (num + 1) + '_' + (i + 1), selected: false });
+        }
+        return answers;
+    };
+    InMemoryDataService = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])()
+    ], InMemoryDataService);
+    return InMemoryDataService;
+}());
 
 
-
-
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/index.js.map
 
 /***/ }),
 
-/***/ 612:
+/***/ "../../../../../src/app/models/answer.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__quiz_config__ = __webpack_require__(497);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__question__ = __webpack_require__(496);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Answer; });
+var Answer = (function () {
+    function Answer(data) {
+        data = data || {};
+        this.id = data.id;
+        this.questionId = data.questionId;
+        this.name = data.name;
+        this.isAnswer = data.isAnswer;
+    }
+    return Answer;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/models/question.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Question; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__answer__ = __webpack_require__("../../../../../src/app/models/answer.ts");
+
+var Question = (function () {
+    function Question(data) {
+        var _this = this;
+        data = data || {};
+        this.id = data.id;
+        this.name = data.name;
+        this.answers = [];
+        data.answers.forEach(function (a) {
+            _this.answers.push(new __WEBPACK_IMPORTED_MODULE_0__answer__["a" /* Answer */](a));
+        });
+    }
+    return Question;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/models/quiz.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Quiz; });
-
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__question__ = __webpack_require__("../../../../../src/app/models/question.ts");
 
 var Quiz = (function () {
     function Quiz(data) {
@@ -283,28 +278,192 @@ var Quiz = (function () {
         if (data) {
             this.id = data.id;
             this.name = data.name;
-            this.description = data.description;
-            this.config = new __WEBPACK_IMPORTED_MODULE_0__quiz_config__["a" /* QuizConfig */](data.config);
+            this.scoreToPass = data.score_to_pass;
+            this.time = data.time_to_pass;
             this.questions = [];
-            data.questions.forEach(function (q) {
-                _this.questions.push(new __WEBPACK_IMPORTED_MODULE_1__question__["a" /* Question */](q));
-            });
+            if (data.questions) {
+                data.questions.forEach(function (q) {
+                    _this.questions.push(new __WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */](q));
+                });
+            }
+            else {
+                this.questions = [];
+            }
         }
     }
     return Quiz;
 }());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/quiz.js.map
+
+
 
 /***/ }),
 
-/***/ 613:
+/***/ "../../../../../src/app/quiz-review/quiz-review.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".answered {\n  background-color:lightskyblue;\n  border:1px solid lightskyblue;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:#ffcccc;\n  border:1px solid #eeaaaa;\n  margin:2px 0;\n  padding:12px;\n}\n\n.offset-sm-4 {\n  margin-bottom: 40px;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-review/quiz-review.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-review/quiz-review.component.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__services_quiz_service__ = __webpack_require__(614);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__models_index__ = __webpack_require__(611);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizReviewComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var QuizReviewComponent = (function () {
+    function QuizReviewComponent() {
+        this.showQuestion = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
+    }
+    QuizReviewComponent.prototype.ngOnInit = function () {
+        console.log(JSON.stringify(this.quiz.questions[0].answers[0]));
+    };
+    QuizReviewComponent.prototype.isAnswered = function (question) {
+        return !!question.answers.find(function (x) { return x.selected; });
+    };
+    ;
+    QuizReviewComponent.prototype.selectedAnswer = function (question) {
+        var name;
+        question.answers.forEach(function (a) {
+            console.log('selected: ' + a.selected);
+            if (a.selected) {
+                name = a.name;
+            }
+        });
+        return name ? name : "not answered";
+    };
+    QuizReviewComponent.prototype.gotoQuestion = function (questionId) {
+        console.log(questionId);
+        this.showQuestion.emit(questionId);
+    };
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */])
+    ], QuizReviewComponent.prototype, "quiz", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["P" /* Output */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */])
+    ], QuizReviewComponent.prototype, "showQuestion", void 0);
+    QuizReviewComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-quiz-review',
+            template: __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.css")]
+        }),
+        __metadata("design:paramtypes", [])
+    ], QuizReviewComponent);
+    return QuizReviewComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz.service.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizService; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__("../../../common/esm5/http.js");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var QuizService = (function () {
+    function QuizService(http) {
+        this.http = http;
+        this.menuUrl = 'menu/test'; // URL to web api
+    }
+    /** GET Quiz */
+    QuizService.prototype.getQuiz = function () {
+        return this.http.get(this.menuUrl + '/get_quiz');
+    };
+    /** GET Questions */
+    QuizService.prototype.getQuestions = function () {
+        return this.http.get(this.menuUrl + '/questions');
+    };
+    QuizService = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */]])
+    ], QuizService);
+    return QuizService;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz/quiz.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".jumbotron {\n  text-align: center;\n}\n\na:hover {\n  color:#607D8B;\n}\n\n.badge {\n  display: inline-block;\n  font-size: small;\n  color: white;\n  padding: 0.8em 0.7em 0 0.7em;\n  background-color: #607D8B;\n  line-height: 1em;\n  position: relative;\n  left: -1px;\n  top: -4px;\n  height: 1.8em;\n  min-width: 16px;\n  text-align: right;\n  margin-right: .8em;\n  border-radius: 4px 0 0 4px;\n}\n\n.button {\n  background-color: #eee;\n  border: none;\n  padding: 5px 10px;\n  border-radius: 4px;\n  cursor: pointer;\n  cursor: hand;\n  font-family: Arial;\n}\n\nbutton:hover {\n  background-color: #cfd8dc;\n}\n\nbutton.delete {\n  position: relative;\n  left: 194px;\n  top: -32px;\n  background-color: gray !important;\n  color: white;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz/quiz.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"jumbotron\" *ngIf=\"quiz\">\n  <h2>{{quiz.name}}</h2>\n  <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz/quiz.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -320,143 +479,49 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var QuizComponent = (function () {
     function QuizComponent(quizService) {
         this.quizService = quizService;
-        this.quiz = new __WEBPACK_IMPORTED_MODULE_2__models_index__["a" /* Quiz */](null);
+        this.currIndex = 0;
         this.mode = 'quiz';
-        this.config = {
-            'allowBack': true,
-            'allowReview': true,
-            'autoMove': false,
-            'duration': 0,
-            'pageSize': 1,
-            'requiredAll': false,
-            'richText': false,
-            'shuffleQuestions': false,
-            'shuffleOptions': false,
-            'showClock': false,
-            'showPager': true,
-            'theme': 'none'
-        };
-        this.pager = {
-            index: 0,
-            size: 1,
-            count: 1
-        };
     }
     QuizComponent.prototype.ngOnInit = function () {
-        this.quizes = this.quizService.getAll();
-        this.quizName = this.quizes[0].id;
-        this.loadQuiz(this.quizName);
+        this.loadQuiz();
     };
-    QuizComponent.prototype.loadQuiz = function (quizName) {
+    QuizComponent.prototype.loadQuiz = function () {
         var _this = this;
-        this.quizService.get(quizName).subscribe(function (res) {
-            _this.quiz = new __WEBPACK_IMPORTED_MODULE_2__models_index__["a" /* Quiz */](res);
-            _this.pager.count = _this.quiz.questions.length;
+        this.quizService.getQuiz().subscribe(function (res) {
+            _this.quiz = new __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */](res);
+            _this.count = _this.quiz.questions.length;
+        }, function (err) {
+            console.error("Error: " + err.message);
         });
-        this.mode = 'quiz';
     };
-    Object.defineProperty(QuizComponent.prototype, "filteredQuestions", {
-        get: function () {
-            return (this.quiz.questions) ?
-                this.quiz.questions.slice(this.pager.index, this.pager.index + this.pager.size) : [];
-        },
-        enumerable: true,
-        configurable: true
-    });
-    QuizComponent.prototype.onSelect = function (question, option) {
-        if (question.questionTypeId === 1) {
-            question.options.forEach(function (x) { if (x.id !== option.id)
-                x.selected = false; });
-        }
-        if (this.config.autoMove) {
-            this.goTo(this.pager.index + 1);
-        }
+    QuizComponent.prototype.getCurrQuestion = function () {
+        return this.quiz.questions[this.currIndex];
     };
     QuizComponent.prototype.goTo = function (index) {
-        if (index >= 0 && index < this.pager.count) {
-            this.pager.index = index;
-            this.mode = 'quiz';
+        if (index >= 0 && index < this.count) {
+            this.currIndex = index;
         }
     };
-    QuizComponent.prototype.isAnswered = function (question) {
-        return question.options.find(function (x) { return x.selected; }) ? 'Answered' : 'Not Answered';
-    };
-    ;
-    QuizComponent.prototype.isCorrect = function (question) {
-        return question.options.every(function (x) { return x.selected === x.isAnswer; }) ? 'correct' : 'wrong';
-    };
-    ;
-    QuizComponent.prototype.onSubmit = function () {
-        var _this = this;
-        var answers = [];
-        this.quiz.questions.forEach(function (x) { return answers.push({ 'quizId': _this.quiz.id, 'questionId': x.id, 'answered': x.answered }); });
-        // Post your data to the server here. answers contains the questionId and the users' answer.
-        console.log(this.quiz.questions);
-        this.mode = 'result';
+    QuizComponent.prototype.showQuestion = function (id) {
+        this.mode = 'quiz';
+        this.goTo(id);
     };
     QuizComponent = __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["U" /* Component */])({
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
             selector: 'app-quiz',
-            template: __webpack_require__(620),
-            styles: [__webpack_require__(618)],
-            providers: [__WEBPACK_IMPORTED_MODULE_1__services_quiz_service__["a" /* QuizService */]]
-        }), 
-        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__services_quiz_service__["a" /* QuizService */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__services_quiz_service__["a" /* QuizService */]) === 'function' && _a) || Object])
+            template: __webpack_require__("../../../../../src/app/quiz/quiz.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz/quiz.component.css")]
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
     ], QuizComponent);
     return QuizComponent;
-    var _a;
 }());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/quiz.component.js.map
+
+
 
 /***/ }),
 
-/***/ 614:
-/***/ (function(module, __webpack_exports__, __webpack_require__) {
-
-"use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__(1);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_http__ = __webpack_require__(477);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_map__ = __webpack_require__(622);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_map___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_rxjs_add_operator_map__);
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizService; });
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-var __metadata = (this && this.__metadata) || function (k, v) {
-    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
-};
-
-
-
-var QuizService = (function () {
-    function QuizService(http) {
-        this.http = http;
-    }
-    QuizService.prototype.get = function (url) {
-        return this.http.get(url).map(function (res) { return res.text().length > 0 ? res.json() : null; });
-    };
-    QuizService.prototype.getAll = function () {
-        return [
-            { id: 'static/js/menu/data/aspnet.json', name: 'Asp.Net' },
-            { id: 'static/js/menu/data/csharp.json', name: 'C Sharp' },
-            { id: 'static/js/menu/data/designPatterns.json', name: 'Design Patterns' }
-        ];
-    };
-    QuizService = __decorate([
-        __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0__angular_core__["d" /* Injectable */])(), 
-        __metadata('design:paramtypes', [(typeof (_a = typeof __WEBPACK_IMPORTED_MODULE_1__angular_http__["b" /* Http */] !== 'undefined' && __WEBPACK_IMPORTED_MODULE_1__angular_http__["b" /* Http */]) === 'function' && _a) || Object])
-    ], QuizService);
-    return QuizService;
-    var _a;
-}());
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/quiz.service.js.map
-
-/***/ }),
-
-/***/ 615:
+/***/ "../../../../../src/environments/environment.ts":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -464,71 +529,43 @@ var QuizService = (function () {
 // The file contents for the current environment will overwrite these during build.
 // The build system defaults to the dev environment which uses `environment.ts`, but if you do
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
-// The list of which env maps to which file can be found in `angular-cli.json`.
+// The list of which env maps to which file can be found in `.angular-cli.json`.
 var environment = {
     production: false
 };
-//# sourceMappingURL=/Users/rsegev/Personal/ng2-quiz/src/environment.js.map
+
 
 /***/ }),
 
-/***/ 617:
+/***/ "../../../../../src/main.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__ = __webpack_require__("../../../platform-browser-dynamic/esm5/platform-browser-dynamic.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__app_app_module__ = __webpack_require__("../../../../../src/app/app.module.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__environments_environment__ = __webpack_require__("../../../../../src/environments/environment.ts");
+
+
+
+
+if (__WEBPACK_IMPORTED_MODULE_3__environments_environment__["a" /* environment */].production) {
+    Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["_13" /* enableProdMode */])();
+}
+Object(__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser_dynamic__["a" /* platformBrowserDynamic */])().bootstrapModule(__WEBPACK_IMPORTED_MODULE_2__app_app_module__["a" /* AppModule */])
+    .catch(function (err) { return console.log(err); });
+
+
+/***/ }),
+
+/***/ 0:
 /***/ (function(module, exports, __webpack_require__) {
 
-exports = module.exports = __webpack_require__(201)();
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
-
-/***/ }),
-
-/***/ 618:
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(201)();
-// imports
-
-
-// module
-exports.push([module.i, "", ""]);
-
-// exports
-
-
-/*** EXPORTS FROM exports-loader ***/
-module.exports = module.exports.toString();
-
-/***/ }),
-
-/***/ 619:
-/***/ (function(module, exports) {
-
-module.exports = "<div class=\"container\">\n  <app-quiz></app-quiz>\n</div>"
-
-/***/ }),
-
-/***/ 620:
-/***/ (function(module, exports) {
-
-module.exports = "<div class=\"row\">\n  <div class=\"col-md-6\">\n    <h3>Quiz Application</h3>\n  </div>\n  <div class=\"col-md-6 text-sm-right\">\n    Select Quiz:\n    <select [(ngModel)]=\"quizName\" (change)=\"loadQuiz(quizName)\">\n        <option *ngFor=\"let quiz of quizes\" [value]=\"quiz.id\">{{quiz.name}}</option>\n      </select>\n  </div>\n</div>\n<div id=\"quiz\">\n  <h1 class=\"text-sm-center\">{{quiz.name}}</h1>\n  <hr />\n\n  <div *ngIf=\"mode=='quiz' && quiz\">\n    <div *ngFor=\"let question of filteredQuestions;\">\n      <div class=\"badge badge-info\">Question {{pager.index + 1}} of {{pager.count}}.</div>\n      <h2>{{pager.index + 1}}. <span [innerHTML]=\"question.name\"></span></h2>\n      <div class=\"row text-left options\">\n        <div class=\"col-md-6\" *ngFor=\"let option of question.options\">\n          <div class=\"option\">\n            <label class=\"\" [attr.for]=\"option.id\">\n                <input id=\"{{option.id}}\" type=\"checkbox\" [(ngModel)]=\"option.selected\" (change)=\"onSelect(question, option);\" />\n                {{option.name}}\n            </label>\n          </div>\n        </div>\n      </div>\n    </div>\n    <hr />\n    <div class=\"text-sm-center\">\n      <button class=\"btn btn-default\" *ngIf=\"config.allowBack\" (click)=\"goTo(0);\">First</button>\n      <button class=\"btn btn-default\" *ngIf=\"config.allowBack\" (click)=\"goTo(pager.index - 1);\">Prev</button>\n      <button class=\"btn btn-primary\" (click)=\"goTo(pager.index + 1);\">Next</button>\n      <button class=\"btn btn-default\" *ngIf=\"config.allowBack\" (click)=\"goTo(pager.count - 1);\">Last</button>\n      <!--<pagination *ngIf=\"config.showPager\" direction-links=\"false\" total-items=\"totalItems\" items-per-page=\"itemsPerPage\" ng-model=\"currentPage\" ng-change=\"pageChanged()\"></pagination>-->\n    </div>\n  </div>\n\n  <div class=\"row review\" *ngIf=\"mode=='review'\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div (click)=\"goTo(index)\" class=\"{{ isAnswered(question) == 'Answered'? 'answered': 'not-answered' }}\">{{index + 1}}. {{ isAnswered(question) }}</div>\n    </div>\n  </div>\n  <div class=\"result\" *ngIf=\"mode=='result'\">\n    <h2>Quiz Result</h2>\n    <div *ngFor=\"let question of quiz.questions; let index = index\">\n      <div class=\"result-question\">\n        <h4>{{index + 1}}. {{question.name}}</h4>\n        <div class=\"row\">\n          <div class=\"col-md-6\" *ngFor=\"let Option of question.options\">\n            <input id=\"{{Option.id}}\" type=\"checkbox\" disabled=\"disabled\" [(ngModel)]=\"Option.selected\" /> {{Option.name}}\n          </div>\n        </div>\n        <div class=\"alert {{ isCorrect(question) == 'correct'? 'alert-success': 'alert-danger'}}\">Your answer is {{isCorrect(question)}}.</div>\n      </div>\n    </div>\n    <h4 class=\"alert alert-info text-sm-center\">You may close this window now.</h4>\n  </div>\n  <hr />\n  <div *ngIf=\"mode!='result'\">\n    <button class=\"btn btn-default\" (click)=\"mode = 'quiz'\">Quiz</button>\n    <button class=\"btn btn-default\" (click)=\"mode = 'review'\">Review</button>\n    <button class=\"btn btn-default\" (click)=\"onSubmit();\">Submit Quiz</button>\n  </div>\n</div>"
-
-/***/ }),
-
-/***/ 637:
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(503);
+module.exports = __webpack_require__("../../../../../src/main.ts");
 
 
 /***/ })
 
-},[637]);
+},[0]);
 //# sourceMappingURL=main.bundle.js.map
