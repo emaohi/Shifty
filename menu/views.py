@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import json
 import logging
 from django.contrib.auth.decorators import login_required
-from django.core import serializers
 from django.http import JsonResponse
 from django.shortcuts import render
 
 from Shifty.utils import get_curr_business
-from menu.models import Quiz, Question, Answer
+from menu.models import Quiz
 
 logger = logging.getLogger('cool')
 
