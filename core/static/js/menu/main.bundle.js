@@ -229,9 +229,9 @@ var Answer = (function () {
     function Answer(data) {
         data = data || {};
         this.id = data.id;
-        this.questionId = data.questionId;
-        this.name = data.name;
-        this.isAnswer = data.isAnswer;
+        this.questionId = data.question;
+        this.name = data.content;
+        this.isAnswer = data.is_correct;
     }
     return Answer;
 }());
@@ -252,7 +252,7 @@ var Question = (function () {
         var _this = this;
         data = data || {};
         this.id = data.id;
-        this.name = data.name;
+        this.name = data.content;
         this.answers = [];
         data.answers.forEach(function (a) {
             _this.answers.push(new __WEBPACK_IMPORTED_MODULE_0__answer__["a" /* Answer */](a));
@@ -488,7 +488,9 @@ var QuizComponent = (function () {
     QuizComponent.prototype.loadQuiz = function () {
         var _this = this;
         this.quizService.getQuiz().subscribe(function (res) {
+            console.log(JSON.stringify(res));
             _this.quiz = new __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */](res);
+            console.log(JSON.stringify(_this.quiz));
             _this.count = _this.quiz.questions.length;
         }, function (err) {
             console.error("Error: " + err.message);
