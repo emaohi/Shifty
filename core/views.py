@@ -327,7 +327,3 @@ def get_slot_request_employees(request, slot_id):
 
         return render(request, 'manager/slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests]})
-
-
-def get_menu_test(request):
-    pass
