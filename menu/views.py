@@ -23,10 +23,11 @@ def get_specific_quiz(request):
         if request.user.profile.role == 'MA':
             quiz_qs = Quiz.objects.filter(business=get_curr_business(request))
             quiz = quiz_qs.first()
-            quiz.is_preview = True
+            is_preview = True
         else:
             quiz = Quiz.objects.filter(business=get_curr_business(request), role=request.user.profile.role).first()
-        response = quiz.serialize()
+            is_preview = False
+        response = quiz.serialize(is_preview)
 
         logger.info('data is ' + str(response))
         return JsonResponse(response)

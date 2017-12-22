@@ -20,7 +20,6 @@ class Quiz(models.Model):
     description = models.CharField(max_length=30, blank=True, null=True)
     score_to_pass = models.IntegerField(default=60)
     time_to_pass = models.IntegerField(default=10)
-    is_preview = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -33,11 +32,12 @@ class Quiz(models.Model):
             q_a['answers'] = Question.objects.get(id=q["pk"]).serialize_answers()
         return only_fields
 
-    def serialize(self):
+    def serialize(self, is_preview=True):
         s_q = serializers.serialize('json', [self])
         json_quiz = json.loads(s_q)
         without_questions = json_quiz[0]["fields"]
         without_questions["questions"] = self.serialize_questions()
+        without_questions['is_preview'] = is_preview
         return without_questions
 
 
