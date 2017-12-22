@@ -189,7 +189,7 @@ var InMemoryDataService = (function () {
     }
     InMemoryDataService.prototype.createDb = function () {
         var test = [
-            { id: 'get_quiz', time_to_pass: 15, score_to_pass: 60, name: 'Waiters test', questions: this.createQuestions(10) },
+            { id: 'get_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test', questions: this.createQuestions(10) }
         ];
         return { test: test };
     };
@@ -197,7 +197,7 @@ var InMemoryDataService = (function () {
         var questions = [];
         var drinks = { 0: 'Rum', 1: 'Tapioca', 2: 'Whiskey', 3: 'Vodka' };
         for (var i = 0; i < num; i++) {
-            questions.push({ id: i, name: 'What is the best ' + drinks[i % 4],
+            questions.push({ id: i, content: 'What is the best ' + drinks[i % 4],
                 answers: this.createAnswers(i), answered: true });
         }
         return questions;
@@ -205,8 +205,8 @@ var InMemoryDataService = (function () {
     InMemoryDataService.prototype.createAnswers = function (num) {
         var answers = [];
         for (var i = 0; i < 4; i++) {
-            answers.push({ id: 1, questionId: 1, isAnswer: i == 1,
-                name: 'koko_' + (num + 1) + '_' + (i + 1), selected: false });
+            answers.push({ id: 1, questionId: 1, is_correct: i == 1,
+                content: 'koko_' + (num + 1) + '_' + (i + 1), selected: false });
         }
         return answers;
     };
@@ -280,6 +280,7 @@ var Quiz = (function () {
             this.name = data.name;
             this.scoreToPass = data.score_to_pass;
             this.time = data.time_to_pass;
+            this.isPreview = data.is_preview;
             this.questions = [];
             if (data.questions) {
                 data.questions.forEach(function (q) {
@@ -306,7 +307,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".answered {\n  background-color:lightskyblue;\n  border:1px solid lightskyblue;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:#ffcccc;\n  border:1px solid #eeaaaa;\n  margin:2px 0;\n  padding:12px;\n}\n\n.offset-sm-4 {\n  margin-bottom: 40px;\n}\n", ""]);
+exports.push([module.i, ".answered {\n  background-color:lightskyblue;\n  border:1px solid lightskyblue;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:#ffcccc;\n  border:1px solid #eeaaaa;\n  margin:2px 0;\n  padding:12px;\n}\n\n.offset-sm-4 {\n  margin-bottom: 40px;\n}\n\n.submitRow {\n  margin-top: 30px;\n}\n", ""]);
 
 // exports
 
@@ -319,7 +320,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-review/quiz-review.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row submitRow\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -452,7 +453,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz/quiz.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"jumbotron\" *ngIf=\"quiz\">\n  <h2>{{quiz.name}}</h2>\n  <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n"
+module.exports = "<div class=\"jumbotron\" *ngIf=\"quiz\">\n  <h2>\n    <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n    {{quiz.name}}\n  </h2>\n  <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n"
 
 /***/ }),
 
@@ -480,6 +481,7 @@ var QuizComponent = (function () {
     function QuizComponent(quizService) {
         this.quizService = quizService;
         this.currIndex = 0;
+        this.roles = ['Waiter', 'Bartender', 'Cook'];
         this.mode = 'quiz';
     }
     QuizComponent.prototype.ngOnInit = function () {

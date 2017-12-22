@@ -19,8 +19,14 @@ def get_main_page(request):
 
 @login_required(login_url="/login")
 def get_specific_quiz(request):
-    quiz = Quiz.objects.filter(business=get_curr_business(request), role=request.user.profile.role)
-    response = quiz.first().serialize()
+    if request.method == 'GET':
+        if request.user.profile.role == 'MA':
+            quiz_qs = Quiz.objects.filter(business=get_curr_business(request))
+            quiz = quiz_qs.first()
+            quiz.is_preview = True
+        else:
+            quiz = Quiz.objects.filter(business=get_curr_business(request), role=request.user.profile.role).first()
+        response = quiz.serialize()
 
-    logger.info('data is ' + str(response))
-    return JsonResponse(response)
+        logger.info('data is ' + str(response))
+        return JsonResponse(response)

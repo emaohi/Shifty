@@ -20,6 +20,7 @@ class Quiz(models.Model):
     description = models.CharField(max_length=30, blank=True, null=True)
     score_to_pass = models.IntegerField(default=60)
     time_to_pass = models.IntegerField(default=10)
+    is_preview = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
