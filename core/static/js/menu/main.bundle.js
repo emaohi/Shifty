@@ -128,12 +128,14 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_7__in_memory_data_service__ = __webpack_require__("../../../../../src/app/in-memory-data.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__angular_forms__ = __webpack_require__("../../../forms/esm5/forms.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__ = __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/index.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -160,7 +162,7 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_4__app_routing_module__["a" /* AppRoutingModule */],
                 __WEBPACK_IMPORTED_MODULE_6__angular_common_http__["b" /* HttpClientModule */],
             ],
-            providers: [__WEBPACK_IMPORTED_MODULE_5__quiz_service__["a" /* QuizService */], __WEBPACK_IMPORTED_MODULE_7__in_memory_data_service__["a" /* InMemoryDataService */]],
+            providers: [__WEBPACK_IMPORTED_MODULE_5__quiz_service__["a" /* QuizService */], __WEBPACK_IMPORTED_MODULE_7__in_memory_data_service__["a" /* InMemoryDataService */], __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__["a" /* CookieService */]],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */]]
         })
     ], AppModule);
@@ -189,7 +191,8 @@ var InMemoryDataService = (function () {
     }
     InMemoryDataService.prototype.createDb = function () {
         var test = [
-            { id: 'get_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test', questions: this.createQuestions(10) }
+            { id: 'get_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test',
+                questions: this.createQuestions(10) }
         ];
         return { test: test };
     };
@@ -320,7 +323,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-review/quiz-review.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row submitRow\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row submitRow\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\" [disabled]=\"quiz.isPreview\" (click)=\"submitQuiz()\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -331,6 +334,7 @@ module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div cla
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizReviewComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -342,8 +346,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
 var QuizReviewComponent = (function () {
-    function QuizReviewComponent() {
+    function QuizReviewComponent(quizService) {
+        this.quizService = quizService;
         this.showQuestion = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
     }
     QuizReviewComponent.prototype.ngOnInit = function () {
@@ -367,6 +373,13 @@ var QuizReviewComponent = (function () {
         console.log(questionId);
         this.showQuestion.emit(questionId);
     };
+    QuizReviewComponent.prototype.submitQuiz = function () {
+        this.quizService.submitQuiz(this.quiz).subscribe(function (res) {
+            console.log('ok, res is: ' + JSON.stringify(res));
+        }, function (err) {
+            console.error("Error: " + err.message);
+        });
+    };
     __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
         __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */])
@@ -381,7 +394,7 @@ var QuizReviewComponent = (function () {
             template: __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.html"),
             styles: [__webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.css")]
         }),
-        __metadata("design:paramtypes", [])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
     ], QuizReviewComponent);
     return QuizReviewComponent;
 }());
@@ -397,6 +410,7 @@ var QuizReviewComponent = (function () {
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizService; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_common_http__ = __webpack_require__("../../../common/esm5/http.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_ngx_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/index.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -408,9 +422,14 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
 var QuizService = (function () {
-    function QuizService(http) {
+    function QuizService(http, cookieService) {
         this.http = http;
+        this.cookieService = cookieService;
+        this.httpOptions = {
+            headers: new __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["c" /* HttpHeaders */]({ 'Content-Type': 'application/json', "X-CSRFToken": this.getCookie('csrftoken') })
+        };
         this.menuUrl = 'menu/test'; // URL to web api
     }
     /** GET Quiz */
@@ -421,9 +440,19 @@ var QuizService = (function () {
     QuizService.prototype.getQuestions = function () {
         return this.http.get(this.menuUrl + '/questions');
     };
+    QuizService.prototype.submitQuiz = function (quiz) {
+        // httpOptions['headers'].append("X-CSRFToken", this.getCookie('csrftoken'));
+        // httpOptions['headers'].append("blabla", 'blabla');
+        return this.http.post(this.menuUrl + '/submit/', quiz, this.httpOptions);
+    };
+    QuizService.prototype.getCookie = function (key) {
+        var cookie = this.cookieService.get(key);
+        console.log('got ' + key + 'cookie: ' + cookie);
+        return cookie;
+    };
     QuizService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */], __WEBPACK_IMPORTED_MODULE_2_ngx_cookie_service__["a" /* CookieService */]])
     ], QuizService);
     return QuizService;
 }());

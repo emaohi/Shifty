@@ -83,6 +83,168 @@ function toComment(sourceMap) {
 
 /***/ }),
 
+/***/ "../../../../ngx-cookie-service/cookie-service/cookie.service.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return CookieService; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__ = __webpack_require__("../../../platform-browser/esm5/platform-browser.js");
+// This service is based on the `ng2-cookies` package which sadly is not a service and does
+// not use `DOCUMENT` injection and therefore doesn't work well with AoT production builds.
+// Package: https://github.com/BCJTI/ng2-cookies
+
+
+var CookieService = (function () {
+    function CookieService(
+        // The type `Document` may not be used here. Although a fix is on its way,
+        // we will go with `any` for now to support Angular 2.4.x projects.
+        // Issue: https://github.com/angular/angular/issues/12631
+        // Fix: https://github.com/angular/angular/pull/14894
+        document) {
+        this.document = document;
+        // To avoid issues with server side prerendering, check if `document` is defined.
+        this.documentIsAccessible = document !== undefined;
+    }
+    /**
+     * @param name Cookie name
+     * @returns {boolean}
+     */
+    CookieService.prototype.check = function (name) {
+        if (!this.documentIsAccessible) {
+            return false;
+        }
+        name = encodeURIComponent(name);
+        var regExp = this.getCookieRegExp(name);
+        var exists = regExp.test(this.document.cookie);
+        return exists;
+    };
+    /**
+     * @param name Cookie name
+     * @returns {any}
+     */
+    CookieService.prototype.get = function (name) {
+        if (this.documentIsAccessible && this.check(name)) {
+            name = encodeURIComponent(name);
+            var regExp = this.getCookieRegExp(name);
+            var result = regExp.exec(this.document.cookie);
+            return decodeURIComponent(result[1]);
+        }
+        else {
+            return '';
+        }
+    };
+    /**
+     * @returns {}
+     */
+    CookieService.prototype.getAll = function () {
+        if (!this.documentIsAccessible) {
+            return {};
+        }
+        var cookies = {};
+        var document = this.document;
+        if (document.cookie && document.cookie !== '') {
+            var split = document.cookie.split(';');
+            for (var i = 0; i < split.length; i += 1) {
+                var currentCookie = split[i].split('=');
+                currentCookie[0] = currentCookie[0].replace(/^ /, '');
+                cookies[decodeURIComponent(currentCookie[0])] = decodeURIComponent(currentCookie[1]);
+            }
+        }
+        return cookies;
+    };
+    /**
+     * @param name    Cookie name
+     * @param value   Cookie value
+     * @param expires Number of days until the cookies expires or an actual `Date`
+     * @param path    Cookie path
+     * @param domain  Cookie domain
+     * @param secure  Secure flag
+     */
+    CookieService.prototype.set = function (name, value, expires, path, domain, secure) {
+        if (!this.documentIsAccessible) {
+            return;
+        }
+        var cookieString = encodeURIComponent(name) + '=' + encodeURIComponent(value) + ';';
+        if (expires) {
+            if (typeof expires === 'number') {
+                var dateExpires = new Date(new Date().getTime() + expires * 1000 * 60 * 60 * 24);
+                cookieString += 'expires=' + dateExpires.toUTCString() + ';';
+            }
+            else {
+                cookieString += 'expires=' + expires.toUTCString() + ';';
+            }
+        }
+        if (path) {
+            cookieString += 'path=' + path + ';';
+        }
+        if (domain) {
+            cookieString += 'domain=' + domain + ';';
+        }
+        if (secure) {
+            cookieString += 'secure;';
+        }
+        this.document.cookie = cookieString;
+    };
+    /**
+     * @param name   Cookie name
+     * @param path   Cookie path
+     * @param domain Cookie domain
+     */
+    CookieService.prototype.delete = function (name, path, domain) {
+        if (!this.documentIsAccessible) {
+            return;
+        }
+        this.set(name, '', -1, path, domain);
+    };
+    /**
+     * @param path   Cookie path
+     * @param domain Cookie domain
+     */
+    CookieService.prototype.deleteAll = function (path, domain) {
+        if (!this.documentIsAccessible) {
+            return;
+        }
+        var cookies = this.getAll();
+        for (var cookieName in cookies) {
+            if (cookies.hasOwnProperty(cookieName)) {
+                this.delete(cookieName, path, domain);
+            }
+        }
+    };
+    /**
+     * @param name Cookie name
+     * @returns {RegExp}
+     */
+    CookieService.prototype.getCookieRegExp = function (name) {
+        var escapedName = name.replace(/([\[\]\{\}\(\)\|\=\;\+\?\,\.\*\^\$])/ig, '\\$1');
+        return new RegExp('(?:^' + escapedName + '|;\\s*' + escapedName + ')=(.*?)(?:;|$)', 'g');
+    };
+    return CookieService;
+}());
+
+CookieService.decorators = [
+    { type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */] },
+];
+/** @nocollapse */
+CookieService.ctorParameters = function () { return [
+    { type: undefined, decorators: [{ type: __WEBPACK_IMPORTED_MODULE_0__angular_core__["z" /* Inject */], args: [__WEBPACK_IMPORTED_MODULE_1__angular_platform_browser__["b" /* DOCUMENT */],] },] },
+]; };
+//# sourceMappingURL=cookie.service.js.map
+
+/***/ }),
+
+/***/ "../../../../ngx-cookie-service/index.js":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__cookie_service_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/cookie-service/cookie.service.js");
+/* harmony namespace reexport (by used) */ __webpack_require__.d(__webpack_exports__, "a", function() { return __WEBPACK_IMPORTED_MODULE_0__cookie_service_cookie_service__["a"]; });
+
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
 /***/ "../../../../rxjs/_esm5/BehaviorSubject.js":
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
@@ -12833,7 +12995,7 @@ var VERSION = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["_8" /* Version */
 /* unused harmony export HttpBackend */
 /* unused harmony export HttpHandler */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return HttpClient; });
-/* unused harmony export HttpHeaders */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return HttpHeaders; });
 /* unused harmony export HTTP_INTERCEPTORS */
 /* unused harmony export JsonpClientBackend */
 /* unused harmony export JsonpInterceptor */
@@ -68950,7 +69112,7 @@ var DEFAULT_VALUE_ACCESSOR = {
  * @return {?}
  */
 function _isAndroid() {
-    var /** @type {?} */ userAgent = Object(__WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["c" /* ɵgetDOM */])() ? Object(__WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["c" /* ɵgetDOM */])().getUserAgent() : '';
+    var /** @type {?} */ userAgent = Object(__WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["d" /* ɵgetDOM */])() ? Object(__WEBPACK_IMPORTED_MODULE_5__angular_platform_browser__["d" /* ɵgetDOM */])().getUserAgent() : '';
     return /android (\d+)/.test(userAgent.toLowerCase());
 }
 /**
@@ -76814,7 +76976,7 @@ var ResourceLoaderImpl = /** @class */ (function (_super) {
  * found in the LICENSE file at https://angular.io/license
  */
 var INTERNAL_BROWSER_DYNAMIC_PLATFORM_PROVIDERS = [
-    __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["b" /* ɵINTERNAL_BROWSER_PLATFORM_PROVIDERS */],
+    __WEBPACK_IMPORTED_MODULE_3__angular_platform_browser__["c" /* ɵINTERNAL_BROWSER_PLATFORM_PROVIDERS */],
     {
         provide: __WEBPACK_IMPORTED_MODULE_1__angular_core__["i" /* COMPILER_OPTIONS */],
         useValue: { providers: [{ provide: __WEBPACK_IMPORTED_MODULE_0__angular_compiler__["s" /* ResourceLoader */], useClass: ResourceLoaderImpl, deps: [] }] },
@@ -76970,7 +77132,7 @@ var platformBrowserDynamic = Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__[
 /* unused harmony export TransferState */
 /* unused harmony export makeStateKey */
 /* unused harmony export By */
-/* unused harmony export DOCUMENT */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return DOCUMENT$1; });
 /* unused harmony export EVENT_MANAGER_PLUGINS */
 /* unused harmony export EventManager */
 /* unused harmony export HAMMER_GESTURE_CONFIG */
@@ -76978,7 +77140,7 @@ var platformBrowserDynamic = Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__[
 /* unused harmony export DomSanitizer */
 /* unused harmony export VERSION */
 /* unused harmony export ɵBROWSER_SANITIZATION_PROVIDERS */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return INTERNAL_BROWSER_PLATFORM_PROVIDERS; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return INTERNAL_BROWSER_PLATFORM_PROVIDERS; });
 /* unused harmony export ɵinitDomAdapter */
 /* unused harmony export ɵBrowserDomAdapter */
 /* unused harmony export ɵBrowserPlatformLocation */
@@ -76987,7 +77149,7 @@ var platformBrowserDynamic = Object(__WEBPACK_IMPORTED_MODULE_1__angular_core__[
 /* unused harmony export ɵescapeHtml */
 /* unused harmony export ɵELEMENT_PROBE_PROVIDERS */
 /* unused harmony export ɵDomAdapter */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "c", function() { return getDOM; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "d", function() { return getDOM; });
 /* unused harmony export ɵsetRootDomAdapter */
 /* unused harmony export ɵDomRendererFactory2 */
 /* unused harmony export ɵNAMESPACE_URIS */
@@ -89511,7 +89673,7 @@ function setupRouter(ref, urlSerializer, contexts, location, injector, loader, c
         router.errorHandler = opts.errorHandler;
     }
     if (opts.enableTracing) {
-        var /** @type {?} */ dom_1 = Object(__WEBPACK_IMPORTED_MODULE_20__angular_platform_browser__["c" /* ɵgetDOM */])();
+        var /** @type {?} */ dom_1 = Object(__WEBPACK_IMPORTED_MODULE_20__angular_platform_browser__["d" /* ɵgetDOM */])();
         router.events.subscribe(function (e) {
             dom_1.logGroup("Router Event: " + ((/** @type {?} */ (e.constructor))).name);
             dom_1.log(e.toString());
