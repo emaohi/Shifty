@@ -129,12 +129,14 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_8__angular_forms__ = __webpack_require__("../../../forms/esm5/forms.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__ = __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/index.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__ = __webpack_require__("../../../../../src/app/quiz-submit/quiz-submit.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -154,7 +156,8 @@ var AppModule = (function () {
             declarations: [
                 __WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */],
                 __WEBPACK_IMPORTED_MODULE_3__quiz_quiz_component__["a" /* QuizComponent */],
-                __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */]
+                __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */],
+                __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -234,7 +237,7 @@ var Answer = (function () {
         this.id = data.id;
         this.questionId = data.question;
         this.name = data.content;
-        this.isAnswer = data.is_correct;
+        this.selected = false;
     }
     return Answer;
 }());
@@ -323,7 +326,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-review/quiz-review.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row submitRow\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\" [disabled]=\"quiz.isPreview\" (click)=\"submitQuiz()\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\" *ngIf=\"!submitted\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'answered': isAnswered(question), 'not-answered': !isAnswered(question)}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i>\n      </div>\n    </div>\n  </div>\n  <div class=\"row submitRow\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <button class=\"btn btn-lg btn-primary\" [disabled]=\"quiz.isPreview\" (click)=\"submitQuiz()\">Submit</button> <br>\n        <small>Click on a question to view it</small>\n    </div>\n  </div>\n</div>\n\n<app-quiz-submit [quiz]=\"quiz\" [result]=\"submitResult\" *ngIf=\"submitted\"></app-quiz-submit>\n"
 
 /***/ }),
 
@@ -351,6 +354,7 @@ var QuizReviewComponent = (function () {
     function QuizReviewComponent(quizService) {
         this.quizService = quizService;
         this.showQuestion = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
+        this.submitted = false;
     }
     QuizReviewComponent.prototype.ngOnInit = function () {
         console.log(JSON.stringify(this.quiz.questions[0].answers[0]));
@@ -362,7 +366,6 @@ var QuizReviewComponent = (function () {
     QuizReviewComponent.prototype.selectedAnswer = function (question) {
         var name;
         question.answers.forEach(function (a) {
-            console.log('selected: ' + a.selected);
             if (a.selected) {
                 name = a.name;
             }
@@ -374,8 +377,11 @@ var QuizReviewComponent = (function () {
         this.showQuestion.emit(questionId);
     };
     QuizReviewComponent.prototype.submitQuiz = function () {
+        var _this = this;
         this.quizService.submitQuiz(this.quiz).subscribe(function (res) {
+            _this.submitted = true;
             console.log('ok, res is: ' + JSON.stringify(res));
+            _this.submitResult = res;
         }, function (err) {
             console.error("Error: " + err.message);
         });
@@ -397,6 +403,115 @@ var QuizReviewComponent = (function () {
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
     ], QuizReviewComponent);
     return QuizReviewComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-submit/quiz-submit.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".correct {\n  background-color:lightgreen;\n  border:1px solid lightgreen;\n  margin:2px 0;\n  padding:12px;\n}\n\n.wrong {\n  background-color:red;\n  border:1px solid red;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:#ffcccc;\n  border:1px solid #eeaaaa;\n  margin:2px 0;\n  padding:12px;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-submit/quiz-submit.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'correct': isCorrect(question), 'wrong': isCorrect(question) == false,\n       'notAnswered': isCorrect(question) == null}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i> <hr>\n        <p *ngIf=\"!isCorrect(question)\">correct answer is: <strong>{{correctAnswer(question)}}</strong></p>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <h3 [ngStyle]=\"{'color':isPassed() ? 'green' : 'red'}\"\n           > Passed : {{isPassed()}}\n      </h3>\n    </div>\n  </div>\n</div>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-submit/quiz-submit.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizSubmitComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var QuizSubmitComponent = (function () {
+    function QuizSubmitComponent() {
+    }
+    QuizSubmitComponent.prototype.ngOnInit = function () { };
+    QuizSubmitComponent.prototype.isCorrect = function (question) {
+        var correctAnswerId = this.result[question.id];
+        var submittedAnswerId = this.getSubmittedAnswerId(question.answers);
+        if (!submittedAnswerId) {
+            return null;
+        }
+        return correctAnswerId == submittedAnswerId;
+    };
+    QuizSubmitComponent.prototype.getSubmittedAnswerId = function (answers) {
+        var submittedId;
+        answers.forEach(function (a) {
+            if (a.selected) {
+                submittedId = a.id;
+            }
+        });
+        return submittedId ? submittedId : null;
+    };
+    QuizSubmitComponent.prototype.correctAnswer = function (question) {
+        var correctAnswerId = this.result[question.id];
+        var correctAnswerText;
+        question.answers.forEach(function (a) {
+            if (a.id == correctAnswerId) {
+                correctAnswerText = a.name;
+            }
+        });
+        return correctAnswerText;
+    };
+    QuizSubmitComponent.prototype.selectedAnswer = function (question) {
+        var name;
+        question.answers.forEach(function (a) {
+            if (a.selected) {
+                name = a.name;
+            }
+        });
+        return name ? name : "not answered";
+    };
+    QuizSubmitComponent.prototype.isPassed = function () {
+        return this.result['score'] >= this.quiz.scoreToPass;
+    };
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */])
+    ], QuizSubmitComponent.prototype, "quiz", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
+        __metadata("design:type", Object)
+    ], QuizSubmitComponent.prototype, "result", void 0);
+    QuizSubmitComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-quiz-submit',
+            template: __webpack_require__("../../../../../src/app/quiz-submit/quiz-submit.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz-submit/quiz-submit.component.css")]
+        }),
+        __metadata("design:paramtypes", [])
+    ], QuizSubmitComponent);
+    return QuizSubmitComponent;
 }());
 
 
@@ -441,8 +556,6 @@ var QuizService = (function () {
         return this.http.get(this.menuUrl + '/questions');
     };
     QuizService.prototype.submitQuiz = function (quiz) {
-        // httpOptions['headers'].append("X-CSRFToken", this.getCookie('csrftoken'));
-        // httpOptions['headers'].append("blabla", 'blabla');
         return this.http.post(this.menuUrl + '/submit/', quiz, this.httpOptions);
     };
     QuizService.prototype.getCookie = function (key) {
@@ -482,7 +595,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz/quiz.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"jumbotron\" *ngIf=\"quiz\">\n  <h2>\n    <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n    {{quiz.name}}\n  </h2>\n  <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n"
+module.exports = "<div class=\"jumbotron\" *ngIf=\"quiz\">\n  <h2>\n    <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n    {{quiz.name}}\n  </h2>\n  <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\"> \n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n"
 
 /***/ }),
 

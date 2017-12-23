@@ -2,6 +2,8 @@ import logging
 from django.conf import settings
 from time import time
 
+from django.http import HttpResponseBadRequest
+
 from Shifty import tasks
 
 logger = logging.getLogger('cool')
@@ -59,3 +61,8 @@ def get_curr_profile(request):
 
 def get_curr_business(request):
     return get_curr_profile(request).business
+
+
+def wrong_method(request):
+    return HttpResponseBadRequest('cannot get distance data with ' + request.method)
+

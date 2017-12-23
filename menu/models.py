@@ -30,15 +30,16 @@ class Quiz(models.Model):
         only_fields = [q_a["fields"] for q_a in jsoned_question_list]
         for q_a, q in zip(only_fields, jsoned_question_list):
             q_a['answers'] = Question.objects.get(id=q["pk"]).serialize_answers()
+            q_a["id"] = q["pk"]
         return only_fields
 
     def serialize(self, is_preview=True):
         s_q = serializers.serialize('json', [self])
         json_quiz = json.loads(s_q)
-        without_questions = json_quiz[0]["fields"]
-        without_questions["questions"] = self.serialize_questions()
-        without_questions['is_preview'] = is_preview
-        return without_questions
+        result_serialized = json_quiz[0]["fields"]
+        result_serialized["questions"] = self.serialize_questions()
+        result_serialized['is_preview'] = is_preview
+        return result_serialized
 
 
 class Question(models.Model):
@@ -51,7 +52,15 @@ class Question(models.Model):
     def serialize_answers(self):
         serialized_answer_list = serializers.serialize('json', self.answer_set.all())
         jsoned_answer_list = json.loads(serialized_answer_list)
-        return [j_a["fields"] for j_a in jsoned_answer_list]
+        serialized_result = [j_a["fields"] for j_a in jsoned_answer_list]
+        for json_result, whole_result in zip(serialized_result, jsoned_answer_list):
+            json_result["id"] = whole_result["pk"]
+        return serialized_result
+
+    def get_correct_answer(self):
+        for a in self.answer_set.all():
+            if a.is_correct:
+                return a.id
 
 
 class Answer(models.Model):
