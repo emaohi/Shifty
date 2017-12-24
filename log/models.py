@@ -87,6 +87,7 @@ class EmployeeProfile(models.Model):
         default='WA',
     )
     enable_mailing = models.BooleanField(default=True)
+    menu_score = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.user.username

@@ -430,7 +430,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-submit/quiz-submit.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'correct': isCorrect(question), 'wrong': isCorrect(question) == false,\n       'notAnswered': isCorrect(question) == null}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i> <hr>\n        <p *ngIf=\"!isCorrect(question)\">correct answer is: <strong>{{correctAnswer(question)}}</strong></p>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <h3 [ngStyle]=\"{'color':isPassed() ? 'green' : 'red'}\"\n           > Passed : {{isPassed()}}\n      </h3>\n    </div>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'correct': isCorrect(question), 'wrong': isCorrect(question) == false,\n       'not-answered': isCorrect(question) == null}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i> <hr>\n        <p *ngIf=\"!isCorrect(question)\">correct answer is: <strong>{{correctAnswer(question)}}</strong></p>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <h3 [ngStyle]=\"{'color':isPassed() ? 'green' : 'red'}\"\n           > Passed : {{isPassed()}}\n      </h3>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -560,7 +560,7 @@ var QuizService = (function () {
     };
     QuizService.prototype.getCookie = function (key) {
         var cookie = this.cookieService.get(key);
-        console.log('got ' + key + 'cookie: ' + cookie);
+        console.log('got ' + key + ' cookie: ' + cookie);
         return cookie;
     };
     QuizService = __decorate([
@@ -595,7 +595,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz/quiz.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"jumbotron\" *ngIf=\"quiz\">\n  <h2>\n    <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n    {{quiz.name}}\n  </h2>\n  <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\"> \n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n"
+module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<h1 *ngIf=\"errMsg\">{{errMsg}}</h1>\n"
 
 /***/ }),
 
@@ -637,7 +637,8 @@ var QuizComponent = (function () {
             console.log(JSON.stringify(_this.quiz));
             _this.count = _this.quiz.questions.length;
         }, function (err) {
-            console.error("Error: " + err.message);
+            console.error("Error: " + JSON.stringify(err));
+            _this.errMsg = "Bad request: " + err.error;
         });
     };
     QuizComponent.prototype.getCurrQuestion = function () {
