@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponse
+from django.http import JsonResponse, HttpResponseBadRequest
 from django.shortcuts import render
 
 from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_method, get_curr_profile
@@ -69,8 +69,7 @@ def ask_another_test_try(request):
             response['retry_status'] = old_emp_request.get_status_display()
         except ObjectDoesNotExist:
             response['retry_status'] = 'non-exist'
-        finally:
-            return JsonResponse(response)
+        return JsonResponse(response)
 
     if request.method == 'POST':
         curr_emp = get_curr_profile(request)
@@ -78,7 +77,6 @@ def ask_another_test_try(request):
         new_emp_req = EmployeeRequest(type='M')
         new_emp_req.save()
         new_emp_req.issuers.add(curr_emp)
-
         return JsonResponse({'created': 'ok'})
 
 

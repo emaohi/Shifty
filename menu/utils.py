@@ -59,4 +59,4 @@ def remove_prev_emp_request(employee):
             id=employee.id), type='M')
         old_emp_request.delete()
     except ObjectDoesNotExist:
-        logger.warning('trying to delete non-existing menu-test employee request of emp: {}', str(employee))
+        logger.warning('trying to delete non-existing menu-test employee request of emp: %s', str(employee))
