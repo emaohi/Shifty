@@ -313,7 +313,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".answered {\n  background-color:lightskyblue;\n  border:1px solid lightskyblue;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:#ffcccc;\n  border:1px solid #eeaaaa;\n  margin:2px 0;\n  padding:12px;\n}\n\n.offset-sm-4 {\n  margin-bottom: 40px;\n}\n\n.submitRow {\n  margin-top: 30px;\n}\n", ""]);
+exports.push([module.i, ".answered {\n  background-color:lightskyblue;\n  border:1px solid lightskyblue;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:yellow;\n  border:1px solid #eae5a6;\n  margin:2px 0;\n  padding:12px;\n}\n\n.offset-sm-4 {\n  margin-bottom: 40px;\n}\n\n.submitRow {\n  margin-top: 30px;\n}\n", ""]);
 
 // exports
 
@@ -417,7 +417,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".correct {\n  background-color:lightgreen;\n  border:1px solid lightgreen;\n  margin:2px 0;\n  padding:12px;\n}\n\n.wrong {\n  background-color:red;\n  border:1px solid red;\n  margin:2px 0;\n  padding:12px;\n}\n\n.not-answered {\n  background-color:#ffcccc;\n  border:1px solid #eeaaaa;\n  margin:2px 0;\n  padding:12px;\n}\n", ""]);
+exports.push([module.i, ".correct {\n  background-color:lightgreen;\n  border:1px solid lightgreen;\n  margin:2px 0;\n  padding:12px;\n}\n\n.wrong, .not-answered {\n  background-color:red;\n  border:1px solid red;\n  margin:2px 0;\n  padding:12px;\n}\n\n.row {\n  margin-bottom: 30px;\n}\n", ""]);
 
 // exports
 
@@ -430,7 +430,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-submit/quiz-submit.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'correct': isCorrect(question), 'wrong': isCorrect(question) == false,\n       'not-answered': isCorrect(question) == null}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i> <hr>\n        <p *ngIf=\"!isCorrect(question)\">correct answer is: <strong>{{correctAnswer(question)}}</strong></p>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <h3 [ngStyle]=\"{'color':isPassed() ? 'green' : 'red'}\"\n           > Passed : {{isPassed()}}\n      </h3>\n    </div>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\">\n  <div class=\"row\">\n    <div class=\"col-sm-4\" *ngFor=\"let question of quiz.questions; let index = index;\">\n      <div [ngClass]=\"{'correct': isCorrect(question), 'wrong': isCorrect(question) == false,\n       'not-answered': isCorrect(question) == null}\"\n           (click)=\"gotoQuestion(question.id)\">\n        {{index + 1}}. <strong>{{ question.name }}</strong> <hr>\n        Your answer: <i>{{ selectedAnswer(question) }}</i> <hr>\n        <p *ngIf=\"!isCorrect(question)\">correct answer is: <strong>{{correctAnswer(question)}}</strong></p>\n      </div>\n    </div>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 offset-sm-4\">\n      <h3 [ngStyle]=\"{'color':isPassed() ? 'green' : 'red'}\">\n        {{isPassed() ? 'You passed the menu test ! ' : 'You failed:('}}\n      </h3>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -547,16 +547,23 @@ var QuizService = (function () {
         };
         this.menuUrl = 'menu/test'; // URL to web api
     }
-    /** GET Quiz */
     QuizService.prototype.getQuiz = function () {
         return this.http.get(this.menuUrl + '/get_quiz');
     };
-    /** GET Questions */
     QuizService.prototype.getQuestions = function () {
         return this.http.get(this.menuUrl + '/questions');
     };
     QuizService.prototype.submitQuiz = function (quiz) {
         return this.http.post(this.menuUrl + '/submit/', quiz, this.httpOptions);
+    };
+    QuizService.prototype.getRetryStatus = function () {
+        return this.http.get(this.menuUrl + '/ask_retry_quiz');
+    };
+    QuizService.prototype.askForRetry = function () {
+        return this.http.post(this.menuUrl + '/ask_retry_quiz/', {}, this.httpOptions);
+    };
+    QuizService.prototype.doRetry = function () {
+        return this.http.post(this.menuUrl + '/retry_quiz/', {}, this.httpOptions);
     };
     QuizService.prototype.getCookie = function (key) {
         var cookie = this.cookieService.get(key);
@@ -582,7 +589,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".jumbotron {\n  text-align: center;\n}\n\na:hover {\n  color:#607D8B;\n}\n\n.badge {\n  display: inline-block;\n  font-size: small;\n  color: white;\n  padding: 0.8em 0.7em 0 0.7em;\n  background-color: #607D8B;\n  line-height: 1em;\n  position: relative;\n  left: -1px;\n  top: -4px;\n  height: 1.8em;\n  min-width: 16px;\n  text-align: right;\n  margin-right: .8em;\n  border-radius: 4px 0 0 4px;\n}\n\n.button {\n  background-color: #eee;\n  border: none;\n  padding: 5px 10px;\n  border-radius: 4px;\n  cursor: pointer;\n  cursor: hand;\n  font-family: Arial;\n}\n\nbutton:hover {\n  background-color: #cfd8dc;\n}\n\nbutton.delete {\n  position: relative;\n  left: 194px;\n  top: -32px;\n  background-color: gray !important;\n  color: white;\n}\n", ""]);
+exports.push([module.i, ".jumbotron {\n  text-align: center;\n}\n\na:hover {\n  color:#607D8B;\n}\n\n.badge {\n  display: inline-block;\n  font-size: small;\n  color: white;\n  padding: 0.8em 0.7em 0 0.7em;\n  background-color: #607D8B;\n  line-height: 1em;\n  position: relative;\n  left: -1px;\n  top: -4px;\n  height: 1.8em;\n  min-width: 16px;\n  text-align: right;\n  margin-right: .8em;\n  border-radius: 4px 0 0 4px;\n}\n\n.button {\n  background-color: #eee;\n  border: none;\n  padding: 5px 10px;\n  border-radius: 4px;\n  cursor: pointer;\n  cursor: hand;\n  font-family: Arial;\n}\n\nbutton:hover {\n  background-color: #cfd8dc;\n}\n\nbutton.delete {\n  position: relative;\n  left: 194px;\n  top: -32px;\n  background-color: gray !important;\n  color: white;\n}\n\n.approved {\n color: green;\n}\n\n.rejected {\n  color: red;\n}\n", ""]);
 
 // exports
 
@@ -595,7 +602,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz/quiz.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<h1 *ngIf=\"errMsg\">{{errMsg}}</h1>\n"
+module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<div class=\"container\" *ngIf=\"errMsg\">\n  <h3>{{errMsg}}</h3>\n  <div [ngClass]=\"{'approved': retryStatus  == 'Approved', 'rejected': retryStatus  == 'Rejected'}\">\n    <p *ngIf=\"retryStatus == 'non-exist'\">You can ask your manager to let you do this test again</p>\n    <p *ngIf=\"retryStatus == 'Pending'\">Your manager still has not responded to your request to retry</p>\n    <p *ngIf=\"retryStatus == 'Rejected'\">Unfortunately your manager rejected your request for retry :(</p>\n    <p *ngIf=\"retryStatus == 'Approved'\">Your manager approved your request to do this test again !</p>\n  </div>\n  <button class=\"btn btn-info\" *ngIf=\"retryStatus == 'non-exist'\" (click)=\"askRetry()\">\n    Ask your manager for retry</button>\n  <button class=\"btn btn-primary\" *ngIf=\"retryStatus == 'Approved'\" (click)=\"retryQuiz()\">\n    Retry quiz</button>\n</div>\n"
 
 /***/ }),
 
@@ -628,6 +635,7 @@ var QuizComponent = (function () {
     }
     QuizComponent.prototype.ngOnInit = function () {
         this.loadQuiz();
+        this.getRetryStatus();
     };
     QuizComponent.prototype.loadQuiz = function () {
         var _this = this;
@@ -638,7 +646,12 @@ var QuizComponent = (function () {
             _this.count = _this.quiz.questions.length;
         }, function (err) {
             console.error("Error: " + JSON.stringify(err));
-            _this.errMsg = "Bad request: " + err.error;
+            if (err['status'] == 400) {
+                _this.errMsg = "Bad request: " + err.error;
+            }
+            else {
+                _this.errMsg = "Unexpected error: " + err.error;
+            }
         });
     };
     QuizComponent.prototype.getCurrQuestion = function () {
@@ -652,6 +665,31 @@ var QuizComponent = (function () {
     QuizComponent.prototype.showQuestion = function (id) {
         this.mode = 'quiz';
         this.goTo(id);
+    };
+    QuizComponent.prototype.getRetryStatus = function () {
+        var _this = this;
+        this.quizService.getRetryStatus().subscribe(function (res) {
+            console.log('retry status is ' + JSON.stringify(res));
+            _this.retryStatus = res.retry_status;
+        }, function (err) {
+            console.error('failed to get retry status: ' + JSON.stringify(err));
+        });
+    };
+    QuizComponent.prototype.askRetry = function () {
+        this.quizService.askForRetry().subscribe(function (res) {
+            console.log('retry ask response is: ' + res.created);
+            location.reload();
+        }, function (err) {
+            console.error('failed to ask for retry: ' + JSON.stringify(err));
+        });
+    };
+    QuizComponent.prototype.retryQuiz = function () {
+        this.quizService.doRetry().subscribe(function (res) {
+            console.log('do retry response is: ' + res.created);
+            location.reload();
+        }, function (err) {
+            console.error('failed to do retry: ' + JSON.stringify(err));
+        });
     };
     QuizComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({

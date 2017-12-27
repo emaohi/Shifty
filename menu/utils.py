@@ -2,6 +2,10 @@ import json
 
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+
+from core.models import EmployeeRequest
+from log.models import EmployeeProfile
 from menu.models import Answer, Question
 
 logger = logging.getLogger('cool')
@@ -42,3 +46,17 @@ def _correct_answer(ques):
     for ans in Answer.objects.filter(question=question):
         if ans.is_correct:
             return ans.id
+
+
+def remove_score_from(employee):
+    employee.menu_score = None
+    employee.save()
+
+
+def remove_prev_emp_request(employee):
+    try:
+        old_emp_request = EmployeeRequest.objects.get(issuers__in=EmployeeProfile.objects.filter(
+            id=employee.id), type='M')
+        old_emp_request.delete()
+    except ObjectDoesNotExist:
+        logger.warning('trying to delete non-existing menu-test employee request of emp: {}', str(employee))
