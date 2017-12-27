@@ -35,6 +35,8 @@ def get_specific_quiz(request):
         else:
             quiz = Quiz.objects.filter(business=get_curr_business(request), role=request.user.profile.role).first()
             is_preview = False
+        if not quiz:
+            return HttpResponseBadRequest('No quiz for your role')
         response = quiz.serialize(is_preview)
 
         logger.info('data is ' + str(response))
