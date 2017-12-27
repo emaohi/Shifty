@@ -10,21 +10,29 @@ from log.models import Business, EmployeeProfile
 class EmployeeRequest(models.Model):
 
     issuers = models.ManyToManyField(EmployeeProfile, related_name='request_issued')
-    sent_time = models.DateTimeField()
+    sent_time = models.DateTimeField(default=datetime.datetime.now())
     subject = models.TextField(max_length=50)
     text = models.TextField(max_length=200)
     STATUS_CHOICES = (
         ('P', 'Pending'), ('A', 'Approved'), ('R', 'Rejected')
     )
     status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+
     TYPE_CHOICES = (
-        ('P', 'Profile change'), ('S', 'Shift swap')
+        ('P', 'Profile change'), ('S', 'Shift swap'), ('M', 'Menu test retry'), ('O', 'Other')
     )
-    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='P')
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='O')
 
     def get_issuers_string(self):
         return ', '.join(str(emp) for emp in self.issuers.all())
     get_issuers_string.short_description = 'issuers'
+
+    def save(self, *args, **kwargs):
+        if not self.subject:
+            self.subject = self.get_type_display() + 'subject'
+        if not self.text:
+            self.text = self.get_type_display() + 'text'
+        super(EmployeeRequest, self).save(*args, **kwargs)
 
 
 class ManagerMessage(models.Model):

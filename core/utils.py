@@ -195,7 +195,8 @@ def save_shifts_request(form, request):
 
 
 def add_mandatory_slots(slot_request):
-    mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, week=get_next_week_num())
+    business = slot_request.employee.business
+    mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, business=business, week=get_next_week_num())
     slot_request.requested_slots.add(*list(mandatory_slots))
 
 

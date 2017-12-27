@@ -112,7 +112,8 @@ def register(request):
     return render(request, 'manager/register.html', {'manager_form': manager_form, 'business_form': business_form})
 
 
-@login_required
+@login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
 def success(request):
     return render(request, 'manager/register_success.html')
 
