@@ -29,9 +29,9 @@ class EmployeeRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.subject:
-            self.subject = self.get_type_display() + 'subject'
+            self.subject = self.get_type_display() + ' subject'
         if not self.text:
-            self.text = self.get_type_display() + 'text'
+            self.text = self.get_type_display() + ' text'
         super(EmployeeRequest, self).save(*args, **kwargs)
 
 
