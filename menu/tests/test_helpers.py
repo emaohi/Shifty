@@ -1,6 +1,6 @@
 from menu.models import Quiz, Question, Answer
 
-# SUBMISSION_QUIZ = {"name":"dQuiz","scoreToPass":60,"time":10,"isPreview":False,
+# SUBMISSION_QUIZ_DATA = {"name":"dQuiz", "scoreToPass":60, "time":10, "isPreview":False,
 #                    "questions":[{"id":1,"name":"new question???",
 #                                  "answers":[{"id":1,"questionId":1,"name":"firstAnswer","selected":False},
 #                                             {"id":11,"questionId":1,"name":"secondAnswer","selected":False},
@@ -19,5 +19,5 @@ def create_quiz(user):
     create_answers(question)
 
 
-def submit_quiz():
-    pass
+# def submit_quiz(user):
+#     pass
