@@ -28,6 +28,6 @@ class MenuViewsTest(TestCase):
 
     # def test_employee_with_score_should_get_bad_request(self):
     #     self.client.login(**self.emp_credentials)
-    #     create_quiz_and_score()
+    #     create_quiz()
     #     resp = self.client.get(reverse('menu_test_quiz'))
     #     self.assertEqual(resp.status_code, 400)
