@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse, HttpResponseBadRequest
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 
 from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_method, get_curr_profile
@@ -33,10 +33,12 @@ def get_specific_quiz(request):
             quiz = quiz_qs.first()
             is_preview = True
         else:
-            quiz = Quiz.objects.filter(business=get_curr_business(request), role=request.user.profile.role).first()
+            quiz = Quiz.objects.filter(business=get_curr_business(request), role=get_curr_profile(request).role).\
+                first()
             is_preview = False
         if not quiz:
-            return HttpResponseBadRequest('No quiz for your role')
+            return HttpResponseNotFound('There are not any quizzes for %s yet' %
+                                        get_curr_profile(request).get_role_display())
         response = quiz.serialize(is_preview)
 
         logger.info('data is ' + str(response))
