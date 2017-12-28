@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import JsonResponse, HttpResponseBadRequest, Http404, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 
 from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_method, get_curr_profile
