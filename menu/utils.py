@@ -48,7 +48,7 @@ def _correct_answer(ques):
             return ans.id
 
 
-def remove_score_from(employee):
+def remove_score_from_emp(employee):
     employee.menu_score = None
     employee.save()
 

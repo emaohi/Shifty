@@ -1,11 +1,15 @@
+import json
+
 from menu.models import Quiz, Question, Answer
 
-# SUBMISSION_QUIZ_DATA = {"name":"dQuiz", "scoreToPass":60, "time":10, "isPreview":False,
-#                    "questions":[{"id":1,"name":"new question???",
-#                                  "answers":[{"id":1,"questionId":1,"name":"firstAnswer","selected":False},
-#                                             {"id":11,"questionId":1,"name":"secondAnswer","selected":False},
-#                                             "id":21,"questionId":1,"name":"thirdAnswer","selected":False},
-#                                             {"id":31,"questionId":1,"name":"fourthAnswer","selected":False}]}]}
+SUBMISSION_QUIZ_DATA = {"name": "dQuiz", "scoreToPass": 60, "time": 10, "isPreview": False,
+                        "questions": [{"id": 1, "name": "new question???",
+                                       "answers": [{"id": 1, "questionId": 1, "name": "firstAnswer", "selected": True},
+                                                   {"id": 2, "questionId": 1, "name": "secondAnswer",
+                                                    "selected": False},
+                                                   {"id": 3, "questionId": 1, "name": "thirdAnswer", "selected": False},
+                                                   {"id": 4, "questionId": 1, "name": "fourthAnswer",
+                                                    "selected": False}]}]}
 
 
 def create_answers(question):
@@ -19,5 +23,5 @@ def create_quiz(user):
     create_answers(question)
 
 
-# def submit_quiz(user):
-#     pass
+def get_quiz_submission_data():
+    return json.dumps(SUBMISSION_QUIZ_DATA)

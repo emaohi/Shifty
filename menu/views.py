@@ -11,7 +11,7 @@ from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_met
 from core.models import EmployeeRequest
 from log.models import EmployeeProfile
 from menu.models import Quiz
-from menu.utils import get_quiz_score, build_quiz_result, remove_score_from, remove_prev_emp_request
+from menu.utils import get_quiz_score, build_quiz_result, remove_score_from_emp, remove_prev_emp_request
 
 logger = logging.getLogger('cool')
 
@@ -78,10 +78,16 @@ def ask_another_test_try(request):
     if request.method == 'POST':
         curr_emp = get_curr_profile(request)
         logger.info('got retry employee request from: ' + str(curr_emp))
-        new_emp_req = EmployeeRequest(type='M')
-        new_emp_req.save()
-        new_emp_req.issuers.add(curr_emp)
-        return JsonResponse({'created': 'ok'})
+        try:
+            existing_request = EmployeeRequest.objects.get(issuers__in=EmployeeProfile.objects.filter(
+                id=get_curr_profile(request).id), type='M')
+            return HttpResponseBadRequest('menu test retry request (with status %s) already exist for this employee'
+                                          % existing_request.get_status_display())
+        except ObjectDoesNotExist:
+            new_emp_req = EmployeeRequest(type='M')
+            new_emp_req.save()
+            new_emp_req.issuers.add(curr_emp)
+            return JsonResponse({'created': 'ok'})
 
 
 @login_required(login_url="/login")
@@ -89,7 +95,7 @@ def ask_another_test_try(request):
 def try_again(request):
     if request.method == 'POST':
         curr_emp = get_curr_profile(request)
-        remove_score_from(curr_emp)
+        remove_score_from_emp(curr_emp)
         remove_prev_emp_request(curr_emp)
         return JsonResponse({'can_do_again': 'ok'})
 

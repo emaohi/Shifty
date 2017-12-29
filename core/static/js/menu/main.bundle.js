@@ -26,6 +26,7 @@ webpackEmptyAsyncContext.id = "../../../../../src/$$_lazy_route_resource lazy re
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__ = __webpack_require__("../../../../../src/app/quiz/quiz.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__("../../../common/esm5/common.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -36,10 +37,10 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
 var routes = [
     { path: '', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
-    { path: 'review', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
-    { path: 'submit', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
+    { path: 'create', component: __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */] },
 ];
 var AppRoutingModule = (function () {
     function AppRoutingModule() {
@@ -130,12 +131,14 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__ = __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__ = __webpack_require__("../../../../../src/app/quiz-submit/quiz-submit.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -157,7 +160,8 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */],
                 __WEBPACK_IMPORTED_MODULE_3__quiz_quiz_component__["a" /* QuizComponent */],
                 __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */],
-                __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */]
+                __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */],
+                __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */]
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -299,6 +303,67 @@ var Quiz = (function () {
         }
     }
     return Quiz;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-creator/quiz-creator.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-creator/quiz-creator.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<p>\n  quiz-creator works!\n</p>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-creator/quiz-creator.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizCreatorComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+var QuizCreatorComponent = (function () {
+    function QuizCreatorComponent() {
+    }
+    QuizCreatorComponent.prototype.ngOnInit = function () {
+    };
+    QuizCreatorComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-quiz-creator',
+            template: __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.css")]
+        }),
+        __metadata("design:paramtypes", [])
+    ], QuizCreatorComponent);
+    return QuizCreatorComponent;
 }());
 
 
@@ -548,16 +613,16 @@ var QuizService = (function () {
         this.menuUrl = 'menu/test'; // URL to web api
     }
     QuizService.prototype.getQuiz = function () {
-        return this.http.get(this.menuUrl + '/get_quiz');
+        return this.http.get(this.menuUrl + '/get_quiz/');
     };
     QuizService.prototype.getQuestions = function () {
-        return this.http.get(this.menuUrl + '/questions');
+        return this.http.get(this.menuUrl + '/questions/');
     };
     QuizService.prototype.submitQuiz = function (quiz) {
         return this.http.post(this.menuUrl + '/submit/', quiz, this.httpOptions);
     };
     QuizService.prototype.getRetryStatus = function () {
-        return this.http.get(this.menuUrl + '/ask_retry_quiz');
+        return this.http.get(this.menuUrl + '/ask_retry_quiz/');
     };
     QuizService.prototype.askForRetry = function () {
         return this.http.post(this.menuUrl + '/ask_retry_quiz/', {}, this.httpOptions);
