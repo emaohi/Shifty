@@ -151,6 +151,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+// import { QuizDetailsComponent } from './quiz-details/quiz-details.component';
 var AppModule = (function () {
     function AppModule() {
     }
@@ -161,7 +162,7 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_3__quiz_quiz_component__["a" /* QuizComponent */],
                 __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */],
                 __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */],
-                __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */]
+                __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */],
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -283,25 +284,28 @@ var Question = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__question__ = __webpack_require__("../../../../../src/app/models/question.ts");
 
 var Quiz = (function () {
-    function Quiz(data) {
-        var _this = this;
+    function Quiz() {
+    }
+    Quiz.createFrom = function (data) {
+        var quiz = new Quiz();
         if (data) {
-            this.id = data.id;
-            this.name = data.name;
-            this.scoreToPass = data.score_to_pass;
-            this.time = data.time_to_pass;
-            this.isPreview = data.is_preview;
-            this.questions = [];
+            quiz.id = data.id;
+            quiz.name = data.name;
+            quiz.scoreToPass = data.score_to_pass;
+            quiz.time = data.time_to_pass;
+            quiz.isPreview = data.is_preview;
+            quiz.questions = [];
             if (data.questions) {
                 data.questions.forEach(function (q) {
-                    _this.questions.push(new __WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */](q));
+                    quiz.questions.push(new __WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */](q));
                 });
             }
             else {
-                this.questions = [];
+                quiz.questions = [];
             }
         }
-    }
+        return quiz;
+    };
     return Quiz;
 }());
 
@@ -317,7 +321,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, "hr{\n  border-color: darkblue;\n  border-width: 20px;\n}\n#message {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  margin-top: 50px;\n}\n.inner-message {\n  margin: 0 auto;\n  opacity: 0.7;\n}\n.existing {\n  background-color: antiquewhite !important;\n}\n\nh3 {\n  margin-bottom: 50px;\n}\n", ""]);
 
 // exports
 
@@ -330,7 +334,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-creator/quiz-creator.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<p>\n  quiz-creator works!\n</p>\n"
+module.exports = "<!--<div class=\"container\" style=\"margin-top: 30px\">-->\n  <!--<div id=\"message\">-->\n    <!--<div style=\"padding: 5px;\">-->\n      <!--<div class=\"alert alert-success inner-message\"  *ngIf=\"successMessage\">-->\n        <!--<strong>Success!</strong> {{ successMessage }}-->\n      <!--</div>-->\n      <!--<div class=\"alert alert-danger inner-message\"  *ngIf=\"errorMessage\">-->\n        <!--<strong>Error!</strong> {{ errorMessage }}-->\n      <!--</div>-->\n    <!--</div>-->\n  <!--</div>-->\n  <!--<div class=\"page-header\"><h1>Quiz Creator</h1></div>-->\n  <!--<div class=\"jumbotron\">-->\n    <!--<div class=\"row\">-->\n      <!--<h3>Create Quiz</h3>-->\n      <!--<small *ngIf=\"existingEvents\">Currently {{ getQuizCnt() }} quizzes</small>-->\n      <!--<form class=\"form-horizontal\">-->\n        <!--<app-quiz-details [quiz]=\"newQuiz\" (refreshNeeded)=\"getQuizzes()\"-->\n                       <!--(generateErrorMessage)=\"setErrorMessage($event)\"></app-quiz-details>-->\n      <!--</form>-->\n    <!--</div>-->\n\n  <!--</div>-->\n\n  <!--<hr>-->\n\n  <!--<div class=\"jumbotron existing\" *ngFor=\"let existingQuiz of existingQuizzes\">-->\n    <!--<div class=\"row\">-->\n      <!--<h3>{{ existingQuiz.name }}</h3>-->\n      <!--<form class=\"form-horizontal\">-->\n        <!--<app-quiz-details [quiz]=\"existingQuiz\" (refreshNeeded)=\"getQuizzes()\"-->\n                       <!--(generateSuccessMessage)=\"setSuccessMessage($event)\"-->\n                       <!--(generateErrorMessage)=\"setErrorMessage($event)\"></app-quiz-details>-->\n      <!--</form>-->\n    <!--</div>-->\n  <!--</div>-->\n\n<!--</div>-->\n"
 
 /***/ }),
 
@@ -340,6 +344,7 @@ module.exports = "<p>\n  quiz-creator works!\n</p>\n"
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizCreatorComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -350,10 +355,31 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+
 var QuizCreatorComponent = (function () {
-    function QuizCreatorComponent() {
+    function QuizCreatorComponent(quizService) {
+        this.quizService = quizService;
     }
     QuizCreatorComponent.prototype.ngOnInit = function () {
+        this.getEvents();
+    };
+    QuizCreatorComponent.prototype.getEvents = function () {
+        this.quizService.getQuizzes().subscribe(function (res) {
+        }, function (err) {
+        });
+    };
+    QuizCreatorComponent.prototype.getQuizCnt = function () {
+        return this.existingQuizzes.length.toString();
+    };
+    QuizCreatorComponent.prototype.setSuccessMessage = function (msg) {
+        var _this = this;
+        this.successMessage = msg;
+        setTimeout(function () { return _this.successMessage = ""; }, 3000);
+    };
+    QuizCreatorComponent.prototype.setErrorMessage = function (msg) {
+        var _this = this;
+        this.errorMessage = msg;
+        setTimeout(function () { return _this.errorMessage = ""; }, 3000);
     };
     QuizCreatorComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
@@ -361,7 +387,7 @@ var QuizCreatorComponent = (function () {
             template: __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.html"),
             styles: [__webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.css")]
         }),
-        __metadata("design:paramtypes", [])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__quiz_service__["a" /* QuizService */]])
     ], QuizCreatorComponent);
     return QuizCreatorComponent;
 }());
@@ -447,6 +473,7 @@ var QuizReviewComponent = (function () {
             _this.submitted = true;
             console.log('ok, res is: ' + JSON.stringify(res));
             _this.submitResult = res;
+            setTimeout(window.location.reload.bind(window.location), 6000);
         }, function (err) {
             console.error("Error: " + err.message);
         });
@@ -635,6 +662,11 @@ var QuizService = (function () {
         console.log('got ' + key + ' cookie: ' + cookie);
         return cookie;
     };
+    QuizService.prototype.getQuizzes = function () {
+        return this.http.get(this.menuUrl + '/get_quizzes/');
+    };
+    QuizService.prototype.create = function (quiz) {
+    };
     QuizService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */], __WEBPACK_IMPORTED_MODULE_2_ngx_cookie_service__["a" /* CookieService */]])
@@ -706,13 +738,13 @@ var QuizComponent = (function () {
         var _this = this;
         this.quizService.getQuiz().subscribe(function (res) {
             console.log(JSON.stringify(res));
-            _this.quiz = new __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */](res);
+            _this.quiz = __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */].createFrom(res);
             console.log(JSON.stringify(_this.quiz));
             _this.count = _this.quiz.questions.length;
         }, function (err) {
             console.error("Error: " + JSON.stringify(err));
             if (err['status'] == 400) {
-                _this.errMsg = "Bad request: " + err.error;
+                _this.errMsg = err.error;
                 _this.getRetryStatus();
             }
             else {

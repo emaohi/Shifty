@@ -47,7 +47,7 @@ def get_manger_msgs_of_employee(employee):
 def get_employee_requests_with_status(manager, status):
     business_employees = manager.business.get_employees()
     return EmployeeRequest.objects.filter(issuers__in=business_employees, status=status). \
-        distinct()
+        distinct().order_by('-sent_time')
 
 
 def send_mail_to_manager(emp_user):
