@@ -7,7 +7,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 
-from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_method, get_curr_profile
+from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_method, get_curr_profile, \
+    must_be_manager_callback
 from core.models import EmployeeRequest
 from log.models import EmployeeProfile
 from menu.models import Quiz
@@ -22,7 +23,13 @@ def get_main_page(request):
 
 
 @login_required(login_url="/login")
-def get_specific_quiz(request):
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def get_create_page(request):
+    return render(request, 'menu/index.html', {})
+
+
+@login_required(login_url="/login")
+def get_quiz(request):
     if request.method == 'GET':
         recent_score = get_curr_profile(request).menu_score
         if recent_score is not None:
@@ -45,6 +52,29 @@ def get_specific_quiz(request):
         return JsonResponse(response)
 
     return wrong_method(request)
+
+
+@login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def get_quiz_roles(request):
+    roles_response = dict(business_name=get_curr_business(request).business_name)
+    roles_list = []
+    for role in EmployeeProfile.get_employee_roles():
+        roles_list.append(dict(name=role, imageUrl='https://png.icons8.com/metro/50/000000/waiter.png'))
+    roles_response['roles'] = roles_list
+    return JsonResponse(roles_response)
+
+        # {id: 'get_quizzes', business_name: 'cool-business',
+        # roles: [{'name': 'Waiter', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png'},
+        #   {'name': 'Bartender', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png'},
+        #   {'name': 'Cook', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png'}]}
+
+
+@login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def get_specific_quiz(request):
+    # TODO change
+    return request
 
 
 @login_required(login_url="/login")
@@ -100,3 +130,5 @@ def try_again(request):
         return JsonResponse({'can_do_again': 'ok'})
 
     return wrong_method(request)
+
+

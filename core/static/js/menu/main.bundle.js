@@ -27,6 +27,7 @@ webpackEmptyAsyncContext.id = "../../../../../src/$$_lazy_route_resource lazy re
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__ = __webpack_require__("../../../../../src/app/quiz/quiz.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__("../../../common/esm5/common.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__quiz_role_creator_quiz_role_creator_component__ = __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -38,17 +39,19 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
 var routes = [
     { path: '', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
     { path: 'create', component: __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */] },
+    { path: 'create/:id', component: __WEBPACK_IMPORTED_MODULE_5__quiz_role_creator_quiz_role_creator_component__["a" /* QuizRoleCreatorComponent */] },
 ];
 var AppRoutingModule = (function () {
     function AppRoutingModule() {
     }
     AppRoutingModule = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgModule */])({
-            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */].forRoot(routes)],
-            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */]],
+            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["c" /* RouterModule */].forRoot(routes)],
+            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["c" /* RouterModule */]],
             providers: [{ provide: __WEBPACK_IMPORTED_MODULE_3__angular_common__["a" /* APP_BASE_HREF */], useValue: '/menu/test' }]
         })
     ], AppRoutingModule);
@@ -132,6 +135,8 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__ = __webpack_require__("../../../../../src/app/quiz-submit/quiz-submit.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__question_details_question_details_component__ = __webpack_require__("../../../../../src/app/question-details/question-details.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__quiz_role_creator_quiz_role_creator_component__ = __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -151,7 +156,8 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
-// import { QuizDetailsComponent } from './quiz-details/quiz-details.component';
+
+
 var AppModule = (function () {
     function AppModule() {
     }
@@ -163,6 +169,8 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */],
                 __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */],
                 __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */],
+                __WEBPACK_IMPORTED_MODULE_13__question_details_question_details_component__["a" /* QuestionDetailsComponent */],
+                __WEBPACK_IMPORTED_MODULE_14__quiz_role_creator_quiz_role_creator_component__["a" /* QuizRoleCreatorComponent */],
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -200,7 +208,11 @@ var InMemoryDataService = (function () {
     InMemoryDataService.prototype.createDb = function () {
         var test = [
             { id: 'get_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test',
-                questions: this.createQuestions(10) }
+                questions: this.createQuestions(10) },
+            { id: 'get_quizzes', business_name: 'cool-business',
+                roles: [{ 'name': 'Waiter', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' },
+                    { 'name': 'Bartender', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' },
+                    { 'name': 'Cook', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' }] },
         ];
         return { test: test };
     };
@@ -313,6 +325,67 @@ var Quiz = (function () {
 
 /***/ }),
 
+/***/ "../../../../../src/app/question-details/question-details.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/question-details/question-details.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<p>\n  question-details works!\n</p>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/question-details/question-details.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuestionDetailsComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+var QuestionDetailsComponent = (function () {
+    function QuestionDetailsComponent() {
+    }
+    QuestionDetailsComponent.prototype.ngOnInit = function () {
+    };
+    QuestionDetailsComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-question-details',
+            template: __webpack_require__("../../../../../src/app/question-details/question-details.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/question-details/question-details.component.css")]
+        }),
+        __metadata("design:paramtypes", [])
+    ], QuestionDetailsComponent);
+    return QuestionDetailsComponent;
+}());
+
+
+
+/***/ }),
+
 /***/ "../../../../../src/app/quiz-creator/quiz-creator.component.css":
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -321,7 +394,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, "hr{\n  border-color: darkblue;\n  border-width: 20px;\n}\n#message {\n  position: fixed;\n  top: 0;\n  left: 0;\n  width: 100%;\n  margin-top: 50px;\n}\n.inner-message {\n  margin: 0 auto;\n  opacity: 0.7;\n}\n.existing {\n  background-color: antiquewhite !important;\n}\n\nh3 {\n  margin-bottom: 50px;\n}\n", ""]);
+exports.push([module.i, ".panel {\n  border: 1px solid rgb(96, 125, 139);\n  border-radius:0 !important;\n  transition: box-shadow 0.5s;\n}\n.panel:hover {\n  box-shadow: 5px 0px 40px rgba(0,0,0, .2);\n}\n.panel-footer .btn:hover {\n  border: 1px solid lightsteelblue;\n  background-color: #fff !important;\n  color: rgb(96, 125, 139);\n}\n.panel-heading {\n  color: #fff !important;\n  background-color: rgb(96, 125, 139) !important;\n  padding: 25px;\n  border-bottom: 1px solid transparent;\n  border-top-left-radius: 0px;\n  border-top-right-radius: 0px;\n  border-bottom-left-radius: 0px;\n  border-bottom-right-radius: 0px;\n}\n.panel-footer {\n  background-color: white !important;\n}\n.panel-footer h3 {\n  font-size: 32px;\n}\n.panel-footer h4 {\n  color: #aaa;\n  font-size: 14px;\n}\n.panel-footer .btn {\n  margin: 15px 0;\n  background-color: rgb(96, 125, 139);\n  color: #fff;\n}\n", ""]);
 
 // exports
 
@@ -334,7 +407,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-creator/quiz-creator.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<!--<div class=\"container\" style=\"margin-top: 30px\">-->\n  <!--<div id=\"message\">-->\n    <!--<div style=\"padding: 5px;\">-->\n      <!--<div class=\"alert alert-success inner-message\"  *ngIf=\"successMessage\">-->\n        <!--<strong>Success!</strong> {{ successMessage }}-->\n      <!--</div>-->\n      <!--<div class=\"alert alert-danger inner-message\"  *ngIf=\"errorMessage\">-->\n        <!--<strong>Error!</strong> {{ errorMessage }}-->\n      <!--</div>-->\n    <!--</div>-->\n  <!--</div>-->\n  <!--<div class=\"page-header\"><h1>Quiz Creator</h1></div>-->\n  <!--<div class=\"jumbotron\">-->\n    <!--<div class=\"row\">-->\n      <!--<h3>Create Quiz</h3>-->\n      <!--<small *ngIf=\"existingEvents\">Currently {{ getQuizCnt() }} quizzes</small>-->\n      <!--<form class=\"form-horizontal\">-->\n        <!--<app-quiz-details [quiz]=\"newQuiz\" (refreshNeeded)=\"getQuizzes()\"-->\n                       <!--(generateErrorMessage)=\"setErrorMessage($event)\"></app-quiz-details>-->\n      <!--</form>-->\n    <!--</div>-->\n\n  <!--</div>-->\n\n  <!--<hr>-->\n\n  <!--<div class=\"jumbotron existing\" *ngFor=\"let existingQuiz of existingQuizzes\">-->\n    <!--<div class=\"row\">-->\n      <!--<h3>{{ existingQuiz.name }}</h3>-->\n      <!--<form class=\"form-horizontal\">-->\n        <!--<app-quiz-details [quiz]=\"existingQuiz\" (refreshNeeded)=\"getQuizzes()\"-->\n                       <!--(generateSuccessMessage)=\"setSuccessMessage($event)\"-->\n                       <!--(generateErrorMessage)=\"setErrorMessage($event)\"></app-quiz-details>-->\n      <!--</form>-->\n    <!--</div>-->\n  <!--</div>-->\n\n<!--</div>-->\n"
+module.exports = "<div class=\"jumbotron\">\n  <h2>{{businessName}} Quiz Creator</h2>\n</div>\n\n<div class=\"container-fluid\" *ngIf=\"roles\">\n  <div class=\"text-center\">\n    <h4>Pick role</h4>\n  </div>\n  <div class=\"row\">\n    <div class=\"col-sm-4 col-xs-12\" *ngFor=\"let role of roles\">\n      <div class=\"panel panel-default text-center\">\n        <div class=\"panel-heading\">\n          <h1>{{role.name}}</h1>\n        </div>\n        <div class=\"panel-body\">\n          <img [src]=\"role.imageUrl\">\n        </div>\n        <div class=\"panel-footer\">\n          <button class=\"btn btn-primary\" (click)=\"gotoQuiz(role.name)\">Create</button>\n        </div>\n      </div>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -345,6 +418,7 @@ module.exports = "<!--<div class=\"container\" style=\"margin-top: 30px\">-->\n 
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizCreatorComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -356,30 +430,28 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
+
 var QuizCreatorComponent = (function () {
-    function QuizCreatorComponent(quizService) {
+    function QuizCreatorComponent(quizService, router) {
         this.quizService = quizService;
+        this.router = router;
+        this.businessName = '';
     }
     QuizCreatorComponent.prototype.ngOnInit = function () {
-        this.getEvents();
+        this.getQuizzes();
     };
-    QuizCreatorComponent.prototype.getEvents = function () {
+    QuizCreatorComponent.prototype.getQuizzes = function () {
+        var _this = this;
         this.quizService.getQuizzes().subscribe(function (res) {
+            _this.businessName = res['businessName'];
+            _this.roles = res['roles'];
         }, function (err) {
+            console.error("Error: " + JSON.stringify(err));
         });
     };
-    QuizCreatorComponent.prototype.getQuizCnt = function () {
-        return this.existingQuizzes.length.toString();
-    };
-    QuizCreatorComponent.prototype.setSuccessMessage = function (msg) {
-        var _this = this;
-        this.successMessage = msg;
-        setTimeout(function () { return _this.successMessage = ""; }, 3000);
-    };
-    QuizCreatorComponent.prototype.setErrorMessage = function (msg) {
-        var _this = this;
-        this.errorMessage = msg;
-        setTimeout(function () { return _this.errorMessage = ""; }, 3000);
+    QuizCreatorComponent.prototype.gotoQuiz = function (roleName) {
+        console.log('gotoQuiz' + roleName);
+        this.router.navigate(['create', roleName]);
     };
     QuizCreatorComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
@@ -387,7 +459,7 @@ var QuizCreatorComponent = (function () {
             template: __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.html"),
             styles: [__webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__quiz_service__["a" /* QuizService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__quiz_service__["a" /* QuizService */], __WEBPACK_IMPORTED_MODULE_2__angular_router__["b" /* Router */]])
     ], QuizCreatorComponent);
     return QuizCreatorComponent;
 }());
@@ -473,7 +545,7 @@ var QuizReviewComponent = (function () {
             _this.submitted = true;
             console.log('ok, res is: ' + JSON.stringify(res));
             _this.submitResult = res;
-            setTimeout(window.location.reload.bind(window.location), 6000);
+            setTimeout(window.location.reload.bind(window.location), 3000);
         }, function (err) {
             console.error("Error: " + err.message);
         });
@@ -495,6 +567,75 @@ var QuizReviewComponent = (function () {
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
     ], QuizReviewComponent);
     return QuizReviewComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, "", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<p>\n  quiz-role-creator works!\n</p>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizRoleCreatorComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+var QuizRoleCreatorComponent = (function () {
+    function QuizRoleCreatorComponent(route, quizService) {
+        this.route = route;
+        this.quizService = quizService;
+    }
+    QuizRoleCreatorComponent.prototype.ngOnInit = function () {
+        var role = this.route.snapshot.paramMap.get('role');
+        this.quizService.getQuiz();
+    };
+    QuizRoleCreatorComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-quiz-role-creator',
+            template: __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.css")]
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */], __WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
+    ], QuizRoleCreatorComponent);
+    return QuizRoleCreatorComponent;
 }());
 
 
@@ -642,6 +783,9 @@ var QuizService = (function () {
     QuizService.prototype.getQuiz = function () {
         return this.http.get(this.menuUrl + '/get_quiz/');
     };
+    QuizService.prototype.getSpecificQuiz = function (role) {
+        return this.http.get(this.menuUrl + '/get_quiz/' + role);
+    };
     QuizService.prototype.getQuestions = function () {
         return this.http.get(this.menuUrl + '/questions/');
     };
@@ -666,6 +810,10 @@ var QuizService = (function () {
         return this.http.get(this.menuUrl + '/get_quizzes/');
     };
     QuizService.prototype.create = function (quiz) {
+    };
+    QuizService.prototype.delete = function (id) {
+    };
+    QuizService.prototype.update = function (id, quiz) {
     };
     QuizService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
