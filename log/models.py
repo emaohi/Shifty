@@ -119,6 +119,10 @@ class EmployeeProfile(models.Model):
             return self.get_manager().user
 
     @classmethod
+    def get_roles_reversed(cls):
+        return dict((v, k) for k, v in cls.ROLE_CHOICES)
+
+    @classmethod
     def get_employee_roles(cls):
         return [verbose for short, verbose in cls.ROLE_CHOICES if short != 'MA']
 

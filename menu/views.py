@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
+from django.templatetags.static import static
 
 from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_method, get_curr_profile, \
     must_be_manager_callback
@@ -60,21 +61,22 @@ def get_quiz_roles(request):
     roles_response = dict(business_name=get_curr_business(request).business_name)
     roles_list = []
     for role in EmployeeProfile.get_employee_roles():
-        roles_list.append(dict(name=role, imageUrl='https://png.icons8.com/metro/50/000000/waiter.png'))
+        roles_list.append(dict(name=role, imageUrl=static('imgs/bt.jpeg')))
     roles_response['roles'] = roles_list
     return JsonResponse(roles_response)
-
-        # {id: 'get_quizzes', business_name: 'cool-business',
-        # roles: [{'name': 'Waiter', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png'},
-        #   {'name': 'Bartender', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png'},
-        #   {'name': 'Cook', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png'}]}
 
 
 @login_required(login_url="/login")
 @user_passes_test(must_be_manager_callback, login_url='/employee')
-def get_specific_quiz(request):
-    # TODO change
-    return request
+def get_specific_quiz(request, role):
+    if request.method == 'GET':
+        short_role = EmployeeProfile.get_roles_reversed()[role]
+        quiz = Quiz.objects.filter(business=get_curr_business(request), role=short_role).first()
+        response = quiz.serialize(True)
+
+        logger.info('data is ' + str(response))
+        return JsonResponse(response)
+    return wrong_method(request)
 
 
 @login_required(login_url="/login")

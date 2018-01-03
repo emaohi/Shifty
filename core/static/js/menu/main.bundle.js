@@ -43,7 +43,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var routes = [
     { path: '', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
     { path: 'create', component: __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */] },
-    { path: 'create/:id', component: __WEBPACK_IMPORTED_MODULE_5__quiz_role_creator_quiz_role_creator_component__["a" /* QuizRoleCreatorComponent */] },
+    { path: 'create/:role', component: __WEBPACK_IMPORTED_MODULE_5__quiz_role_creator_quiz_role_creator_component__["a" /* QuizRoleCreatorComponent */] },
 ];
 var AppRoutingModule = (function () {
     function AppRoutingModule() {
@@ -581,7 +581,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, ".container {\n  margin-top: 30px;\n}\n", ""]);
 
 // exports
 
@@ -594,7 +594,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<p>\n  quiz-role-creator works!\n</p>\n"
+module.exports = "<div class=\"container\">\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <h3>{{quiz.name}} - Basic settings</h3>\n    </div>\n    <form class=\"form-horizontal\" *ngIf=\"quiz\">\n      <div class=\"form-group\">\n        <label for=\"quizName\" class=\"col-sm-2 control-label\">Name: </label>\n        <div class=\"col-sm-4\">\n          <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n        </div>\n      </div>\n      <div class=\"form-group\">\n        <label for=\"quizMinScore\" class=\"col-sm-2 control-label\">Minimum score: </label>\n        <div class=\"col-sm-4\">\n          <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\" name=\"quizMinScore\"/>\n        </div>\n      </div>\n    </form>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -606,6 +606,7 @@ module.exports = "<p>\n  quiz-role-creator works!\n</p>\n"
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -618,14 +619,29 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
 var QuizRoleCreatorComponent = (function () {
     function QuizRoleCreatorComponent(route, quizService) {
         this.route = route;
         this.quizService = quizService;
     }
     QuizRoleCreatorComponent.prototype.ngOnInit = function () {
-        var role = this.route.snapshot.paramMap.get('role');
-        this.quizService.getQuiz();
+        this.role = this.route.snapshot.paramMap.get('role');
+        this.get_specific_quiz();
+    };
+    QuizRoleCreatorComponent.prototype.get_specific_quiz = function () {
+        var _this = this;
+        this.quizService.getQuiz().subscribe(function (res) {
+            _this.quiz = __WEBPACK_IMPORTED_MODULE_3__models_quiz__["a" /* Quiz */].createFrom(res);
+            console.log(JSON.stringify(_this.quiz));
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+            }
+        });
     };
     QuizRoleCreatorComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
@@ -784,7 +800,7 @@ var QuizService = (function () {
         return this.http.get(this.menuUrl + '/get_quiz/');
     };
     QuizService.prototype.getSpecificQuiz = function (role) {
-        return this.http.get(this.menuUrl + '/get_quiz/' + role);
+        return this.http.get(this.menuUrl + '/get_specific_quiz/' + role + '/');
     };
     QuizService.prototype.getQuestions = function () {
         return this.http.get(this.menuUrl + '/questions/');

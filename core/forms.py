@@ -172,7 +172,7 @@ class ShiftSlotForm(forms.Form):
         if operation == 'eq':
             operation = 'exact'
         lookup = '%s__%s' % (field, operation)
-        role_reverse = dict((v, k) for k, v in EmployeeProfile.ROLE_CHOICES)
+        role_reverse = EmployeeProfile.get_roles_reversed()
         filtered_emps = EmployeeProfile.objects \
             .filter(**{'business__business_name': self.business.business_name, 'role': role_reverse[role.title()],
                        lookup: value})
