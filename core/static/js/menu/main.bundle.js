@@ -209,6 +209,8 @@ var InMemoryDataService = (function () {
         var test = [
             { id: 'get_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test',
                 questions: this.createQuestions(10) },
+            { id: 'get_specific_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test',
+                questions: this.createQuestions(10) },
             { id: 'get_quizzes', business_name: 'cool-business',
                 roles: [{ 'name': 'Waiter', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' },
                     { 'name': 'Bartender', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' },
@@ -228,7 +230,7 @@ var InMemoryDataService = (function () {
     InMemoryDataService.prototype.createAnswers = function (num) {
         var answers = [];
         for (var i = 0; i < 4; i++) {
-            answers.push({ id: 1, questionId: 1, is_correct: i == 1,
+            answers.push({ id: i, questionId: 1, is_correct: i == 1,
                 content: 'koko_' + (num + 1) + '_' + (i + 1), selected: false });
         }
         return answers;
@@ -249,13 +251,19 @@ var InMemoryDataService = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Answer; });
 var Answer = (function () {
-    function Answer(data) {
-        data = data || {};
-        this.id = data.id;
-        this.questionId = data.question;
-        this.name = data.content;
+    function Answer() {
         this.selected = false;
     }
+    Answer.createFrom = function (data) {
+        var answer = new Answer();
+        data = data || {};
+        answer.id = data.id;
+        answer.questionId = data.question;
+        answer.name = data.content;
+        answer.isAnswer = data.is_correct;
+        answer.selected = false;
+        return answer;
+    };
     return Answer;
 }());
 
@@ -271,16 +279,25 @@ var Answer = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__answer__ = __webpack_require__("../../../../../src/app/models/answer.ts");
 
 var Question = (function () {
-    function Question(data) {
-        var _this = this;
-        data = data || {};
-        this.id = data.id;
-        this.name = data.content;
-        this.answers = [];
-        data.answers.forEach(function (a) {
-            _this.answers.push(new __WEBPACK_IMPORTED_MODULE_0__answer__["a" /* Answer */](a));
-        });
+    function Question() {
+        this.answered = false;
     }
+    Question.createFrom = function (data) {
+        var question = new Question();
+        data = data || {};
+        question.answers = [];
+        question.id = data.id;
+        question.name = data.content;
+        if (data.answers) {
+            data.answers.forEach(function (a) {
+                question.answers.push(__WEBPACK_IMPORTED_MODULE_0__answer__["a" /* Answer */].createFrom(a));
+            });
+        }
+        else {
+            question.answers = [];
+        }
+        return question;
+    };
     return Question;
 }());
 
@@ -309,7 +326,7 @@ var Quiz = (function () {
             quiz.questions = [];
             if (data.questions) {
                 data.questions.forEach(function (q) {
-                    quiz.questions.push(new __WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */](q));
+                    quiz.questions.push(__WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */].createFrom(q));
                 });
             }
             else {
@@ -333,7 +350,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, "", ""]);
+exports.push([module.i, ".panel {\n  border: 1px solid rgb(96, 125, 139);\n  /*border-radius:0 !important;*/\n  transition: box-shadow 0.5s;\n}\n.panel:hover {\n  box-shadow: 5px 0px 40px rgba(0,0,0, .2);\n}\n.panel-footer .btn:hover {\n  border: 1px solid lightsteelblue;\n  background-color: #fff !important;\n  color: rgb(96, 125, 139);\n}\n.panel-heading {\n  color: #fff !important;\n  background-color: rgb(96, 125, 139) !important;\n  padding: 8px;\n  border-bottom: 1px solid transparent;\n}\n.panel-footer {\n  background-color: white !important;\n}\n.panel-footer h3 {\n  font-size: 32px;\n}\n.panel-footer h4 {\n  color: #aaa;\n  font-size: 14px;\n}\n.panel-footer .btn {\n  margin: 15px 0;\n  background-color: rgb(96, 125, 139);\n  color: #fff;\n}\n", ""]);
 
 // exports
 
@@ -346,7 +363,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/question-details/question-details.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<p>\n  question-details works!\n</p>\n"
+module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h5 class=\"panel-title\" style=\"display: inline\">{{ question.name }}</h5>\n  </div>\n  <div class=\"panel-body\">\n    <div class=\"row\">\n      <div class=\"col-sm-3\" *ngFor=\"let answer of question.answers\">\n        <h5>\n          <span class=\"badge\"\n                [ngClass]=\"{'badge-danger': !answer.isAnswer, 'badge-success': answer.isAnswer}\">\n            {{answer.name}}\n          </span>\n        </h5>\n      </div>\n    </div>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -356,6 +373,7 @@ module.exports = "<p>\n  question-details works!\n</p>\n"
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuestionDetailsComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_question__ = __webpack_require__("../../../../../src/app/models/question.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -366,11 +384,16 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 
+
 var QuestionDetailsComponent = (function () {
     function QuestionDetailsComponent() {
     }
     QuestionDetailsComponent.prototype.ngOnInit = function () {
     };
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1__models_question__["a" /* Question */])
+    ], QuestionDetailsComponent.prototype, "question", void 0);
     QuestionDetailsComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
             selector: 'app-question-details',
@@ -581,7 +604,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".container {\n  margin-top: 30px;\n}\n", ""]);
+exports.push([module.i, ".container {\n  margin-top: 30px;\n}\n\n\n.col-md-6 {\n  margin-bottom: 20px;\n}\n\n.newQuestion {\n  margin-top: 20px;\n}\n\n#questionAddHeader {\n  text-align: center;\n}\n", ""]);
 
 // exports
 
@@ -594,7 +617,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <h3>{{quiz.name}} - Basic settings</h3>\n    </div>\n    <form class=\"form-horizontal\" *ngIf=\"quiz\">\n      <div class=\"form-group\">\n        <label for=\"quizName\" class=\"col-sm-2 control-label\">Name: </label>\n        <div class=\"col-sm-4\">\n          <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n        </div>\n      </div>\n      <div class=\"form-group\">\n        <label for=\"quizMinScore\" class=\"col-sm-2 control-label\">Minimum score: </label>\n        <div class=\"col-sm-4\">\n          <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\" name=\"quizMinScore\"/>\n        </div>\n      </div>\n    </form>\n  </div>\n</div>\n"
+module.exports = "<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <div class=\"col-sm-8\">\n        <h3>{{quiz.name}} - Basic settings</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"quizName\" class=\"col-sm-4 col-form-label\">Name: </label>\n            <div class=\"col-sm-6\">\n              <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinTime\" class=\"col-sm-4 col-form-label\">Minimum score: </label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinTime\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\"\n                     name=\"quizMinTime\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinScore\" class=\"col-sm-4 col-form-label\">Maximum time:</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.time\" class=\"form-control\" name=\"quizMinScore\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-lg btn-primary\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"row newQuestion\" *ngIf=\"newQuestion\">\n      <div class=\"col-sm-10\">\n        <h3 id=\"questionAddHeader\">Add/Edit Question</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"newQuestionName\" class=\"col-sm-2 col-form-label\">Question:</label>\n            <div class=\"col-sm-9\">\n              <input id=\"newQuestionName\" type=\"text\" [(ngModel)]=\"newQuestion.name\"\n                     class=\"form-control\" name=\"newQuestion\"/>\n            </div>\n            <div class=\"col-sm-1\">\n              <strong>#{{newQuestion.id}}</strong>\n            </div>\n          </div>\n\n          <div class=\"form-group row\" *ngFor=\"let a of this.newQuestion.answers; let i=index;\">\n            <label for=\"newAnswer{{i}}\" class=\"col-sm-2 col-form-label\">Answer {{i+1}} (#{{a.id}}): </label>\n            <div class=\"col-sm-8\">\n              <input type=\"text\" id=\"newAnswer{{i}}\" [(ngModel)]=\"a.name\"\n                     class=\"form-control\" name=\"newQuestionName{{i}}\"/>\n            </div>\n            <label for=\"newAnswer{{i}}-correct\" class=\"col-sm-1 col-form-label\">correct:</label>\n            <div class=\"col-sm-1\">\n              <input type=\"checkbox\" id=\"newAnswer{{i}}-correct\" [(ngModel)]=\"a.isAnswer\"\n                     class=\"form-control\" name=\"newQuestionIsCorrect-{{i}}\"/>\n            </div>\n          </div>\n\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-lg btn-primary\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"row\" style=\"margin-top: 20px\">\n    <div class=\"col-md-6\" *ngFor=\"let question of quiz.questions\">\n      <app-question-details [question]=\"question\" (click)=\"setNewQuestion(question)\"></app-question-details>\n    </div>\n  </div>\n</div>\n\n<h2 *ngIf=\"errMsg\">{{errMsg}}</h2>\n"
 
 /***/ }),
 
@@ -607,6 +630,8 @@ module.exports = "<div class=\"container\">\n  <div class=\"page-header\"><h1>Cr
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__models_question__ = __webpack_require__("../../../../../src/app/models/question.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__models_answer__ = __webpack_require__("../../../../../src/app/models/answer.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -620,28 +645,45 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 
 
 
+
+
 var QuizRoleCreatorComponent = (function () {
     function QuizRoleCreatorComponent(route, quizService) {
         this.route = route;
         this.quizService = quizService;
+        this.newQuestion = new __WEBPACK_IMPORTED_MODULE_4__models_question__["a" /* Question */]();
     }
     QuizRoleCreatorComponent.prototype.ngOnInit = function () {
         this.role = this.route.snapshot.paramMap.get('role');
-        this.get_specific_quiz();
+        this.get_specific_quiz(this.role);
+        this.set_answers_to_new_question();
     };
-    QuizRoleCreatorComponent.prototype.get_specific_quiz = function () {
+    QuizRoleCreatorComponent.prototype.get_specific_quiz = function (role) {
         var _this = this;
-        this.quizService.getQuiz().subscribe(function (res) {
+        this.quizService.getSpecificQuiz(role).subscribe(function (res) {
             _this.quiz = __WEBPACK_IMPORTED_MODULE_3__models_quiz__["a" /* Quiz */].createFrom(res);
-            console.log(JSON.stringify(_this.quiz));
         }, function (err) {
             if (err['status'] == 400) {
                 console.error("Bad request Error: " + JSON.stringify(err));
+                _this.errMsg = err.error;
             }
             else {
                 console.error("Unexpected Error: " + JSON.stringify(err));
             }
         });
+    };
+    QuizRoleCreatorComponent.prototype.set_answers_to_new_question = function () {
+        var answers = [];
+        for (var i = 0; i < 4; i++) {
+            var answer = new __WEBPACK_IMPORTED_MODULE_5__models_answer__["a" /* Answer */]();
+            answer.isAnswer = false;
+            answer.selected = false;
+            answers.push(answer);
+        }
+        this.newQuestion.answers = answers;
+    };
+    QuizRoleCreatorComponent.prototype.setNewQuestion = function (ques) {
+        this.newQuestion = ques;
     };
     QuizRoleCreatorComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({

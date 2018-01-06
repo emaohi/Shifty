@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import json
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
@@ -70,12 +71,35 @@ def get_quiz_roles(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def get_specific_quiz(request, role):
     if request.method == 'GET':
-        short_role = EmployeeProfile.get_roles_reversed()[role]
-        quiz = Quiz.objects.filter(business=get_curr_business(request), role=short_role).first()
-        response = quiz.serialize(True)
+        try:
+            short_role = EmployeeProfile.get_roles_reversed()[role]
+        except KeyError:
+            return HttpResponseBadRequest('no such role: %s' % role)
 
+        quiz = Quiz.objects.filter(business=get_curr_business(request), role=short_role).first()
+
+        if not quiz:
+            quiz = Quiz.objects.create(role=short_role, business=get_curr_business(request))
+
+        response = quiz.serialize(True)
         logger.info('data is ' + str(response))
         return JsonResponse(response)
+    return wrong_method(request)
+
+
+@login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def submit_quiz_settings(request):
+    if request.method == 'POST':
+        print json.dumps(request.POST)
+    return wrong_method(request)
+
+
+@login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def submit_question_details(request):
+    if request.method == 'POST':
+        print json.dumps(request.POST)
     return wrong_method(request)
 
 
@@ -90,6 +114,18 @@ def quiz_submission(request):
         curr_profile.menu_score = quiz_score
         curr_profile.save()
         return JsonResponse(build_quiz_result(request.body, quiz_score))
+
+    return wrong_method(request)
+
+
+@login_required(login_url="/login")
+@user_passes_test(must_be_employee_callback)
+def try_again(request):
+    if request.method == 'POST':
+        curr_emp = get_curr_profile(request)
+        remove_score_from_emp(curr_emp)
+        remove_prev_emp_request(curr_emp)
+        return JsonResponse({'can_do_again': 'ok'})
 
     return wrong_method(request)
 
@@ -120,17 +156,3 @@ def ask_another_test_try(request):
             new_emp_req.save()
             new_emp_req.issuers.add(curr_emp)
             return JsonResponse({'created': 'ok'})
-
-
-@login_required(login_url="/login")
-@user_passes_test(must_be_employee_callback)
-def try_again(request):
-    if request.method == 'POST':
-        curr_emp = get_curr_profile(request)
-        remove_score_from_emp(curr_emp)
-        remove_prev_emp_request(curr_emp)
-        return JsonResponse({'can_do_again': 'ok'})
-
-    return wrong_method(request)
-
-
