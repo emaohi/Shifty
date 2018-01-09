@@ -42,7 +42,7 @@ def get_quiz(request):
             quiz = quiz_qs.first()
             is_preview = True
         else:
-            quiz = Quiz.objects.filter(business=get_curr_business(request), role=get_curr_profile(request).role).\
+            quiz = Quiz.objects.filter(business=get_curr_business(request), role=get_curr_profile(request).role). \
                 first()
             is_preview = False
         if not quiz:
@@ -91,7 +91,15 @@ def get_specific_quiz(request, role):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def submit_quiz_settings(request):
     if request.method == 'POST':
-        print json.dumps(request.POST)
+        settings_data = json.loads(request.body)
+        quiz_id, quiz_name, new_min_score, new_max_time = settings_data.get('id'), settings_data.get('name'), \
+                                                          settings_data.get('score'), settings_data.get('time')
+
+        quiz = Quiz.objects.get(id=quiz_id)
+        quiz.name, quiz.score_to_pass, quiz.time_to_pass = quiz_name, new_min_score, new_max_time
+        quiz.save()
+        return JsonResponse({})
+
     return wrong_method(request)
 
 

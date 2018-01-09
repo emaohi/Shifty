@@ -617,7 +617,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <div class=\"col-sm-8\">\n        <h3>{{quiz.name}} - Basic settings</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"quizName\" class=\"col-sm-4 col-form-label\">Name: </label>\n            <div class=\"col-sm-6\">\n              <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinTime\" class=\"col-sm-4 col-form-label\">Minimum score: </label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinTime\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\"\n                     name=\"quizMinTime\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinScore\" class=\"col-sm-4 col-form-label\">Maximum time:</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.time\" class=\"form-control\" name=\"quizMinScore\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-lg btn-primary\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"row newQuestion\" *ngIf=\"newQuestion\">\n      <div class=\"col-sm-10\">\n        <h3 id=\"questionAddHeader\">Add/Edit Question</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"newQuestionName\" class=\"col-sm-2 col-form-label\">Question:</label>\n            <div class=\"col-sm-9\">\n              <input id=\"newQuestionName\" type=\"text\" [(ngModel)]=\"newQuestion.name\"\n                     class=\"form-control\" name=\"newQuestion\"/>\n            </div>\n            <div class=\"col-sm-1\">\n              <strong>#{{newQuestion.id}}</strong>\n            </div>\n          </div>\n\n          <div class=\"form-group row\" *ngFor=\"let a of this.newQuestion.answers; let i=index;\">\n            <label for=\"newAnswer{{i}}\" class=\"col-sm-2 col-form-label\">Answer {{i+1}} (#{{a.id}}): </label>\n            <div class=\"col-sm-8\">\n              <input type=\"text\" id=\"newAnswer{{i}}\" [(ngModel)]=\"a.name\"\n                     class=\"form-control\" name=\"newQuestionName{{i}}\"/>\n            </div>\n            <label for=\"newAnswer{{i}}-correct\" class=\"col-sm-1 col-form-label\">correct:</label>\n            <div class=\"col-sm-1\">\n              <input type=\"checkbox\" id=\"newAnswer{{i}}-correct\" [(ngModel)]=\"a.isAnswer\"\n                     class=\"form-control\" name=\"newQuestionIsCorrect-{{i}}\"/>\n            </div>\n          </div>\n\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-lg btn-primary\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"row\" style=\"margin-top: 20px\">\n    <div class=\"col-md-6\" *ngFor=\"let question of quiz.questions\">\n      <app-question-details [question]=\"question\" (click)=\"setNewQuestion(question)\"></app-question-details>\n    </div>\n  </div>\n</div>\n\n<h2 *ngIf=\"errMsg\">{{errMsg}}</h2>\n"
+module.exports = "<div class=\"container\" *ngIf=\"quiz\">\n  <div id=\"message\">\n    <div style=\"padding: 5px;\">\n      <div class=\"alert alert-success inner-message\"  *ngIf=\"successMessage\">\n        <strong>Success!</strong> {{ successMessage }}\n      </div>\n      <div class=\"alert alert-danger inner-message\"  *ngIf=\"errorMessage\">\n        <strong>Error!</strong> {{ errorMessage }}\n      </div>\n    </div>\n  </div>\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <div class=\"col-sm-8\">\n        <h3>{{quiz.name}} - Basic settings</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"quizName\" class=\"col-sm-4 col-form-label\">Name: </label>\n            <div class=\"col-sm-6\">\n              <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinTime\" class=\"col-sm-4 col-form-label\">Minimum score: </label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinTime\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\"\n                     name=\"quizMinTime\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinScore\" class=\"col-sm-4 col-form-label\">Maximum time:</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.time\" class=\"form-control\" name=\"quizMinScore\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-lg btn-primary\" (click)=\"updateBasicConfig()\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"row newQuestion\" *ngIf=\"newQuestion\">\n      <div class=\"col-sm-10\">\n        <h3 id=\"questionAddHeader\">Add/Edit Question</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"newQuestionName\" class=\"col-sm-2 col-form-label\">Question:</label>\n            <div class=\"col-sm-9\">\n              <input id=\"newQuestionName\" type=\"text\" [(ngModel)]=\"newQuestion.name\"\n                     class=\"form-control\" name=\"newQuestion\"/>\n            </div>\n            <div class=\"col-sm-1\">\n              <strong>#{{newQuestion.id}}</strong>\n            </div>\n          </div>\n\n          <div class=\"form-group row\" *ngFor=\"let a of this.newQuestion.answers; let i=index;\">\n            <label for=\"newAnswer{{i}}\" class=\"col-sm-2 col-form-label\">Answer {{i+1}} (#{{a.id}}): </label>\n            <div class=\"col-sm-8\">\n              <input type=\"text\" id=\"newAnswer{{i}}\" [(ngModel)]=\"a.name\"\n                     class=\"form-control\" name=\"newQuestionName{{i}}\"/>\n            </div>\n            <label for=\"newAnswer{{i}}-correct\" class=\"col-sm-1 col-form-label\">correct:</label>\n            <div class=\"col-sm-1\">\n              <input type=\"checkbox\" id=\"newAnswer{{i}}-correct\" [(ngModel)]=\"a.isAnswer\"\n                     class=\"form-control\" name=\"newQuestionIsCorrect-{{i}}\"/>\n            </div>\n          </div>\n\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-lg btn-primary\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"row\" style=\"margin-top: 20px\">\n    <div class=\"col-md-6\" *ngFor=\"let question of quiz.questions\">\n      <app-question-details [question]=\"question\" (click)=\"setNewQuestion(question)\"></app-question-details>\n    </div>\n  </div>\n</div>\n\n<h2 *ngIf=\"errMsg\">{{errMsg}}</h2>\n"
 
 /***/ }),
 
@@ -684,6 +684,31 @@ var QuizRoleCreatorComponent = (function () {
     };
     QuizRoleCreatorComponent.prototype.setNewQuestion = function (ques) {
         this.newQuestion = ques;
+    };
+    QuizRoleCreatorComponent.prototype.updateBasicConfig = function () {
+        var _this = this;
+        this.quizService.submitBasicConf(this.quiz.id, this.quiz.name, this.quiz.time, this.quiz.scoreToPass).subscribe(function (res) {
+            _this.setSuccessMessage("Quiz updated");
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.setSuccessMessage = function (msg) {
+        var _this = this;
+        this.successMessage = msg;
+        setTimeout(function () { return _this.successMessage = ""; }, 3000);
+    };
+    QuizRoleCreatorComponent.prototype.setErrorMessage = function (msg) {
+        var _this = this;
+        this.errorMessage = msg;
+        setTimeout(function () { return _this.errorMessage = ""; }, 3000);
     };
     QuizRoleCreatorComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
@@ -866,6 +891,10 @@ var QuizService = (function () {
     };
     QuizService.prototype.getQuizzes = function () {
         return this.http.get(this.menuUrl + '/get_quizzes/');
+    };
+    QuizService.prototype.submitBasicConf = function (id, name, time, score) {
+        console.log("id " + id + "time " + time + "score " + score);
+        return this.http.post(this.menuUrl + '/update_basic_conf/', { id: id, name: name, time: time, score: score }, this.httpOptions);
     };
     QuizService.prototype.create = function (quiz) {
     };

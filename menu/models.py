@@ -37,6 +37,7 @@ class Quiz(models.Model):
         s_q = serializers.serialize('json', [self])
         json_quiz = json.loads(s_q)
         result_serialized = json_quiz[0]["fields"]
+        result_serialized['id'] = self.id
         result_serialized["questions"] = self.serialize_questions()
         result_serialized['is_preview'] = is_preview
         return result_serialized
