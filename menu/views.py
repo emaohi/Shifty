@@ -14,7 +14,8 @@ from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_met
 from core.models import EmployeeRequest
 from log.models import EmployeeProfile
 from menu.models import Quiz
-from menu.utils import get_quiz_score, build_quiz_result, remove_score_from_emp, remove_prev_emp_request
+from menu.utils import get_quiz_score, build_quiz_result, remove_score_from_emp, remove_prev_emp_request, \
+    deserialize_question_data
 
 logger = logging.getLogger('cool')
 
@@ -107,7 +108,14 @@ def submit_quiz_settings(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def submit_question_details(request):
     if request.method == 'POST':
-        print json.dumps(request.POST)
+        question_data = json.loads(request.body)
+        try:
+            question = deserialize_question_data(question_data)
+            question.save()
+            return JsonResponse({})
+        except AttributeError as e:
+            return HttpResponseBadRequest('Illegal question data: ' + str(e))
+
     return wrong_method(request)
 
 

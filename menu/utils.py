@@ -2,6 +2,7 @@ import json
 
 import logging
 
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.models import EmployeeRequest
@@ -60,3 +61,28 @@ def remove_prev_emp_request(employee):
         old_emp_request.delete()
     except ObjectDoesNotExist:
         logger.warning('trying to delete non-existing menu-test employee request of emp: %s', str(employee))
+
+
+def deserialize_question_data(data):
+    deserialized_objects = serializers.deserialize('json', data)
+    deserialized_question = filter_deserialize_menu_model('Question', deserialized_objects)
+    deserialized_answers = filter_deserialize_menu_model('Answer', deserialized_objects)
+
+
+def filter_deserialize_menu_model(model_name, all_objects):
+    return list(filter(lambda d: d['model'] == 'menu.' + model_name, all_objects))
+
+
+def get_basic_question(data):
+    quiz_id = data.get('quiz_id')
+    question_id = data.get('question_id')
+    question_content = data.get('name')
+    if question_id:
+        ques = Question.objects.get(id=question_id)
+        ques.content = question_content
+        ques.save()
+    else:
+        ques = Question.objects.create(quiz=data.get(quiz_id), content=question_content)
+    return ques
+
+
