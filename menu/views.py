@@ -110,8 +110,7 @@ def submit_question_details(request):
     if request.method == 'POST':
         question_data = json.loads(request.body)
         try:
-            question = deserialize_question_data(question_data)
-            question.save()
+            deserialize_question_data(question_data)
             return JsonResponse({})
         except AttributeError as e:
             return HttpResponseBadRequest('Illegal question data: ' + str(e))

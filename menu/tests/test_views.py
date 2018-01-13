@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from core.test.test_helpers import create_manager_and_employee_groups, create_new_manager, create_new_employee
-from menu.tests.test_helpers import create_quiz, get_quiz_submission_data
+from menu.tests.test_helpers import create_quiz_with_questions_and_answers, get_quiz_submission_data
 
 
 class MenuViewsTest(TestCase):
@@ -22,7 +22,7 @@ class MenuViewsTest(TestCase):
         create_new_manager(cls.manager_credentials)
         create_new_employee(cls.emp_credentials)
 
-        create_quiz(User.objects.get(username=cls.emp_credentials['username']))
+        create_quiz_with_questions_and_answers(User.objects.get(username=cls.emp_credentials['username']))
 
     def setUp(self):
         self.client.logout()

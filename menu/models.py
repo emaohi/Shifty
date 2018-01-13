@@ -48,7 +48,7 @@ class Question(models.Model):
     content = models.TextField(max_length=100)
 
     def __str__(self):
-        return '%s: %s' % (str(self.quiz), self.content)
+        return '%s (in quiz "%s")' % (str(self.content), self.quiz)
 
     def serialize_answers(self):
         serialized_answer_list = serializers.serialize('json', self.answer_set.all())
