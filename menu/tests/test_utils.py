@@ -8,8 +8,6 @@ from menu.utils import deserialize_objects
 
 
 class UtilsTest(TestCase):
-    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
-    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
     pk_question = [{
         'pk': '2', 'model': 'menu.Question', 'fields': {'quiz': '1', 'content': 'Do i exist?'}

@@ -4,7 +4,7 @@ from log.models import Business
 from menu.models import Quiz, Question, Answer
 
 SUBMISSION_QUIZ_DATA = {"name": "dQuiz", "scoreToPass": 60, "time": 10, "isPreview": False,
-                        "questions": [{"id": 1, "name": "new question???",
+                        "questions": [{"id": 999, "name": "new question???",
                                        "answers": [{"id": 1, "questionId": 1, "name": "firstAnswer", "selected": True},
                                                    {"id": 2, "questionId": 1, "name": "secondAnswer",
                                                     "selected": False},
@@ -20,7 +20,7 @@ def create_answers(question):
 
 def create_quiz_with_questions_and_answers(user):
     quiz = create_quiz_only(user.profile.business)
-    question = Question.objects.create(quiz=quiz, content='is this test question?')
+    question = Question.objects.create(id=999, quiz=quiz, content='is this test question?')
     create_answers(question)
 
 
@@ -31,9 +31,3 @@ def create_quiz_only(business_name):
 
 def get_quiz_submission_data():
     return json.dumps(SUBMISSION_QUIZ_DATA)
-
-
-# def create_serialize_answers(question_id, correct):
-#     serialized_answers = []
-#     for i in range(4):
-#         serialized_answers.append(dict(pk=1))
