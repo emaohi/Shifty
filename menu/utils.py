@@ -63,8 +63,8 @@ def remove_prev_emp_request(employee):
         logger.warning('trying to delete non-existing menu-test employee request of emp: %s', str(employee))
 
 
-def deserialize_question_data(data):
+def deserialize_objects(data):
     deserialized_objects = serializers.deserialize('json', data)
-    for d_o in deserialized_objects:
-        logger.info('Going to deserialize %s', d_o.object)
-        d_o.save()
+    for deserialized_obj in deserialized_objects:
+        deserialized_obj.save()
+

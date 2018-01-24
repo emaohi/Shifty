@@ -33,7 +33,7 @@ def get_quiz_submission_data():
     return json.dumps(SUBMISSION_QUIZ_DATA)
 
 
-def create_serialize_answers(question_id, correct):
-    serialized_answers = []
-    for i in range(4):
-        serialized_answers.append(dict(pk=1))
+# def create_serialize_answers(question_id, correct):
+#     serialized_answers = []
+#     for i in range(4):
+#         serialized_answers.append(dict(pk=1))

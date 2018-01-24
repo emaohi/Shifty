@@ -13,9 +13,9 @@ from Shifty.utils import get_curr_business, must_be_employee_callback, wrong_met
     must_be_manager_callback
 from core.models import EmployeeRequest
 from log.models import EmployeeProfile
-from menu.models import Quiz
+from menu.models import Quiz, Question
 from menu.utils import get_quiz_score, build_quiz_result, remove_score_from_emp, remove_prev_emp_request, \
-    deserialize_question_data
+    deserialize_objects
 
 logger = logging.getLogger('cool')
 
@@ -108,13 +108,26 @@ def submit_quiz_settings(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def submit_question_details(request):
     if request.method == 'POST':
-        question_data = json.loads(request.body)
         try:
-            deserialize_question_data(question_data)
+            deserialize_objects(request.body)
             return JsonResponse({})
         except AttributeError as e:
             return HttpResponseBadRequest('Illegal question data: ' + str(e))
 
+    return wrong_method(request)
+
+
+@login_required(login_url="/login")
+@user_passes_test(must_be_manager_callback, login_url='/employee')
+def submit_question_only(request):
+    if request.method == 'POST':
+        try:
+            question_data = json.loads(request.body)
+            ques = Question.objects.create(quiz=Quiz.objects.get(id=question_data['quiz']),
+                                           content=question_data['name'])
+            return JsonResponse({'question_id': ques.id})
+        except AttributeError as e:
+            return HttpResponseBadRequest('Illegal question data: ' + str(e))
     return wrong_method(request)
 
 
