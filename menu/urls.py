@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^test/update_basic_conf/$', views.submit_quiz_settings, name='quiz_settings'),
     url(r'^test/update_question/$', views.submit_question_details, name='update_question'),
     url(r'^test/create_question/$', views.submit_question_only, name='create_question'),
+    url(r'^test/delete_question/(?P<question_id>[0-9]+)/$', views.delete_question, name='delete_question'),
     url(r'^test/create.*$', views.get_create_page, name='menu_test_main'),
     url(r'^test/.*$', views.get_main_page, name='menu_test_main'),
     ]

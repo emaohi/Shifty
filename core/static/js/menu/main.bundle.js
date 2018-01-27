@@ -51,8 +51,8 @@ var AppRoutingModule = (function () {
     }
     AppRoutingModule = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgModule */])({
-            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["c" /* RouterModule */].forRoot(routes)],
-            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["c" /* RouterModule */]],
+            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* RouterModule */].forRoot(routes)],
+            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* RouterModule */]],
             providers: [{ provide: __WEBPACK_IMPORTED_MODULE_3__angular_common__["a" /* APP_BASE_HREF */], useValue: '/menu/test' }]
         })
     ], AppRoutingModule);
@@ -291,6 +291,7 @@ var Answer = (function () {
 
 var Question = (function () {
     function Question() {
+        this.name = "new question";
         this.answered = false;
     }
     Question.createFrom = function (data) {
@@ -378,7 +379,7 @@ exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-b
 
 
 // module
-exports.push([module.i, ".panel {\n  border: 1px solid rgb(96, 125, 139);\n  /*border-radius: 15px !important;*/\n  transition: box-shadow 0.5s;\n}\n.panel:hover {\n  box-shadow: 5px 0px 40px rgba(0,0,0, .2);\n}\n.panel-footer .btn:hover {\n  border: 1px solid lightsteelblue;\n  background-color: #fff !important;\n  color: rgb(96, 125, 139);\n}\n.panel-heading {\n  color: #fff !important;\n  background-color: rgb(96, 125, 139) !important;\n  padding: 8px;\n  border-bottom: 1px solid transparent;\n}\n.panel-footer {\n  background-color: white !important;\n}\n.panel-footer h3 {\n  font-size: 32px;\n}\n.panel-footer h4 {\n  color: #aaa;\n  font-size: 14px;\n}\n.panel-footer .btn {\n  margin: 15px 0;\n  background-color: rgb(96, 125, 139);\n  color: #fff;\n}\n\n.panel-heading .btn {\n  float: right;\n}\n\ntr {\n  text-align: center;\n}\n", ""]);
+exports.push([module.i, ".panel {\n  border: 1px solid rgb(96, 125, 139);\n  /*border-radius: 15px !important;*/\n  transition: box-shadow 0.5s;\n}\n.panel:hover {\n  box-shadow: 5px 0px 40px rgba(0,0,0, .2);\n}\n.panel-footer .btn:hover {\n  border: 1px solid lightsteelblue;\n  background-color: #fff !important;\n  color: rgb(96, 125, 139);\n}\n.panel-heading {\n  color: #fff !important;\n  background-color: rgb(96, 125, 139) !important;\n  padding: 8px;\n  border-bottom: 1px solid transparent;\n}\n.panel-footer {\n  background-color: white !important;\n}\n.panel-footer h3 {\n  font-size: 32px;\n}\n.panel-footer h4 {\n  color: #aaa;\n  font-size: 14px;\n}\n.panel-footer .btn {\n  margin: 15px 0;\n  background-color: rgb(96, 125, 139);\n  color: #fff;\n}\n\n.panel-heading .btn {\n  float: right;\n}\n\n.table {\n  margin-bottom: 0px !important;\n}\n\ntr {\n  text-align: center;\n}\n", ""]);
 
 // exports
 
@@ -391,7 +392,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/question-details/question-details.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h5 class=\"panel-title\" style=\"display: inline\">{{ question.name }}</h5>\n    <button class=\"btn btn-info btn-sm\" (click)=\"showQuestion()\">\n      <i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i>\n    </button>\n    <button class=\"btn btn-default btn-sm\" (click)=\"toggleAnswers()\">\n      <i class=\"fa fa-chevron-down\" aria-hidden=\"true\"></i>\n    </button>\n  </div>\n  <div class=\"panel-body\" *ngIf=\"showAnswers\">\n    <table class=\"table\">\n      <tbody>\n        <tr *ngFor=\"let answer of question.answers\"\n            [ngClass]=\"{'table-success': answer.isAnswer, 'table-danger': !answer.isAnswer}\">\n          <td>{{answer.name}}</td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n"
+module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h5 class=\"panel-title\" style=\"display: inline\">{{ question.name }}</h5>\n    <button class=\"btn btn-danger btn-sm\" (click)=\"deleteQuestion()\">\n      <i class=\"fa fa-trash\" aria-hidden=\"true\"></i>\n    </button>\n    <button class=\"btn btn-info btn-sm\" (click)=\"showQuestion()\">\n      <i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i>\n    </button>\n    <button class=\"btn btn-default btn-sm\" (click)=\"toggleAnswers()\">\n      <i class=\"fa fa-chevron-down\" aria-hidden=\"true\"></i>\n    </button>\n  </div>\n  <div class=\"panel-body\" *ngIf=\"showAnswers\">\n    <table class=\"table\">\n      <tbody>\n        <tr *ngFor=\"let answer of question.answers\"\n            [ngClass]=\"{'table-success': answer.isAnswer, 'table-danger': !answer.isAnswer}\">\n          <td>{{answer.name}}</td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -416,6 +417,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var QuestionDetailsComponent = (function () {
     function QuestionDetailsComponent() {
         this.emitQuestion = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
+        this.deleteQuestionEmitter = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
         this.showAnswers = false;
     }
     QuestionDetailsComponent.prototype.ngOnInit = function () {
@@ -426,6 +428,9 @@ var QuestionDetailsComponent = (function () {
     QuestionDetailsComponent.prototype.toggleAnswers = function () {
         this.showAnswers = !this.showAnswers;
     };
+    QuestionDetailsComponent.prototype.deleteQuestion = function () {
+        this.deleteQuestionEmitter.emit(this.question.id);
+    };
     __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
         __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1__models_question__["a" /* Question */])
@@ -434,6 +439,10 @@ var QuestionDetailsComponent = (function () {
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["P" /* Output */])(),
         __metadata("design:type", __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */])
     ], QuestionDetailsComponent.prototype, "emitQuestion", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["P" /* Output */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */])
+    ], QuestionDetailsComponent.prototype, "deleteQuestionEmitter", void 0);
     QuestionDetailsComponent = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
             selector: 'app-question-details',
@@ -481,7 +490,6 @@ module.exports = "<div class=\"jumbotron\">\n  <h2>{{businessName}} Quiz Creator
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizCreatorComponent; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -493,11 +501,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 
 
-
 var QuizCreatorComponent = (function () {
-    function QuizCreatorComponent(quizService, router) {
+    function QuizCreatorComponent(quizService) {
         this.quizService = quizService;
-        this.router = router;
         this.businessName = '';
     }
     QuizCreatorComponent.prototype.ngOnInit = function () {
@@ -518,7 +524,7 @@ var QuizCreatorComponent = (function () {
             template: __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.html"),
             styles: [__webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.css")]
         }),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__quiz_service__["a" /* QuizService */], __WEBPACK_IMPORTED_MODULE_2__angular_router__["b" /* Router */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__quiz_service__["a" /* QuizService */]])
     ], QuizCreatorComponent);
     return QuizCreatorComponent;
 }());
@@ -653,7 +659,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\" *ngIf=\"quiz\">\n  <div id=\"message\">\n    <div style=\"padding: 5px;\">\n      <div class=\"alert alert-success inner-message\"  *ngIf=\"successMessage\">\n        <strong>Success!</strong> {{ successMessage }}\n      </div>\n      <div class=\"alert alert-danger inner-message\"  *ngIf=\"errorMessage\">\n        <strong>Error!</strong> {{ errorMessage }}\n      </div>\n    </div>\n  </div>\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <div class=\"col-sm-8\">\n        <h3>{{quiz.name}} - Basic settings</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"quizName\" class=\"col-sm-4 col-form-label\">Name: </label>\n            <div class=\"col-sm-6\">\n              <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinTime\" class=\"col-sm-4 col-form-label\">Minimum score: </label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinTime\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\"\n                     name=\"quizMinTime\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinScore\" class=\"col-sm-4 col-form-label\">Maximum time:</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.time\" class=\"form-control\" name=\"quizMinScore\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-primary\" (click)=\"updateBasicConfig()\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"row newQuestion\" *ngIf=\"newQuestion\">\n      <div class=\"col-sm-10\">\n        <h3 id=\"questionAddHeader\">Add/Edit Question</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"newQuestionName\" class=\"col-sm-2 col-form-label\">Question:</label>\n            <div class=\"col-sm-9\">\n              <input id=\"newQuestionName\" type=\"text\" [(ngModel)]=\"newQuestion.name\"\n                     class=\"form-control\" name=\"newQuestion\"/>\n            </div>\n            <div class=\"col-sm-1\">\n              <strong>#{{newQuestion.id}}</strong>\n            </div>\n          </div>\n\n          <div class=\"form-group row\" *ngFor=\"let a of this.newQuestion.answers; let i=index;\">\n            <label for=\"newAnswer{{i}}\" class=\"col-sm-2 col-form-label\">Answer {{i+1}} (#{{a.id}}): </label>\n            <div class=\"col-sm-8\">\n              <input type=\"text\" id=\"newAnswer{{i}}\" [(ngModel)]=\"a.name\"\n                     class=\"form-control\" name=\"newQuestionName{{i}}\"/>\n            </div>\n            <label for=\"newAnswer{{i}}-correct\" class=\"col-sm-1 col-form-label\">correct:</label>\n            <div class=\"col-sm-1\">\n              <input type=\"checkbox\" id=\"newAnswer{{i}}-correct\" [(ngModel)]=\"a.isAnswer\"\n                     class=\"form-control\" name=\"newQuestionIsCorrect-{{i}}\"/>\n            </div>\n          </div>\n\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-primary\" (click)=\"updateQuestion()\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"row\" style=\"margin-top: 20px\">\n    <div class=\"col-md-6\" *ngFor=\"let question of quiz.questions\">\n      <app-question-details [question]=\"question\" (emitQuestion)=\"setNewQuestion($event)\"></app-question-details>\n    </div>\n  </div>\n</div>\n\n<h2 *ngIf=\"errMsg\">{{errMsg}}</h2>\n"
+module.exports = "<div class=\"container\" *ngIf=\"quiz\">\n  <div id=\"message\">\n    <div style=\"padding: 5px;\">\n      <div class=\"alert alert-success inner-message\"  *ngIf=\"successMessage\">\n        <strong>Success!</strong> {{ successMessage }}\n      </div>\n      <div class=\"alert alert-danger inner-message\"  *ngIf=\"errorMessage\">\n        <strong>Error!</strong> {{ errorMessage }}\n      </div>\n    </div>\n  </div>\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <div class=\"col-sm-8\">\n        <h3>{{quiz.name}} - Basic settings</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"quizName\" class=\"col-sm-4 col-form-label\">Name: </label>\n            <div class=\"col-sm-6\">\n              <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinTime\" class=\"col-sm-4 col-form-label\">Minimum score: </label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinTime\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\"\n                     name=\"quizMinTime\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinScore\" class=\"col-sm-4 col-form-label\">Maximum time:</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.time\" class=\"form-control\" name=\"quizMinScore\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-info\" (click)=\"updateBasicConfig()\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"row newQuestion\" *ngIf=\"newQuestion\">\n      <div class=\"col-sm-10\">\n        <h3 id=\"questionAddHeader\">Add/Edit Question</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"newQuestionName\" class=\"col-sm-2 col-form-label\">Question:</label>\n            <div class=\"col-sm-9\">\n              <input id=\"newQuestionName\" type=\"text\" [(ngModel)]=\"newQuestion.name\"\n                     class=\"form-control\" name=\"newQuestion\"/>\n            </div>\n            <div class=\"col-sm-1\">\n              <strong>#{{newQuestion.id}}</strong>\n            </div>\n          </div>\n\n          <div class=\"form-group row\" *ngFor=\"let a of this.newQuestion.answers; let i=index;\">\n            <label for=\"newAnswer{{i}}\" class=\"col-sm-2 col-form-label\">Answer {{i+1}} (#{{a.id}}): </label>\n            <div class=\"col-sm-8\">\n              <input type=\"text\" id=\"newAnswer{{i}}\" [(ngModel)]=\"a.name\"\n                     class=\"form-control\" name=\"newQuestionName{{i}}\"/>\n            </div>\n            <label for=\"newAnswer{{i}}-correct\" class=\"col-sm-1 col-form-label\">correct:</label>\n            <div class=\"col-sm-1\">\n              <input type=\"checkbox\" id=\"newAnswer{{i}}-correct\" [(ngModel)]=\"a.isAnswer\"\n                     class=\"form-control\" name=\"newQuestionIsCorrect-{{i}}\"/>\n            </div>\n          </div>\n\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <div class=\"btn-group\">\n                <button class=\"btn btn-info\" (click)=\"updateQuestion()\">Save</button>\n                <button class=\"btn btn-success\" (click)=\"resetQuestion()\">New</button>\n              </div>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"row\" style=\"margin-top: 20px\">\n    <div class=\"col-md-6\" *ngFor=\"let question of quiz.questions\">\n      <app-question-details [question]=\"question\"\n                            (emitQuestion)=\"setNewQuestion($event)\"\n                            (deleteQuestionEmitter)=\"deleteQuestion($event)\">\n      </app-question-details>\n    </div>\n  </div>\n</div>\n\n<h2 *ngIf=\"errMsg\">{{errMsg}}</h2>\n"
 
 /***/ }),
 
@@ -687,14 +693,13 @@ var QuizRoleCreatorComponent = (function () {
     function QuizRoleCreatorComponent(route, quizService) {
         this.route = route;
         this.quizService = quizService;
-        this.newQuestion = new __WEBPACK_IMPORTED_MODULE_4__models_question__["a" /* Question */]();
     }
     QuizRoleCreatorComponent.prototype.ngOnInit = function () {
         var _this = this;
         this.route.params.subscribe(function (params) {
+            _this.resetQuestion();
             _this.role = params['role'];
             _this.get_specific_quiz();
-            _this.set_answers_to_new_question();
         });
     };
     QuizRoleCreatorComponent.prototype.get_specific_quiz = function () {
@@ -729,6 +734,22 @@ var QuizRoleCreatorComponent = (function () {
             }
         });
     };
+    QuizRoleCreatorComponent.prototype.deleteQuestion = function (quesId) {
+        var _this = this;
+        this.quizService.deleteQuestion(quesId).subscribe(function (res) {
+            _this.setSuccessMessage("Question " + quesId + " has been deleted");
+            _this.resetPage();
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+        });
+    };
     QuizRoleCreatorComponent.prototype.updateBasicConfig = function () {
         var _this = this;
         this.quizService.submitBasicConf(this.quiz.id, this.quiz.name, this.quiz.time, this.quiz.scoreToPass).subscribe(function (res) {
@@ -756,7 +777,7 @@ var QuizRoleCreatorComponent = (function () {
         var _this = this;
         this.quizService.updateQuestion(this.newQuestion, this.quiz.id).subscribe(function (res) {
             _this.setSuccessMessage("Quiz updated");
-            _this.get_specific_quiz();
+            _this.resetPage();
         }, function (err) {
             if (err['status'] == 400) {
                 console.error("Bad request Error: " + JSON.stringify(err));
@@ -784,6 +805,14 @@ var QuizRoleCreatorComponent = (function () {
                 _this.setErrorMessage(err.error);
             }
         });
+    };
+    QuizRoleCreatorComponent.prototype.resetQuestion = function () {
+        this.newQuestion = new __WEBPACK_IMPORTED_MODULE_4__models_question__["a" /* Question */]();
+        this.set_answers_to_new_question();
+    };
+    QuizRoleCreatorComponent.prototype.resetPage = function () {
+        this.resetQuestion();
+        this.get_specific_quiz();
     };
     QuizRoleCreatorComponent.prototype.setSuccessMessage = function (msg) {
         var _this = this;
@@ -991,11 +1020,9 @@ var QuizService = (function () {
         console.log("Going only to create question");
         return this.http.post(this.menuUrl + '/create_question/', Object.assign(question, { 'quiz': quizId }), this.httpOptions);
     };
-    QuizService.prototype.create = function (quiz) {
-    };
-    QuizService.prototype.delete = function (id) {
-    };
-    QuizService.prototype.update = function (id, quiz) {
+    QuizService.prototype.deleteQuestion = function (quesId) {
+        console.log("going to delete question id: " + quesId);
+        return this.http.delete(this.menuUrl + '/delete_question/' + quesId + '/', this.httpOptions);
     };
     QuizService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),

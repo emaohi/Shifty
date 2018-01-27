@@ -117,6 +117,15 @@ def submit_question_details(request):
     return wrong_method(request)
 
 
+def delete_question(request, question_id):
+    if request.method == 'DELETE':
+        question_to_delete = Question.objects.get(id=question_id)
+        question_to_delete.delete()
+        return JsonResponse({})
+
+    return wrong_method(request)
+
+
 @login_required(login_url="/login")
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def submit_question_only(request):
@@ -184,3 +193,5 @@ def ask_another_test_try(request):
             new_emp_req.save()
             new_emp_req.issuers.add(curr_emp)
             return JsonResponse({'created': 'ok'})
+
+
