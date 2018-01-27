@@ -2,6 +2,7 @@ import json
 
 import logging
 
+from django.core import serializers
 from django.core.exceptions import ObjectDoesNotExist
 
 from core.models import EmployeeRequest
@@ -48,7 +49,7 @@ def _correct_answer(ques):
             return ans.id
 
 
-def remove_score_from(employee):
+def remove_score_from_emp(employee):
     employee.menu_score = None
     employee.save()
 
@@ -60,3 +61,10 @@ def remove_prev_emp_request(employee):
         old_emp_request.delete()
     except ObjectDoesNotExist:
         logger.warning('trying to delete non-existing menu-test employee request of emp: %s', str(employee))
+
+
+def deserialize_objects(data):
+    deserialized_objects = serializers.deserialize('json', data)
+    for deserialized_obj in deserialized_objects:
+        deserialized_obj.save()
+

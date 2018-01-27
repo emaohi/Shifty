@@ -64,5 +64,5 @@ def get_curr_business(request):
 
 
 def wrong_method(request):
-    return HttpResponseBadRequest('cannot get distance data with ' + request.method)
+    return HttpResponseBadRequest('cannot get here with ' + request.method)
 

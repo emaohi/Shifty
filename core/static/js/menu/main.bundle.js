@@ -26,6 +26,8 @@ webpackEmptyAsyncContext.id = "../../../../../src/$$_lazy_route_resource lazy re
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__ = __webpack_require__("../../../../../src/app/quiz/quiz.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__angular_common__ = __webpack_require__("../../../common/esm5/common.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__quiz_role_creator_quiz_role_creator_component__ = __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -36,18 +38,21 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 
 
 
+
+
 var routes = [
     { path: '', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
-    { path: 'review', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
-    { path: 'submit', component: __WEBPACK_IMPORTED_MODULE_2__quiz_quiz_component__["a" /* QuizComponent */] },
+    { path: 'create', component: __WEBPACK_IMPORTED_MODULE_4__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */], children: [
+            { path: ':role', component: __WEBPACK_IMPORTED_MODULE_5__quiz_role_creator_quiz_role_creator_component__["a" /* QuizRoleCreatorComponent */] }
+        ] },
 ];
 var AppRoutingModule = (function () {
     function AppRoutingModule() {
     }
     AppRoutingModule = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["I" /* NgModule */])({
-            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */].forRoot(routes)],
-            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* RouterModule */]],
+            imports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* RouterModule */].forRoot(routes)],
+            exports: [__WEBPACK_IMPORTED_MODULE_1__angular_router__["b" /* RouterModule */]],
             providers: [{ provide: __WEBPACK_IMPORTED_MODULE_3__angular_common__["a" /* APP_BASE_HREF */], useValue: '/menu/test' }]
         })
     ], AppRoutingModule);
@@ -130,12 +135,18 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__ = __webpack_require__("../../../../../src/app/quiz-review/quiz-review.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__ = __webpack_require__("../../../../ngx-cookie-service/index.js");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__ = __webpack_require__("../../../../../src/app/quiz-submit/quiz-submit.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__question_details_question_details_component__ = __webpack_require__("../../../../../src/app/question-details/question-details.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__quiz_role_creator_quiz_role_creator_component__ = __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
+
+
 
 
 
@@ -157,7 +168,10 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */],
                 __WEBPACK_IMPORTED_MODULE_3__quiz_quiz_component__["a" /* QuizComponent */],
                 __WEBPACK_IMPORTED_MODULE_9__quiz_review_quiz_review_component__["a" /* QuizReviewComponent */],
-                __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */]
+                __WEBPACK_IMPORTED_MODULE_11__quiz_submit_quiz_submit_component__["a" /* QuizSubmitComponent */],
+                __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__["a" /* QuizCreatorComponent */],
+                __WEBPACK_IMPORTED_MODULE_13__question_details_question_details_component__["a" /* QuestionDetailsComponent */],
+                __WEBPACK_IMPORTED_MODULE_14__quiz_role_creator_quiz_role_creator_component__["a" /* QuizRoleCreatorComponent */],
             ],
             imports: [
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
@@ -195,7 +209,13 @@ var InMemoryDataService = (function () {
     InMemoryDataService.prototype.createDb = function () {
         var test = [
             { id: 'get_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test',
-                questions: this.createQuestions(10) }
+                questions: this.createQuestions(10) },
+            { id: 'get_specific_quiz', is_preview: true, time_to_pass: 15, score_to_pass: 60, name: 'Waiters test',
+                questions: this.createQuestions(10) },
+            { id: 'get_quizzes', business_name: 'cool-business',
+                roles: [{ 'name': 'Waiter', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' },
+                    { 'name': 'Bartender', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' },
+                    { 'name': 'Cook', 'imageUrl': 'https://png.icons8.com/metro/50/000000/waiter.png' }] },
         ];
         return { test: test };
     };
@@ -211,7 +231,7 @@ var InMemoryDataService = (function () {
     InMemoryDataService.prototype.createAnswers = function (num) {
         var answers = [];
         for (var i = 0; i < 4; i++) {
-            answers.push({ id: 1, questionId: 1, is_correct: i == 1,
+            answers.push({ id: i, questionId: 1, is_correct: i == 1,
                 content: 'koko_' + (num + 1) + '_' + (i + 1), selected: false });
         }
         return answers;
@@ -232,13 +252,29 @@ var InMemoryDataService = (function () {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return Answer; });
 var Answer = (function () {
-    function Answer(data) {
-        data = data || {};
-        this.id = data.id;
-        this.questionId = data.question;
-        this.name = data.content;
+    function Answer() {
         this.selected = false;
     }
+    Answer.createFrom = function (data) {
+        var answer = new Answer();
+        data = data || {};
+        var dataFields = data.fields;
+        answer.id = data.pk;
+        answer.backend_model = data.model;
+        answer.questionId = dataFields.question;
+        answer.name = dataFields.content;
+        answer.isAnswer = dataFields.is_correct;
+        answer.selected = false;
+        return answer;
+    };
+    Answer.prototype.createPostData = function (newQuestionId) {
+        var data = { "fields": { "question": this.questionId ? this.questionId : newQuestionId } };
+        data["pk"] = this.id;
+        data["model"] = this.backend_model ? this.backend_model : 'menu.answer';
+        data["fields"]["content"] = this.name;
+        data["fields"]["is_correct"] = this.isAnswer;
+        return data;
+    };
     return Answer;
 }());
 
@@ -254,16 +290,42 @@ var Answer = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__answer__ = __webpack_require__("../../../../../src/app/models/answer.ts");
 
 var Question = (function () {
-    function Question(data) {
-        var _this = this;
-        data = data || {};
-        this.id = data.id;
-        this.name = data.content;
-        this.answers = [];
-        data.answers.forEach(function (a) {
-            _this.answers.push(new __WEBPACK_IMPORTED_MODULE_0__answer__["a" /* Answer */](a));
-        });
+    function Question() {
+        this.name = "new question";
+        this.answered = false;
     }
+    Question.createFrom = function (data) {
+        var question = new Question();
+        data = data || {};
+        var dataFields = data.fields;
+        question.answers = [];
+        question.id = data.pk;
+        question.backend_model = data.model;
+        question.name = dataFields.content;
+        if (data.answers) {
+            data.answers.forEach(function (a) {
+                question.answers.push(__WEBPACK_IMPORTED_MODULE_0__answer__["a" /* Answer */].createFrom(a));
+            });
+        }
+        else {
+            question.answers = [];
+        }
+        return question;
+    };
+    Question.prototype.createPostData = function (quizId) {
+        var _this = this;
+        var data = [];
+        var question_data = { "fields": { "quiz": quizId } };
+        question_data["pk"] = this.id;
+        question_data["model"] = this.backend_model ? this.backend_model : 'menu.question';
+        question_data["fields"]["content"] = this.name;
+        data.push(question_data);
+        this.answers.forEach(function (ans) {
+            data.push(ans.createPostData(_this.id));
+        });
+        console.log("data is " + data);
+        return data;
+    };
     return Question;
 }());
 
@@ -279,26 +341,192 @@ var Question = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__question__ = __webpack_require__("../../../../../src/app/models/question.ts");
 
 var Quiz = (function () {
-    function Quiz(data) {
-        var _this = this;
+    function Quiz() {
+    }
+    Quiz.createFrom = function (data) {
+        var quiz = new Quiz();
         if (data) {
-            this.id = data.id;
-            this.name = data.name;
-            this.scoreToPass = data.score_to_pass;
-            this.time = data.time_to_pass;
-            this.isPreview = data.is_preview;
-            this.questions = [];
+            var dataFields = data.fields;
+            quiz.id = data.pk;
+            quiz.name = dataFields.name;
+            quiz.scoreToPass = dataFields.score_to_pass;
+            quiz.time = dataFields.time_to_pass;
+            quiz.isPreview = data.is_preview;
+            quiz.questions = [];
             if (data.questions) {
                 data.questions.forEach(function (q) {
-                    _this.questions.push(new __WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */](q));
+                    quiz.questions.push(__WEBPACK_IMPORTED_MODULE_0__question__["a" /* Question */].createFrom(q));
                 });
             }
             else {
-                this.questions = [];
+                quiz.questions = [];
             }
         }
-    }
+        return quiz;
+    };
     return Quiz;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/question-details/question-details.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".panel {\n  border: 1px solid rgb(96, 125, 139);\n  /*border-radius: 15px !important;*/\n  transition: box-shadow 0.5s;\n}\n.panel:hover {\n  box-shadow: 5px 0px 40px rgba(0,0,0, .2);\n}\n.panel-footer .btn:hover {\n  border: 1px solid lightsteelblue;\n  background-color: #fff !important;\n  color: rgb(96, 125, 139);\n}\n.panel-heading {\n  color: #fff !important;\n  background-color: rgb(96, 125, 139) !important;\n  padding: 8px;\n  border-bottom: 1px solid transparent;\n}\n.panel-footer {\n  background-color: white !important;\n}\n.panel-footer h3 {\n  font-size: 32px;\n}\n.panel-footer h4 {\n  color: #aaa;\n  font-size: 14px;\n}\n.panel-footer .btn {\n  margin: 15px 0;\n  background-color: rgb(96, 125, 139);\n  color: #fff;\n}\n\n.panel-heading .btn {\n  float: right;\n}\n\n.table {\n  margin-bottom: 0px !important;\n}\n\ntr {\n  text-align: center;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/question-details/question-details.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"panel panel-default\">\n  <div class=\"panel-heading\">\n    <h5 class=\"panel-title\" style=\"display: inline\">{{ question.name }}</h5>\n    <button class=\"btn btn-danger btn-sm\" (click)=\"deleteQuestion()\">\n      <i class=\"fa fa-trash\" aria-hidden=\"true\"></i>\n    </button>\n    <button class=\"btn btn-info btn-sm\" (click)=\"showQuestion()\">\n      <i class=\"fa fa-pencil-square-o\" aria-hidden=\"true\"></i>\n    </button>\n    <button class=\"btn btn-default btn-sm\" (click)=\"toggleAnswers()\">\n      <i class=\"fa fa-chevron-down\" aria-hidden=\"true\"></i>\n    </button>\n  </div>\n  <div class=\"panel-body\" *ngIf=\"showAnswers\">\n    <table class=\"table\">\n      <tbody>\n        <tr *ngFor=\"let answer of question.answers\"\n            [ngClass]=\"{'table-success': answer.isAnswer, 'table-danger': !answer.isAnswer}\">\n          <td>{{answer.name}}</td>\n        </tr>\n      </tbody>\n    </table>\n  </div>\n</div>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/question-details/question-details.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuestionDetailsComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__models_question__ = __webpack_require__("../../../../../src/app/models/question.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var QuestionDetailsComponent = (function () {
+    function QuestionDetailsComponent() {
+        this.emitQuestion = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
+        this.deleteQuestionEmitter = new __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */]();
+        this.showAnswers = false;
+    }
+    QuestionDetailsComponent.prototype.ngOnInit = function () {
+    };
+    QuestionDetailsComponent.prototype.showQuestion = function () {
+        this.emitQuestion.emit(this.question.id);
+    };
+    QuestionDetailsComponent.prototype.toggleAnswers = function () {
+        this.showAnswers = !this.showAnswers;
+    };
+    QuestionDetailsComponent.prototype.deleteQuestion = function () {
+        this.deleteQuestionEmitter.emit(this.question.id);
+    };
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["D" /* Input */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_1__models_question__["a" /* Question */])
+    ], QuestionDetailsComponent.prototype, "question", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["P" /* Output */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */])
+    ], QuestionDetailsComponent.prototype, "emitQuestion", void 0);
+    __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["P" /* Output */])(),
+        __metadata("design:type", __WEBPACK_IMPORTED_MODULE_0__angular_core__["v" /* EventEmitter */])
+    ], QuestionDetailsComponent.prototype, "deleteQuestionEmitter", void 0);
+    QuestionDetailsComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-question-details',
+            template: __webpack_require__("../../../../../src/app/question-details/question-details.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/question-details/question-details.component.css")]
+        }),
+        __metadata("design:paramtypes", [])
+    ], QuestionDetailsComponent);
+    return QuestionDetailsComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-creator/quiz-creator.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".panel {\n  border: 1px solid rgb(96, 125, 139);\n  border-radius:0 !important;\n  transition: box-shadow 0.5s;\n}\n.panel:hover {\n  box-shadow: 5px 0px 40px rgba(0,0,0, .2);\n}\n.panel-footer .btn:hover {\n  border: 1px solid lightsteelblue;\n  background-color: #fff !important;\n  color: rgb(96, 125, 139);\n}\n.panel-heading {\n  color: #fff !important;\n  background-color: rgb(96, 125, 139) !important;\n  padding: 25px;\n  border-bottom: 1px solid transparent;\n  border-top-left-radius: 0px;\n  border-top-right-radius: 0px;\n  border-bottom-left-radius: 0px;\n  border-bottom-right-radius: 0px;\n}\n.panel-footer {\n  background-color: white !important;\n}\n.panel-footer h3 {\n  font-size: 32px;\n}\n.panel-footer h4 {\n  color: #aaa;\n  font-size: 14px;\n}\n.panel-footer .btn {\n  margin: 15px 0;\n  background-color: rgb(96, 125, 139);\n  color: #fff;\n}\n\n.btn-primary {\n  margin-right: 10px;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-creator/quiz-creator.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"jumbotron\">\n  <h2>{{businessName}} Quiz Creator</h2>\n  <div class=\"btn-group\">\n    <a *ngFor=\"let role of roles\" [routerLink]=\"role.name\"><button class=\"btn btn-primary\"\n            >{{role.name}}</button></a>\n  </div>\n</div>\n\n\n<router-outlet></router-outlet>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-creator/quiz-creator.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizCreatorComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+var QuizCreatorComponent = (function () {
+    function QuizCreatorComponent(quizService) {
+        this.quizService = quizService;
+        this.businessName = '';
+    }
+    QuizCreatorComponent.prototype.ngOnInit = function () {
+        this.getQuizzes();
+    };
+    QuizCreatorComponent.prototype.getQuizzes = function () {
+        var _this = this;
+        this.quizService.getQuizzes().subscribe(function (res) {
+            _this.businessName = res['businessName'];
+            _this.roles = res['roles'];
+        }, function (err) {
+            console.error("Error: " + JSON.stringify(err));
+        });
+    };
+    QuizCreatorComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-quiz-creator',
+            template: __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.css")]
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__quiz_service__["a" /* QuizService */]])
+    ], QuizCreatorComponent);
+    return QuizCreatorComponent;
 }());
 
 
@@ -382,6 +610,7 @@ var QuizReviewComponent = (function () {
             _this.submitted = true;
             console.log('ok, res is: ' + JSON.stringify(res));
             _this.submitResult = res;
+            setTimeout(window.location.reload.bind(window.location), 3000);
         }, function (err) {
             console.error("Error: " + err.message);
         });
@@ -403,6 +632,207 @@ var QuizReviewComponent = (function () {
         __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
     ], QuizReviewComponent);
     return QuizReviewComponent;
+}());
+
+
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.css":
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__("../../../../css-loader/lib/css-base.js")(false);
+// imports
+
+
+// module
+exports.push([module.i, ".container {\n  margin-top: 30px;\n}\n\n\n.col-md-6 {\n  margin-bottom: 20px;\n}\n\n.newQuestion {\n  margin-top: 20px;\n}\n\n#questionAddHeader {\n  text-align: center;\n}\n\n.alert{\n  position: fixed;\n  top: 5px;\n  left:2%;\n  width: 96%;\n}\n", ""]);
+
+// exports
+
+
+/*** EXPORTS FROM exports-loader ***/
+module.exports = module.exports.toString();
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html":
+/***/ (function(module, exports) {
+
+module.exports = "<div class=\"container\" *ngIf=\"quiz\">\n  <div id=\"message\">\n    <div style=\"padding: 5px;\">\n      <div class=\"alert alert-success inner-message\"  *ngIf=\"successMessage\">\n        <strong>Success!</strong> {{ successMessage }}\n      </div>\n      <div class=\"alert alert-danger inner-message\"  *ngIf=\"errorMessage\">\n        <strong>Error!</strong> {{ errorMessage }}\n      </div>\n    </div>\n  </div>\n  <div class=\"page-header\"><h1>Create {{role}} menu test</h1></div>\n  <div class=\"jumbotron\">\n    <div class=\"row\">\n      <div class=\"col-sm-8\">\n        <h3>{{quiz.name}} - Basic settings</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"quizName\" class=\"col-sm-4 col-form-label\">Name: </label>\n            <div class=\"col-sm-6\">\n              <input type=\"text\" id=\"quizName\" [(ngModel)]=\"quiz.name\" class=\"form-control\" name=\"quizName\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinTime\" class=\"col-sm-4 col-form-label\">Minimum score: </label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinTime\" [(ngModel)]=\"quiz.scoreToPass\" class=\"form-control\"\n                     name=\"quizMinTime\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <label for=\"quizMinScore\" class=\"col-sm-4 col-form-label\">Maximum time:</label>\n            <div class=\"col-sm-3\">\n              <input type=\"text\" id=\"quizMinScore\" [(ngModel)]=\"quiz.time\" class=\"form-control\" name=\"quizMinScore\"/>\n            </div>\n          </div>\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <button class=\"btn btn-info\" (click)=\"updateBasicConfig()\">Save</button>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n\n    <div class=\"row newQuestion\" *ngIf=\"newQuestion\">\n      <div class=\"col-sm-10\">\n        <h3 id=\"questionAddHeader\">Add/Edit Question</h3>\n        <form class=\"form-horizontal\">\n          <div class=\"form-group row\">\n            <label for=\"newQuestionName\" class=\"col-sm-2 col-form-label\">Question:</label>\n            <div class=\"col-sm-9\">\n              <input id=\"newQuestionName\" type=\"text\" [(ngModel)]=\"newQuestion.name\"\n                     class=\"form-control\" name=\"newQuestion\"/>\n            </div>\n            <div class=\"col-sm-1\">\n              <strong>#{{newQuestion.id}}</strong>\n            </div>\n          </div>\n\n          <div class=\"form-group row\" *ngFor=\"let a of this.newQuestion.answers; let i=index;\">\n            <label for=\"newAnswer{{i}}\" class=\"col-sm-2 col-form-label\">Answer {{i+1}} (#{{a.id}}): </label>\n            <div class=\"col-sm-8\">\n              <input type=\"text\" id=\"newAnswer{{i}}\" [(ngModel)]=\"a.name\"\n                     class=\"form-control\" name=\"newQuestionName{{i}}\"/>\n            </div>\n            <label for=\"newAnswer{{i}}-correct\" class=\"col-sm-1 col-form-label\">correct:</label>\n            <div class=\"col-sm-1\">\n              <input type=\"checkbox\" id=\"newAnswer{{i}}-correct\" [(ngModel)]=\"a.isAnswer\"\n                     class=\"form-control\" name=\"newQuestionIsCorrect-{{i}}\"/>\n            </div>\n          </div>\n\n          <div class=\"form-group row\">\n            <div class=\"col-sm-4 offset-sm-4\">\n              <div class=\"btn-group\">\n                <button class=\"btn btn-info\" (click)=\"updateQuestion()\">Save</button>\n                <button class=\"btn btn-success\" (click)=\"resetQuestion()\">New</button>\n              </div>\n            </div>\n          </div>\n        </form>\n      </div>\n    </div>\n  </div>\n</div>\n\n<div class=\"container\" *ngIf=\"quiz\">\n  <div class=\"row\" style=\"margin-top: 20px\">\n    <div class=\"col-md-6\" *ngFor=\"let question of quiz.questions\">\n      <app-question-details [question]=\"question\"\n                            (emitQuestion)=\"setNewQuestion($event)\"\n                            (deleteQuestionEmitter)=\"deleteQuestion($event)\">\n      </app-question-details>\n    </div>\n  </div>\n</div>\n\n<h2 *ngIf=\"errMsg\">{{errMsg}}</h2>\n"
+
+/***/ }),
+
+/***/ "../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts":
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return QuizRoleCreatorComponent; });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__angular_core__ = __webpack_require__("../../../core/esm5/core.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__angular_router__ = __webpack_require__("../../../router/esm5/router.js");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__quiz_service__ = __webpack_require__("../../../../../src/app/quiz.service.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__models_quiz__ = __webpack_require__("../../../../../src/app/models/quiz.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__models_question__ = __webpack_require__("../../../../../src/app/models/question.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__models_answer__ = __webpack_require__("../../../../../src/app/models/answer.ts");
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+
+
+
+
+
+
+var QuizRoleCreatorComponent = (function () {
+    function QuizRoleCreatorComponent(route, quizService) {
+        this.route = route;
+        this.quizService = quizService;
+    }
+    QuizRoleCreatorComponent.prototype.ngOnInit = function () {
+        var _this = this;
+        this.route.params.subscribe(function (params) {
+            _this.resetQuestion();
+            _this.role = params['role'];
+            _this.get_specific_quiz();
+        });
+    };
+    QuizRoleCreatorComponent.prototype.get_specific_quiz = function () {
+        var _this = this;
+        this.quizService.getSpecificQuiz(this.role).subscribe(function (res) {
+            _this.quiz = __WEBPACK_IMPORTED_MODULE_3__models_quiz__["a" /* Quiz */].createFrom(res);
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+                _this.errMsg = err.error;
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.set_answers_to_new_question = function () {
+        var answers = [];
+        for (var i = 0; i < 4; i++) {
+            var answer = new __WEBPACK_IMPORTED_MODULE_5__models_answer__["a" /* Answer */]();
+            answer.isAnswer = false;
+            answer.selected = false;
+            answers.push(answer);
+        }
+        this.newQuestion.answers = answers;
+    };
+    QuizRoleCreatorComponent.prototype.setNewQuestion = function (quesId) {
+        var _this = this;
+        this.quiz.questions.forEach(function (q) {
+            if (q.id == quesId) {
+                _this.newQuestion = q;
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.deleteQuestion = function (quesId) {
+        var _this = this;
+        this.quizService.deleteQuestion(quesId).subscribe(function (res) {
+            _this.setSuccessMessage("Question " + quesId + " has been deleted");
+            _this.resetPage();
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.updateBasicConfig = function () {
+        var _this = this;
+        this.quizService.submitBasicConf(this.quiz.id, this.quiz.name, this.quiz.time, this.quiz.scoreToPass).subscribe(function (res) {
+            _this.setSuccessMessage("Quiz updated");
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.updateQuestion = function () {
+        if (this.newQuestion.id == null) {
+            this.createQuestion();
+        }
+        else {
+            this.updateQuestionsWithAnswers();
+        }
+    };
+    QuizRoleCreatorComponent.prototype.updateQuestionsWithAnswers = function () {
+        var _this = this;
+        this.quizService.updateQuestion(this.newQuestion, this.quiz.id).subscribe(function (res) {
+            _this.setSuccessMessage("Quiz updated");
+            _this.resetPage();
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.createQuestion = function () {
+        var _this = this;
+        this.quizService.createQuestion(this.newQuestion, this.quiz.id).subscribe(function (res) {
+            _this.newQuestion.id = res.question_id;
+            console.log('new question id is ' + res.question_id);
+            _this.updateQuestionsWithAnswers();
+        }, function (err) {
+            if (err['status'] == 400) {
+                console.error("Bad request Error when creating question: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+            else {
+                console.error("Unexpected Error: " + JSON.stringify(err));
+                _this.setErrorMessage(err.error);
+            }
+        });
+    };
+    QuizRoleCreatorComponent.prototype.resetQuestion = function () {
+        this.newQuestion = new __WEBPACK_IMPORTED_MODULE_4__models_question__["a" /* Question */]();
+        this.set_answers_to_new_question();
+    };
+    QuizRoleCreatorComponent.prototype.resetPage = function () {
+        this.resetQuestion();
+        this.get_specific_quiz();
+    };
+    QuizRoleCreatorComponent.prototype.setSuccessMessage = function (msg) {
+        var _this = this;
+        this.successMessage = msg;
+        setTimeout(function () { return _this.successMessage = ""; }, 3000);
+    };
+    QuizRoleCreatorComponent.prototype.setErrorMessage = function (msg) {
+        var _this = this;
+        this.errorMessage = msg;
+        setTimeout(function () { return _this.errorMessage = ""; }, 3000);
+    };
+    QuizRoleCreatorComponent = __decorate([
+        Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["n" /* Component */])({
+            selector: 'app-quiz-role-creator',
+            template: __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.html"),
+            styles: [__webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.css")]
+        }),
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_router__["a" /* ActivatedRoute */], __WEBPACK_IMPORTED_MODULE_2__quiz_service__["a" /* QuizService */]])
+    ], QuizRoleCreatorComponent);
+    return QuizRoleCreatorComponent;
 }());
 
 
@@ -548,16 +978,19 @@ var QuizService = (function () {
         this.menuUrl = 'menu/test'; // URL to web api
     }
     QuizService.prototype.getQuiz = function () {
-        return this.http.get(this.menuUrl + '/get_quiz');
+        return this.http.get(this.menuUrl + '/get_quiz/');
+    };
+    QuizService.prototype.getSpecificQuiz = function (role) {
+        return this.http.get(this.menuUrl + '/get_specific_quiz/' + role + '/');
     };
     QuizService.prototype.getQuestions = function () {
-        return this.http.get(this.menuUrl + '/questions');
+        return this.http.get(this.menuUrl + '/questions/');
     };
     QuizService.prototype.submitQuiz = function (quiz) {
         return this.http.post(this.menuUrl + '/submit/', quiz, this.httpOptions);
     };
     QuizService.prototype.getRetryStatus = function () {
-        return this.http.get(this.menuUrl + '/ask_retry_quiz');
+        return this.http.get(this.menuUrl + '/ask_retry_quiz/');
     };
     QuizService.prototype.askForRetry = function () {
         return this.http.post(this.menuUrl + '/ask_retry_quiz/', {}, this.httpOptions);
@@ -569,6 +1002,27 @@ var QuizService = (function () {
         var cookie = this.cookieService.get(key);
         console.log('got ' + key + ' cookie: ' + cookie);
         return cookie;
+    };
+    QuizService.prototype.getQuizzes = function () {
+        return this.http.get(this.menuUrl + '/get_quizzes/');
+    };
+    QuizService.prototype.submitBasicConf = function (id, name, time, score) {
+        console.log("id " + id + "time " + time + "score " + score);
+        return this.http.post(this.menuUrl + '/update_basic_conf/', { id: id, name: name, time: time, score: score }, this.httpOptions);
+    };
+    QuizService.prototype.updateQuestion = function (question, quizId) {
+        console.log("Going to update question: " + JSON.stringify(question));
+        var questionPostData = question.createPostData(quizId);
+        console.log("Going to send this post data: " + JSON.stringify(questionPostData));
+        return this.http.post(this.menuUrl + '/update_question/', questionPostData, this.httpOptions);
+    };
+    QuizService.prototype.createQuestion = function (question, quizId) {
+        console.log("Going only to create question");
+        return this.http.post(this.menuUrl + '/create_question/', Object.assign(question, { 'quiz': quizId }), this.httpOptions);
+    };
+    QuizService.prototype.deleteQuestion = function (quesId) {
+        console.log("going to delete question id: " + quesId);
+        return this.http.delete(this.menuUrl + '/delete_question/' + quesId + '/', this.httpOptions);
     };
     QuizService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
@@ -641,13 +1095,13 @@ var QuizComponent = (function () {
         var _this = this;
         this.quizService.getQuiz().subscribe(function (res) {
             console.log(JSON.stringify(res));
-            _this.quiz = new __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */](res);
+            _this.quiz = __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */].createFrom(res);
             console.log(JSON.stringify(_this.quiz));
             _this.count = _this.quiz.questions.length;
         }, function (err) {
             console.error("Error: " + JSON.stringify(err));
             if (err['status'] == 400) {
-                _this.errMsg = "Bad request: " + err.error;
+                _this.errMsg = err.error;
                 _this.getRetryStatus();
             }
             else {

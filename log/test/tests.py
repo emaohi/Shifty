@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User, Group
 from django.test import TestCase, override_settings
 
-from log.test.test_utils import make_data
+from log.test.test_helpers import make_data
 
 from mock import patch
 

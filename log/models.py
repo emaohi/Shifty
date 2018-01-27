@@ -118,6 +118,14 @@ class EmployeeProfile(models.Model):
         if self.get_manager():
             return self.get_manager().user
 
+    @classmethod
+    def get_roles_reversed(cls):
+        return dict((v, k) for k, v in cls.ROLE_CHOICES)
+
+    @classmethod
+    def get_employee_roles(cls):
+        return [verbose for short, verbose in cls.ROLE_CHOICES if short != 'MA']
+
     @staticmethod
     def get_filtered_upon_fields():
         return ['birth_date', 'started_work_date', 'gender', 'avg_rate']
