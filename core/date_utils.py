@@ -68,3 +68,15 @@ def get_current_deadline_date(day_of_week):
     if r_date.date() > datetime.date.today():
         return r_date
     return None
+
+
+def get_current_week_range():
+    date = datetime.date.today()
+    return get_week_range(date)
+
+
+def get_week_range(date):
+    start_week = date - datetime.timedelta((date.weekday() + 1) % 7)
+    end_week = start_week + datetime.timedelta(7)
+
+    return start_week, end_week

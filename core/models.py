@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 import datetime
 from django.db import models
 
-from core.date_utils import get_next_week_num
+from core.date_utils import get_next_week_num, get_week_range
 from log.models import Business, EmployeeProfile
 
 
@@ -46,7 +46,7 @@ class ManagerMessage(models.Model):
         return self.text.split(':')
 
     def get_recipients_string(self):
-        num_of_recipients = len(self.recipients.all())
+        num_of_recipients = self.recipients.all().count()
         if num_of_recipients > 5:
             return ', '.join(str(emp) for emp in self.recipients.all()[:5]) +\
                    ' and ' + str(num_of_recipients - 5) + ' more'
@@ -136,3 +136,7 @@ class ShiftRequest(models.Model):
 
     def get_slots(self):
         return ", ".join([str(slot) for slot in self.requested_slots.all()])
+
+    def week_range(self):
+        start_week, end_week = get_week_range(self.submission_time.date())
+        return ' -> '.join([str(start_week), str(end_week)])
