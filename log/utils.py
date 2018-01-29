@@ -67,7 +67,7 @@ class NewEmployeeHandler:
         existing_users = User.objects.filter(username__contains=suggested_username).order_by('date_joined')
 
         # this username doesnt exist - return it
-        if len(existing_users) == 0:
+        if existing_users.count() == 0:
             return suggested_username
 
         last_added = existing_users.last()

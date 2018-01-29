@@ -2,7 +2,6 @@ import traceback
 
 import logging
 
-import datetime
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.http import HttpResponseRedirect, HttpResponse
@@ -11,7 +10,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
 from kombu.exceptions import OperationalError
 
-from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string
+from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string, \
+    get_current_week_range
 from core.models import ShiftRequest
 from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
@@ -57,9 +57,7 @@ def manager_home(request):
 def emp_home(request):
     manager_messages = get_manger_msgs_of_employee(request.user.profile)
 
-    date = datetime.date.today()
-    start_week = date - datetime.timedelta((date.weekday() + 1) % 7)
-    end_week = start_week + datetime.timedelta(6)
+    start_week, end_week = get_current_week_range()
     existing_request = ShiftRequest.objects.filter(employee=get_curr_profile(request),
                                                    submission_time__range=[start_week, end_week]).first()
 

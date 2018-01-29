@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
-from core.date_utils import get_date, get_curr_week_num, get_next_week_num
+from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range
 from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest
 from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
 from django.conf import settings
@@ -101,8 +101,8 @@ def save_holidays(holiday_json):
         h_date = holiday.get('date')
         date = datetime.datetime.strptime(h_date, '%Y-%m-%d')
 
-        new_holiday = Holiday(name=h_name, date=date)
-        new_holiday.save()
+        _, created = Holiday.objects.get_or_create(name=h_name, date=date)
+        logger.info('got %s holiday,%r created', h_name, created)
 
 
 def validate_language(text):
@@ -201,13 +201,12 @@ def add_mandatory_slots(slot_request):
 
 
 def delete_other_requests(request, slots_request):
-    date = datetime.date.today()
-    start_week = date - datetime.timedelta((date.weekday() + 1) % 7)
-    end_week = start_week + datetime.timedelta(6)
+    start_week, end_week = get_current_week_range()
     existing_requests = ShiftRequest.objects \
         .filter(employee=get_curr_profile(request),
                 submission_time__range=[start_week, end_week]). \
         exclude(submission_time=slots_request.submission_time)
+    logger.info("deleting %d old slots for this week...", existing_requests.count())
     existing_requests.delete()
 
 

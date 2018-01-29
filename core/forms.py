@@ -173,10 +173,10 @@ class ShiftSlotForm(forms.Form):
             operation = 'exact'
         lookup = '%s__%s' % (field, operation)
         role_reverse = EmployeeProfile.get_roles_reversed()
-        filtered_emps = EmployeeProfile.objects \
+        filtered_emps_cnt = EmployeeProfile.objects \
             .filter(**{'business__business_name': self.business.business_name, 'role': role_reverse[role.title()],
-                       lookup: value})
-        return len(filtered_emps) >= apply_on
+                       lookup: value}).count()
+        return filtered_emps_cnt >= apply_on
 
     @staticmethod
     def validate_slot_not_overlaping(clean_data):
