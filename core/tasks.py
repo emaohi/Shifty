@@ -11,7 +11,7 @@ from core.utils import save_holidays
 logger = logging.getLogger('cool')
 
 
-@periodic_task(run_every=crontab())
+@periodic_task(run_every=crontab(minute=0, hour=0))
 def get_holidays():
 
     logger.info("XXXX - In get holidays task")
