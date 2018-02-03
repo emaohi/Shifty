@@ -221,3 +221,15 @@ def get_cached_non_mandatory_slots(business, week):
         cache.set(key, slots, half_an_hour)
         return slots
     return cache.get(key)
+
+
+def naively_find_employees_for_shift(shift_slot):
+    return [
+        fetch_role_employees(shift_slot.business, role, shift_slot.get_constraint_num_of_role())
+        for role in shift_slot.get_constraints_json()
+    ]
+
+
+def fetch_role_employees(business, role, num_of_role_emps):
+    business_role_emps = business.get_role_employees(role)
+    return business_role_emps[:num_of_role_emps]

@@ -52,6 +52,9 @@ class Business(models.Model):
     def get_employees(self):
         return self.employeeprofile_set.all()
 
+    def get_role_employees(self, role):
+        return self.get_employees().filter(role=role)
+
     def has_deadline_day_passed(self):
         today_weekday = datetime.today().weekday() + 2
         today_weekday = 1 if today_weekday == 8 else today_weekday

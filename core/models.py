@@ -1,6 +1,8 @@
 from __future__ import unicode_literals
 
 import datetime
+import json
+
 from django.db import models
 
 from core.date_utils import get_next_week_num, get_week_range
@@ -121,11 +123,13 @@ class ShiftSlot(models.Model):
     def is_next_week(self):
         return self.week == get_next_week_num()
 
+    def get_constraints_json(self):
+        return json.loads(self.constraints)
 
-# class Shift(models.Model):
-#     pass
-#
-#
+    def get_constraint_num_of_role(self, role):
+        return self.get_constraints_json()[role]['num']
+
+
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
     requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests')
@@ -140,3 +144,10 @@ class ShiftRequest(models.Model):
     def week_range(self):
         start_week, end_week = get_week_range(self.submission_time.date())
         return ' -> '.join([str(start_week), str(end_week)])
+
+
+class Shift(models.Model):
+    slot = models.ForeignKey(ShiftSlot, on_delete=models.CASCADE)
+    employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
+    total_tips = models.IntegerField(null=True, blank=True)
+    remarks = models.TextField(max_length=200, null=True, blank=True)
