@@ -11,7 +11,7 @@ from datetime import datetime
 from django.conf import settings
 
 from core.date_utils import get_next_week_num
-from core.models import ShiftSlot, Shift
+from core.models import ShiftSlot
 from core.shift_generator import NaiveShiftGenerator
 from core.utils import save_holidays
 from log.models import Business
@@ -41,7 +41,7 @@ def get_holidays():
 @shared_task
 def generate_next_week_shifts(business_name):
 
-    sleep(20)
+    sleep(10)
 
     business = Business.objects.get(pk=business_name)
     next_week = get_next_week_num()

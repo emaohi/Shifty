@@ -5,7 +5,6 @@ import logging
 import urllib
 
 import requests
-from abc import ABCMeta, abstractmethod
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone

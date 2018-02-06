@@ -11,6 +11,10 @@ class AbstractShiftGenerator:
     __metaclass__ = ABCMeta
 
     @abstractmethod
+    def __init__(self):
+        pass
+
+    @abstractmethod
     def generate(self):
         pass
 
@@ -18,6 +22,7 @@ class AbstractShiftGenerator:
 class NaiveShiftGenerator(AbstractShiftGenerator):
 
     def __init__(self, slots):
+        super(NaiveShiftGenerator, self).__init__()
         self.slots = slots
 
     def generate(self):

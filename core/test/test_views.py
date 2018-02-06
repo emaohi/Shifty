@@ -3,7 +3,7 @@ import urllib
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
+from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
     create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee
 
@@ -237,9 +237,6 @@ class GetSlotRequestersViewTest(TestCase):
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
         'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
-    requested_slot = {
-        'requested_slots': ['1']
-    }
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
@@ -258,12 +255,14 @@ class GetSlotRequestersViewTest(TestCase):
         self.client.logout()
 
         self.client.login(**self.emp_credentials)
-        self.client.post(reverse('slots_request'), data=self.requested_slot, follow=True)
+        slot_id = str(ShiftSlot.objects.first().id)
+        self.client.post(reverse('slots_request'), data={'requested_slots': [slot_id]}, follow=True)
         self.client.logout()
 
     def test_view_should_succeed(self):
         self.client.login(**self.manager_credentials)
-        resp = self.client.get(reverse('slot_request_employees', kwargs={'slot_id': '1'}))
+        slot_id = str(ShiftSlot.objects.first().id)
+        resp = self.client.get(reverse('slot_request_employees', kwargs={'slot_id': slot_id}))
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(resp.context['emps'][0].user.username, 'testuser1')
 

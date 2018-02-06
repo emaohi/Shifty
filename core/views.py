@@ -320,6 +320,7 @@ def get_work_duration_data(request):
 @user_passes_test(must_be_manager_callback)
 def get_slot_request_employees(request, slot_id):
     if request.method == 'GET':
+        print ShiftSlot.objects.first().id
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if not requested_slot.is_next_week():
             return HttpResponseBadRequest('slot is not next week')
