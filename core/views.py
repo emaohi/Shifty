@@ -1,6 +1,7 @@
 import json
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, get_object_or_404
@@ -15,10 +16,11 @@ from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
-    save_shifts_request, delete_other_requests, validate_language
+    save_shifts_request, delete_other_requests, validate_language, get_next_week_slots
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
-    get_curr_business
+    get_curr_business, wait_for_tasks_to_be_completed, wrong_method
+from core import tasks
 
 logger = logging.getLogger('cool')
 
@@ -226,11 +228,9 @@ def delete_slot(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def get_next_week_slots_calendar(request):
     shifts_json = []
-    curr_business = get_curr_business(request)
     slot_id_to_constraints_dict = {}
 
-    next_week_no = get_next_week_num()
-    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=curr_business)
+    next_week_slots = get_next_week_slots(get_curr_business(request))
     for slot in next_week_slots:
         text_color, title = get_color_and_title_from_slot(slot)
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
@@ -259,10 +259,11 @@ def submit_slots_request(request):
             shifts_request = save_shifts_request(form, request)
             delete_other_requests(request, shifts_request)
 
-            logger.info('slots chosen are: ' + str(shifts_request.requested_slots))
+            logger.info('slots chosen are: %s', str(shifts_request.requested_slots.all()))
             messages.success(request, 'request saved')
             return HttpResponseRedirect('/')
         else:
+            logger.error('couldn\'t save slots request: %s', str(form.errors.as_text()))
             messages.error(request, message='couldn\'t save slots request: %s' % str(form.errors.as_text()))
             return render(request, 'employee/home.html', {'form': form})
 
@@ -327,3 +328,23 @@ def get_slot_request_employees(request, slot_id):
 
         return render(request, 'manager/slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests]})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+def generate_shifts(request):
+    if request.method == 'POST':
+        next_week_slots = get_next_week_slots(get_curr_business(request))
+        if not len(next_week_slots):
+            return HttpResponseBadRequest('No slots next week !')
+        else:
+            business_name = get_curr_business(request).business_name
+            if settings.CELERY:
+                async_task = tasks.generate_next_week_shifts.delay(business_name)
+                if not wait_for_tasks_to_be_completed([async_task]):
+                    return HttpResponseServerError('Couldn\'t generate shifts for next week, please try again')
+            else:
+                tasks.generate_next_week_shifts(business_name)
+            return HttpResponse('Shifts were generated successfully')
+
+    return wrong_method(request)

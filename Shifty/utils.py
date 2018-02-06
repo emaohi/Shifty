@@ -10,12 +10,9 @@ logger = logging.getLogger('cool')
 
 
 def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_results=True):
-    def now_millis():
-        """returns current timestamp in millis"""
-        return int(round(time() * 1000))
 
     is_celery = settings.CELERY
-    task_results = []
+    async_tasks = []
 
     logger.info('recp list is: %s', str(r_2_c_dict))
 
@@ -23,16 +20,26 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_
 
     for recp, context in recp_list.iteritems():
         send_mail_params = [recp.email, subject, text, template, context]
-        task_results.append(tasks.send_mail.delay(*send_mail_params) if is_celery else
-                            tasks.send_mail(*send_mail_params))
+        async_tasks.append(tasks.send_mail.delay(*send_mail_params) if is_celery else
+                           tasks.send_mail(*send_mail_params))
 
     if is_celery and wait_for_results:
-        timeout_millis = settings.CELERY_MAIL_TIMEOUT
-        time_to_stop = now_millis() + timeout_millis
-        while time_to_stop > now_millis():
-            if all([result.status == 'SUCCESS' for result in task_results]):
-                return True
-        raise EmailWaitError('Waited too much for mails to be sent')
+        if not wait_for_tasks_to_be_completed(async_tasks):
+            raise EmailWaitError('Waited too much for mails to be sent')
+
+
+def now_millis():
+    return int(round(time() * 1000))
+
+
+def wait_for_tasks_to_be_completed(celery_tasks):
+    timeout_millis = settings.CELERY_MAIL_TIMEOUT
+    time_to_stop = now_millis() + timeout_millis
+    while time_to_stop > now_millis():
+        if all([result.status == 'SUCCESS' for result in celery_tasks]):
+            return True
+    logger.warn('not all celery tasks finished/succeeded before timeout')
+    return False
 
 
 class EmailWaitError(Exception):

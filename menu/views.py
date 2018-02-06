@@ -137,6 +137,7 @@ def submit_question_only(request):
             return JsonResponse({'question_id': ques.id})
         except AttributeError as e:
             return HttpResponseBadRequest('Illegal question data: ' + str(e))
+
     return wrong_method(request)
 
 

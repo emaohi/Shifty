@@ -1,9 +1,9 @@
 import urllib
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from core.models import EmployeeRequest, ShiftSlot
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
     create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee
 
@@ -237,6 +237,9 @@ class GetSlotRequestersViewTest(TestCase):
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
         'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
+    requested_slot = {
+        'requested_slots': ['1']
+    }
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
@@ -251,13 +254,45 @@ class GetSlotRequestersViewTest(TestCase):
     def setUp(self):
         self.client.login(**self.manager_credentials)
         self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        self.client.post(reverse('finish_slots'), {'isFinished': 'true'})
         self.client.logout()
 
         self.client.login(**self.emp_credentials)
-        self.client.post(reverse('slots_request'), )
+        self.client.post(reverse('slots_request'), data=self.requested_slot, follow=True)
+        self.client.logout()
 
     def test_view_should_succeed(self):
-        set_address_to_employee(username=self.manager_credentials['username'], address='Haifa')
         self.client.login(**self.manager_credentials)
-        resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
+        resp = self.client.get(reverse('slot_request_employees', kwargs={'slot_id': '1'}))
         self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context['emps'][0].user.username, 'testuser1')
+
+
+@override_settings(CELERY=False)
+class GenerateShiftsViewTest(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+    dummy_slot = {
+        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
+        add_fields_to_slot(cls.dummy_slot)
+
+    def test_view_should_return_bad_request_if_no_slots(self):
+        self.client.login(**self.manager_credentials)
+        resp = self.client.post(reverse('generate_shifts'))
+        self.assertEqual(resp.status_code, 400)
+
+    def test_should_succeed_if_slot_exist(self):
+        self.client.login(**self.manager_credentials)
+        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        resp = self.client.post(reverse('generate_shifts'))
+        self.assertEqual(resp.status_code, 200)
+
+        self.assertTrue(Shift.objects.exists())

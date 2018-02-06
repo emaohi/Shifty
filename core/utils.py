@@ -5,6 +5,7 @@ import logging
 import urllib
 
 import requests
+from abc import ABCMeta, abstractmethod
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -161,6 +162,12 @@ def get_dist_data(home_address, work_address, is_drive, is_walk):
     return json_res
 
 
+def get_next_week_slots(business):
+    next_week_no = get_next_week_num()
+    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=business)
+    return next_week_slots
+
+
 def parse_duration_data(raw_distance_response):
     driving_duration = None
     walking_duration = None
@@ -221,15 +228,3 @@ def get_cached_non_mandatory_slots(business, week):
         cache.set(key, slots, half_an_hour)
         return slots
     return cache.get(key)
-
-
-def naively_find_employees_for_shift(shift_slot):
-    all_emps = []
-    for role in shift_slot.get_constraints_json():
-        all_emps += fetch_role_employees(shift_slot.business, role, shift_slot.get_constraint_num_of_role(role))
-    return all_emps
-
-
-def fetch_role_employees(business, role, num_of_role_emps):
-    business_role_emps = business.get_role_employees(role)
-    return business_role_emps[:num_of_role_emps]
