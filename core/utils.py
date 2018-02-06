@@ -224,10 +224,10 @@ def get_cached_non_mandatory_slots(business, week):
 
 
 def naively_find_employees_for_shift(shift_slot):
-    return [
-        fetch_role_employees(shift_slot.business, role, shift_slot.get_constraint_num_of_role())
-        for role in shift_slot.get_constraints_json()
-    ]
+    all_emps = []
+    for role in shift_slot.get_constraints_json():
+        all_emps += fetch_role_employees(shift_slot.business, role, shift_slot.get_constraint_num_of_role(role))
+    return all_emps
 
 
 def fetch_role_employees(business, role, num_of_role_emps):

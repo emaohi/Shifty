@@ -234,7 +234,7 @@ class GetDurationDataViewTest(TestCase):
 
 class GetSlotRequestersViewTest(TestCase):
     dummy_slot = {
-        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
+        'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
         'num_of_bartenders': '0', 'num_of_cooks': '0'
     }
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
@@ -252,3 +252,12 @@ class GetSlotRequestersViewTest(TestCase):
         self.client.login(**self.manager_credentials)
         self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.client.logout()
+
+        self.client.login(**self.emp_credentials)
+        self.client.post(reverse('slots_request'), )
+
+    def test_view_should_succeed(self):
+        set_address_to_employee(username=self.manager_credentials['username'], address='Haifa')
+        self.client.login(**self.manager_credentials)
+        resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
+        self.assertEqual(resp.status_code, 200)

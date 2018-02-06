@@ -38,15 +38,16 @@ def get_holidays():
 
 
 @shared_task
-def generate_next_week_shifts(business_id):
+def generate_next_week_shifts(business_name):
 
     sleep(20)
 
-    business = Business.objects.get(pk=business_id)
+    business = Business.objects.get(pk=business_name)
     next_week = get_next_week_num()
     slots = ShiftSlot.objects.filter(business=business, week=next_week)
 
     for slot in slots:
+        logger.info('Going to make shifts for slots: %s', str(slots))
         employees = naively_find_employees_for_shift(shift_slot=slot)
         shift = Shift.objects.create(slot=slot)
         shift.employees.add(*[employee.id for employee in employees])

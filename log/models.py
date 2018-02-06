@@ -53,7 +53,7 @@ class Business(models.Model):
         return self.employeeprofile_set.all()
 
     def get_role_employees(self, role):
-        return self.get_employees().filter(role=role)
+        return self.get_employees().filter(role=EmployeeProfile.get_roles_reversed()[role.title()])
 
     def has_deadline_day_passed(self):
         today_weekday = datetime.today().weekday() + 2

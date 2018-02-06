@@ -147,7 +147,7 @@ class ShiftRequest(models.Model):
 
 
 class Shift(models.Model):
-    slot = models.ForeignKey(ShiftSlot, on_delete=models.CASCADE)
+    slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
     total_tips = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(max_length=200, null=True, blank=True)
