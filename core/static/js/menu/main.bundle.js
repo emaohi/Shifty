@@ -84,7 +84,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/app.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<router-outlet></router-outlet>\n\n"
+module.exports = "<ngx-loading-bar [color]=\"'#42c5f4'\" [includeSpinner]=\"false\"></ngx-loading-bar>\n<router-outlet></router-outlet>\n\n"
 
 /***/ }),
 
@@ -138,12 +138,14 @@ var AppComponent = (function () {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_12__quiz_creator_quiz_creator_component__ = __webpack_require__("../../../../../src/app/quiz-creator/quiz-creator.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_13__question_details_question_details_component__ = __webpack_require__("../../../../../src/app/question-details/question-details.component.ts");
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_14__quiz_role_creator_quiz_role_creator_component__ = __webpack_require__("../../../../../src/app/quiz-role-creator/quiz-role-creator.component.ts");
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_15__ngx_loading_bar_http_client__ = __webpack_require__("../../../../@ngx-loading-bar/http-client/@ngx-loading-bar/http-client.es5.js");
 var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+
 
 
 
@@ -177,7 +179,11 @@ var AppModule = (function () {
                 __WEBPACK_IMPORTED_MODULE_0__angular_platform_browser__["a" /* BrowserModule */],
                 __WEBPACK_IMPORTED_MODULE_8__angular_forms__["a" /* FormsModule */],
                 __WEBPACK_IMPORTED_MODULE_4__app_routing_module__["a" /* AppRoutingModule */],
-                __WEBPACK_IMPORTED_MODULE_6__angular_common_http__["b" /* HttpClientModule */],
+                __WEBPACK_IMPORTED_MODULE_6__angular_common_http__["c" /* HttpClientModule */],
+                __WEBPACK_IMPORTED_MODULE_15__ngx_loading_bar_http_client__["a" /* LoadingBarHttpClientModule */]
+                // HttpClientInMemoryWebApiModule.forRoot(
+                //   InMemoryDataService
+                // )
             ],
             providers: [__WEBPACK_IMPORTED_MODULE_5__quiz_service__["a" /* QuizService */], __WEBPACK_IMPORTED_MODULE_7__in_memory_data_service__["a" /* InMemoryDataService */], __WEBPACK_IMPORTED_MODULE_10_ngx_cookie_service__["a" /* CookieService */]],
             bootstrap: [__WEBPACK_IMPORTED_MODULE_2__app_component__["a" /* AppComponent */]]
@@ -973,7 +979,7 @@ var QuizService = (function () {
         this.http = http;
         this.cookieService = cookieService;
         this.httpOptions = {
-            headers: new __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["c" /* HttpHeaders */]({ 'Content-Type': 'application/json', "X-CSRFToken": this.getCookie('csrftoken') })
+            headers: new __WEBPACK_IMPORTED_MODULE_1__angular_common_http__["e" /* HttpHeaders */]({ 'Content-Type': 'application/json', "X-CSRFToken": this.getCookie('csrftoken') })
         };
         this.menuUrl = 'menu/test'; // URL to web api
     }
@@ -1026,7 +1032,7 @@ var QuizService = (function () {
     };
     QuizService = __decorate([
         Object(__WEBPACK_IMPORTED_MODULE_0__angular_core__["A" /* Injectable */])(),
-        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["a" /* HttpClient */], __WEBPACK_IMPORTED_MODULE_2_ngx_cookie_service__["a" /* CookieService */]])
+        __metadata("design:paramtypes", [__WEBPACK_IMPORTED_MODULE_1__angular_common_http__["b" /* HttpClient */], __WEBPACK_IMPORTED_MODULE_2_ngx_cookie_service__["a" /* CookieService */]])
     ], QuizService);
     return QuizService;
 }());
@@ -1056,7 +1062,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz/quiz.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n  <a href=\"/menu/test/create\" class=\"btn btn-info\">Menu test creator</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<div class=\"container\" *ngIf=\"errMsg\">\n  <h3>{{errMsg}}</h3>\n  <div *ngIf=\"retryStatus\" [ngClass]=\"{'approved': retryStatus  == 'Approved', 'rejected': retryStatus  == 'Rejected'}\">\n    <p *ngIf=\"retryStatus == 'non-exist'\">You can ask your manager to let you do this test again</p>\n    <p *ngIf=\"retryStatus == 'Pending'\">Your manager still has not responded to your request to retry</p>\n    <p *ngIf=\"retryStatus == 'Rejected'\">Unfortunately your manager rejected your request for retry :(</p>\n    <p *ngIf=\"retryStatus == 'Approved'\">Your manager approved your request to do this test again !</p>\n    <button class=\"btn btn-info\" *ngIf=\"retryStatus == 'non-exist'\" (click)=\"askRetry()\">\n      Ask your manager for retry</button>\n    <button class=\"btn btn-primary\" *ngIf=\"retryStatus == 'Approved'\" (click)=\"retryQuiz()\">\n      Retry quiz</button>\n  </div>\n</div>\n"
+module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n  <a href=\"/menu/test/create\" class=\"btn btn-info\" *ngIf=\"quiz && quiz.isPreview\">Menu test creator</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<div class=\"container\" *ngIf=\"errMsg\">\n  <h3>{{errMsg}}</h3>\n  <div *ngIf=\"retryStatus\" [ngClass]=\"{'approved': retryStatus  == 'Approved', 'rejected': retryStatus  == 'Rejected'}\">\n    <p *ngIf=\"retryStatus == 'non-exist'\">You can ask your manager to let you do this test again</p>\n    <p *ngIf=\"retryStatus == 'Pending'\">Your manager still has not responded to your request to retry</p>\n    <p *ngIf=\"retryStatus == 'Rejected'\">Unfortunately your manager rejected your request for retry :(</p>\n    <p *ngIf=\"retryStatus == 'Approved'\">Your manager approved your request to do this test again !</p>\n    <button class=\"btn btn-info\" *ngIf=\"retryStatus == 'non-exist'\" (click)=\"askRetry()\">\n      Ask your manager for retry</button>\n    <button class=\"btn btn-primary\" *ngIf=\"retryStatus == 'Approved'\" (click)=\"retryQuiz()\">\n      Retry quiz</button>\n  </div>\n</div>\n"
 
 /***/ }),
 
