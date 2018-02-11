@@ -341,11 +341,15 @@ def generate_shifts(request):
         else:
             business_name = get_curr_business(request).business_name
             if settings.CELERY:
-                async_task = tasks.generate_next_week_shifts.delay(business_name)
-                if not wait_for_tasks_to_be_completed([async_task]):
+                generate_async_task = tasks.generate_next_week_shifts.delay(business_name)
+                if not wait_for_tasks_to_be_completed([generate_async_task]):
                     return HttpResponseServerError('Couldn\'t generate shifts for next week, please try again')
             else:
                 tasks.generate_next_week_shifts(business_name)
+            text = 'Your manager has generated shifts for next week'
+            create_manager_msg(recipients=get_curr_business(request).get_employees(),
+                               subject='New Shifts', text=text,
+                               wait_for_mail_results=False)
             return HttpResponse('Shifts were generated successfully')
 
     return wrong_method(request)

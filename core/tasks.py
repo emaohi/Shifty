@@ -41,7 +41,7 @@ def get_holidays():
 @shared_task
 def generate_next_week_shifts(business_name):
 
-    sleep(10)
+    sleep(7)
 
     business = Business.objects.get(pk=business_name)
     next_week = get_next_week_num()
