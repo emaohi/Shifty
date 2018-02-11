@@ -13,7 +13,7 @@ from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
     save_shifts_request, delete_other_requests, validate_language, get_next_week_slots

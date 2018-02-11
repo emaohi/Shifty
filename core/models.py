@@ -131,7 +131,7 @@ class ShiftSlot(models.Model):
 
     def was_shift_generated(self):
         try:
-            s = self.shift
+            s = self.shift #pylint: disable=unused-variable
             return True
         except Shift.DoesNotExist:
             return False
