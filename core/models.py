@@ -102,8 +102,8 @@ class ShiftSlot(models.Model):
     name = models.CharField(blank=True, null=True, default='Custom', max_length=30)
 
     def __str__(self):
-        return '%s slot - %s, %s to %s%s' %\
-               (self.name, self.get_day_str(), str(self.start_hour),
+        return '%s slot(#%s) - %s, %s to %s%s' %\
+               (self.name, self.id, self.get_day_str(), str(self.start_hour),
                 str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
 
     def start_time_str(self):
@@ -128,6 +128,13 @@ class ShiftSlot(models.Model):
 
     def get_constraint_num_of_role(self, role):
         return self.get_constraints_json()[role]['num']
+
+    def was_shift_generated(self):
+        try:
+            s = self.shift
+            return True
+        except Shift.DoesNotExist:
+            return False
 
 
 class ShiftRequest(models.Model):

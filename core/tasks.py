@@ -51,4 +51,7 @@ def generate_next_week_shifts(business_name):
 
     shift_generator.generate()
 
+    business.shifts_generated = True
+    business.save()
+
     logger.info('generated shifts for business %s week num %d', business.business_name, next_week)

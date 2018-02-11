@@ -196,6 +196,8 @@
                                     </h4>
                                 </div>
 
+                                <h3 id="generatedMsg" style="display: none">Shifts were generated</h3>
+
                             </div>
                             <div class="col-md-2">
                                 <small id="timerH"></small>
@@ -235,15 +237,19 @@
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
                     <li role="presentation" class="active">
+                        <a href="#shiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
+                    </li>
+                    <li role="presentation" style="float: right">
                         <a href="#constraintTab" role="tab" data-toggle="tab">Slot Constraints</a>
                     </li>
-                    <li role="presentation">
-                        <a href="#empsTab" role="tab" data-toggle="tab">Requesters so far</a>
+                    <li role="presentation" style="float: right">
+                        <a href="#empsTab" role="tab" data-toggle="tab">Employees Requested</a>
                     </li>
                 </ul>
                 <!-- Tab panes -->
                 <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="constraintTab"></div>
+                    <div role="tabpanel" class="tab-pane active" id="shiftEmpsTab"></div>
+                    <div role="tabpanel" class="tab-pane" id="constraintTab"></div>
                     <div role="tabpanel" class="tab-pane" id="empsTab"></div>
 
                 </div>
@@ -270,6 +276,7 @@
         var next_slots_url = "{% url 'get_next_slots' %}";
         var finish_slots_url = "{% url 'finish_slots' %}";
         var slot_request_employees = "{% url 'slot_request_employees' 0%}";
+        var shift_employees = "{% url 'shift_employees' 0%}";
         var start_date = "{{ start_date }}";
         var deadline_date = "{{ deadline_date }}";
     </script>

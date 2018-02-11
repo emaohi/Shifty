@@ -13,7 +13,7 @@ from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
     save_shifts_request, delete_other_requests, validate_language, get_next_week_slots
@@ -236,7 +236,7 @@ def get_next_week_slots_calendar(request):
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
                                    'start': slot.start_time_str(),
                                    'end': slot.end_time_str(),
-                                   'backgroundColor': '#205067',
+                                   'backgroundColor': '#205067' if not slot.was_shift_generated() else 'blue',
                                    'textColor': text_color})
         shifts_json.append(jsoned_shift)
         slot_id_to_constraints_dict[slot.id] = slot.constraints
@@ -271,7 +271,7 @@ def submit_slots_request(request):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def is_finish_slots(request):
-    curr_business = request.user.profile.business
+    curr_business = get_curr_business(request)
     if request.method == 'POST':
         action = request.POST.get('isFinished')
         curr_business.slot_request_enabled = True if action == 'true' else False
@@ -286,7 +286,7 @@ def is_finish_slots(request):
         logger.info('saved business finished slots status to: %s', curr_business.slot_request_enabled)
         return HttpResponse('ok')
     logger.info('returning the business finished slots status which is: %s', curr_business.slot_request_enabled)
-    return HttpResponse(curr_business.slot_request_enabled)
+    return HttpResponse('generated' if curr_business.shifts_generated else curr_business.slot_request_enabled)
 
 
 @cache_page(60 * 15, key_prefix='shifty')
@@ -347,5 +347,23 @@ def generate_shifts(request):
             else:
                 tasks.generate_next_week_shifts(business_name)
             return HttpResponse('Shifts were generated successfully')
+
+    return wrong_method(request)
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+def get_shift_employees(request, slot_id):
+    if request.method == 'GET':
+        requested_slot = ShiftSlot.objects.get(id=slot_id)
+        if not requested_slot.is_next_week():
+            return HttpResponseBadRequest('slot is not next week')
+        if requested_slot.was_shift_generated():
+            shift = requested_slot.shift
+            return render(request, 'manager/slot_request_emp_list.html',
+                          {'emps': shift.employees.all()})
+        else:
+            logger.error('cant find shift for slot id %s', slot_id)
+            return HttpResponse('Cant find shift for this slot')
 
     return wrong_method(request)

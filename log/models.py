@@ -42,6 +42,7 @@ class Business(models.Model):
     )
     deadline_day = models.CharField(max_length=1, choices=DAYS_OF_WEEK, default='7')
     slot_request_enabled = models.BooleanField(default=False)
+    shifts_generated = models.BooleanField(default=False)
 
     def __str__(self):
         return self.business_name
