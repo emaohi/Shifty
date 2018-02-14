@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'raven.contrib.django.raven_compat',
     'log',
     'core',
     'menu'
@@ -171,3 +172,5 @@ DIRECTIONS_URL = 'https://maps.google.com/maps/dir/?api=1&origin=%s&destination=
 
 # profanity filter
 PROFANITY_SERVICE_URL = 'http://www.purgomalum.com/service/containsprofanity?text=%s'
+
+RAVEN_CONFIG = {}

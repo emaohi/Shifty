@@ -9,6 +9,7 @@ from celery.task import periodic_task
 from datetime import datetime
 
 from django.conf import settings
+from django.db import IntegrityError
 
 from core.date_utils import get_next_week_num
 from core.models import ShiftSlot
@@ -49,9 +50,16 @@ def generate_next_week_shifts(business_name):
 
     shift_generator = NaiveShiftGenerator(slots)
 
-    shift_generator.generate()
+    try:
+        shift_generator.generate()
 
-    business.shifts_generated = True
-    business.save()
+        business.shifts_generated = '1'
+        business.save()
+        logger.info('generated shifts for business %s week num %d', business.business_name, next_week)
 
-    logger.info('generated shifts for business %s week num %d', business.business_name, next_week)
+    except IntegrityError as e:
+        business.shifts_generated = '2'
+        business.save()
+        logger.info('FAILED - generated shifts for business %s week num %d: %s', business.business_name, next_week,
+                    str(e))
+        raise e

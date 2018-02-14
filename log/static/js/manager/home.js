@@ -29,6 +29,10 @@ $(document).ready(function () {
         deleteSlot(shiftId);
     });
 
+    $('#generate').click(function () {
+       generate_slots();
+    });
+
     $(document.body).on("click", "a[data-toggle]", function (event) {
         location.hash = this.getAttribute("href");
     });
@@ -82,6 +86,21 @@ function getSlotsStatus() {
         success: finishSlots,
         error: function (xhr) {
             alert("something fishy: " + xhr);
+        }
+    });
+}
+
+function generate_slots() {
+    $.ajax({
+        url: generate_shifts_url, //from template
+        type: "post",
+        data: {},
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: location.reload(),
+        error: function (xhr) {
+            console.error("something fishy: " + xhr);
         }
     });
 }

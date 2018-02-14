@@ -42,7 +42,14 @@ class Business(models.Model):
     )
     deadline_day = models.CharField(max_length=1, choices=DAYS_OF_WEEK, default='7')
     slot_request_enabled = models.BooleanField(default=False)
-    shifts_generated = models.BooleanField(default=False)
+
+    SHIFT_GENERATION_STATUS = (
+        ('0', 'Not generated'),
+        ('1', 'Generated'),
+        ('2', 'Failed'),
+        ('3', 'Generating')
+    )
+    shifts_generated = models.CharField(max_length=1, choices=SHIFT_GENERATION_STATUS, default='0')
 
     def __str__(self):
         return self.business_name

@@ -48,7 +48,7 @@ def manager_home(request):
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
                'curr_week_str': curr_week_string, 'start_date': next_week_date,
-               'deadline_date': deadline_date}
+               'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated}
     return render(request, "manager/home.html", context)
 
 

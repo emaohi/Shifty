@@ -286,7 +286,7 @@ def is_finish_slots(request):
         logger.info('saved business finished slots status to: %s', curr_business.slot_request_enabled)
         return HttpResponse('ok')
     logger.info('returning the business finished slots status which is: %s', curr_business.slot_request_enabled)
-    return HttpResponse('generated' if curr_business.shifts_generated else curr_business.slot_request_enabled)
+    return HttpResponse(curr_business.slot_request_enabled)
 
 
 @cache_page(60 * 15, key_prefix='shifty')
@@ -334,23 +334,23 @@ def get_slot_request_employees(request, slot_id):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def generate_shifts(request):
+    def execute_shift_generation(business_name):
+        if settings.CELERY:
+            tasks.generate_next_week_shifts.delay(business_name)
+        else:
+            tasks.generate_next_week_shifts(business_name)
+
     if request.method == 'POST':
         next_week_slots = get_next_week_slots(get_curr_business(request))
         if not len(next_week_slots):
             return HttpResponseBadRequest('No slots next week !')
         else:
-            business_name = get_curr_business(request).business_name
-            if settings.CELERY:
-                generate_async_task = tasks.generate_next_week_shifts.delay(business_name)
-                if not wait_for_tasks_to_be_completed([generate_async_task]):
-                    return HttpResponseServerError('Couldn\'t generate shifts for next week, please try again')
-            else:
-                tasks.generate_next_week_shifts(business_name)
-            text = 'Your manager has generated shifts for next week'
+            execute_shift_generation(get_curr_business(request).business_name)
+
             create_manager_msg(recipients=get_curr_business(request).get_employees(),
-                               subject='New Shifts', text=text,
+                               subject='New Shifts', text='Your manager has generated shifts for next week',
                                wait_for_mail_results=False)
-            return HttpResponse('Shifts were generated successfully')
+            return HttpResponse('Request triggered')
 
     return wrong_method(request)
 
