@@ -9,3 +9,4 @@
 celerybeat-schedule
 Shifty/checking_calendar.py
 dump.rdb
+init-redis-rabbit-celery.sh

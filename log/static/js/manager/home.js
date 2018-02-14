@@ -29,6 +29,10 @@ $(document).ready(function () {
         deleteSlot(shiftId);
     });
 
+    $('#generate').click(function () {
+       generate_slots();
+    });
+
     $(document.body).on("click", "a[data-toggle]", function (event) {
         location.hash = this.getAttribute("href");
     });
@@ -86,16 +90,33 @@ function getSlotsStatus() {
     });
 }
 
+function generate_slots() {
+    $.ajax({
+        url: generate_shifts_url, //from template
+        type: "post",
+        data: {},
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: location.reload(),
+        error: function (xhr) {
+            console.error("something fishy: " + xhr);
+        }
+    });
+}
+
 function finishSlots(isFinished) {
-    var isTrueSet = (isFinished == 'True');
-    if (isTrueSet) {
+    if (isFinished == 'True') {
         $('#calDiv').addClass("disabledbutton");
         $('#finishSlots').hide();
         $('#slotMsg').show();
-    } else {
+    } else if (isFinished == 'False'){
         $('#calDiv').removeClass("disabledbutton");
         $('#finishSlots').show();
         $('#slotMsg').hide();
+    } else {
+        $('#finishSlots').hide();
+        $("#generatedMsg").show();
     }
 }
 
@@ -170,17 +191,34 @@ function showSlotDetails(shiftId, constraints_json){
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
     $('#constraintModal').find('.modal-title').html('Shift #' + shiftId + ' constraints');
 
-    getSlotEmpList(shiftId);
+    setSlotEmpList(shiftId);
+    setShiftEmpList(shiftId);
 
     $('#putShiftId').text(shiftId);
     $('#constraintModal').modal('show');
 }
-function getSlotEmpList(shiftId) {
+function setSlotEmpList(shiftId) {
     $.ajax({
         url: slot_request_employees.slice(0, -1) + shiftId, //from template
         type: "get", //send it through get method,
         success: function (res) {
             $("#empsTab").html(res);
+        },
+        error: function (err) {
+            $("#empsTab").html(err.responseText);
+        }
+    });
+}
+
+function setShiftEmpList(slotId) {
+    $.ajax({
+        url: shift_employees.slice(0, -1) + slotId, //from template
+        type: "get", //send it through get method,
+        success: function (res) {
+            $("#shiftEmpsTab").html(res);
+        },
+        error: function (err) {
+            $("#empsTab").html(err);
         }
     });
 }

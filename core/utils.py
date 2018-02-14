@@ -161,6 +161,12 @@ def get_dist_data(home_address, work_address, is_drive, is_walk):
     return json_res
 
 
+def get_next_week_slots(business):
+    next_week_no = get_next_week_num()
+    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=business)
+    return next_week_slots
+
+
 def parse_duration_data(raw_distance_response):
     driving_duration = None
     walking_duration = None

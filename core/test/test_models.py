@@ -10,16 +10,18 @@ class ShiftSlotModelTest(TestCase):
 
     test_business = None
 
+    slot = None
+
     @classmethod
     def setUpTestData(cls):
         test_manager = User.objects.create_user({'username': 'testUser', 'password': 'secret'})
         cls.test_business = Business.objects.create(business_name='testBiz', manager=test_manager)
-        ShiftSlot.objects.create(business=cls.test_business, year='2016', day='1',
-                                 start_hour='12:00:00', end_hour='13:00:00')
+        cls.slot = ShiftSlot.objects.create(business=cls.test_business, year='2016', day='1',
+                                            start_hour='12:00:00', end_hour='13:00:00')
 
     def test_slot_to_string_looks_correctly(self):
         slot = ShiftSlot.objects.get(year='2016')
-        expected_to_str = 'Custom slot - Sunday, 12:00:00 to 13:00:00'
+        expected_to_str = 'Custom slot(#%s) - Sunday, 12:00:00 to 13:00:00' % self.slot.id
         self.assertEqual(expected_to_str, str(slot))
 
     def test_should_return_correct_date_string(self):

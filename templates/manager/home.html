@@ -79,7 +79,13 @@
     <div class="container">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#current">Current week shifts</a></li>
-            <li><a data-toggle="tab" href="#next">Next week shifts</a></li>
+            <li><a data-toggle="tab" href="#next">Next week shifts
+            {% if shifts_generated == '1' %}<span class="label label-success">Generated</span>
+            {% elif shifts_generated == '2' %}<span class="label label-danger">Generation Failed</span>
+            {% elif shifts_generated == '3' %}<span class="label label-info">Generation In process</span>
+            {% else %}<span class="label label-default">Not generated</span>
+            {% endif %}
+            </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu Quiz</a></li>
             <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests</a></li>
@@ -192,9 +198,12 @@
                                 <div id="slotMsg" style="display: none">
                                     <h4>shift requests submission is <strong
                                             style="color: green">enabled</strong>
-                                        <button class="btn btn-warning" id="resetSlots">Reset slots</button>
+                                        <button class="btn btn-default" id="resetSlots">Reset</button>
                                     </h4>
+                                    <button id="generate" class="btn btn-lg btn-primary">Generate Shifts</button>
                                 </div>
+
+                                <h3 id="generatedMsg" style="display: none">Shifts were generated</h3>
 
                             </div>
                             <div class="col-md-2">
@@ -202,7 +211,7 @@
                             </div>
                         </div>
                         <div class="row" style="margin-top: 20px">
-                            <div class="col-sm-2 col-sm-offset-4">
+                            <div class="col-sm-2">
                                 <span class="legend legend1">Mandatory / Holiday slot</span>
                             </div>
                             <div class="col-sm-2">
@@ -235,15 +244,19 @@
                 <!-- Nav tabs -->
                 <ul class="nav nav-tabs" role="tablist">
                     <li role="presentation" class="active">
+                        <a href="#shiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
+                    </li>
+                    <li role="presentation" style="float: right">
                         <a href="#constraintTab" role="tab" data-toggle="tab">Slot Constraints</a>
                     </li>
-                    <li role="presentation">
-                        <a href="#empsTab" role="tab" data-toggle="tab">Requesters so far</a>
+                    <li role="presentation" style="float: right">
+                        <a href="#empsTab" role="tab" data-toggle="tab">Employees Requested</a>
                     </li>
                 </ul>
                 <!-- Tab panes -->
                 <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane active" id="constraintTab"></div>
+                    <div role="tabpanel" class="tab-pane active" id="shiftEmpsTab"></div>
+                    <div role="tabpanel" class="tab-pane" id="constraintTab"></div>
                     <div role="tabpanel" class="tab-pane" id="empsTab"></div>
 
                 </div>
@@ -270,6 +283,8 @@
         var next_slots_url = "{% url 'get_next_slots' %}";
         var finish_slots_url = "{% url 'finish_slots' %}";
         var slot_request_employees = "{% url 'slot_request_employees' 0%}";
+        var shift_employees = "{% url 'shift_employees' 0%}";
+        var generate_shifts_url = "{% url 'generate_shifts' %}";
         var start_date = "{{ start_date }}";
         var deadline_date = "{{ deadline_date }}";
     </script>

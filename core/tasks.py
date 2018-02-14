@@ -1,12 +1,21 @@
 import json
 import logging
+from time import sleep
+
 import requests
+from celery import shared_task
 from celery.schedules import crontab
 from celery.task import periodic_task
 from datetime import datetime
 
 from django.conf import settings
+from django.db import IntegrityError
+
+from core.date_utils import get_next_week_num
+from core.models import ShiftSlot
+from core.shift_generator import NaiveShiftGenerator
 from core.utils import save_holidays
+from log.models import Business
 
 logger = logging.getLogger('cool')
 
@@ -28,3 +37,29 @@ def get_holidays():
     logger.info('one res is: %s', json.loads(res.text)['items'][0])
 
     save_holidays(res.text)
+
+
+@shared_task
+def generate_next_week_shifts(business_name):
+
+    sleep(7)
+
+    business = Business.objects.get(pk=business_name)
+    next_week = get_next_week_num()
+    slots = ShiftSlot.objects.filter(business=business, week=next_week)
+
+    shift_generator = NaiveShiftGenerator(slots)
+
+    try:
+        shift_generator.generate()
+
+        business.shifts_generated = '1'
+        business.save()
+        logger.info('generated shifts for business %s week num %d', business.business_name, next_week)
+
+    except IntegrityError as e:
+        business.shifts_generated = '2'
+        business.save()
+        logger.info('FAILED - generated shifts for business %s week num %d: %s', business.business_name, next_week,
+                    str(e))
+        raise e

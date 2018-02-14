@@ -1,7 +1,7 @@
 {% if emps|length > 0 %}
-<ul class="list-group">
+<ul class="list-group" style="text-align: center">
     {% for emp in emps %}
-    <li class="list-group-item">{{ emp }}</li>
+    <li class="list-group-item">{{ emp.get_role_display }}: {{ emp }}</li>
     {% endfor %}
 </ul>
 {% else %}
