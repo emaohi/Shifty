@@ -19,7 +19,7 @@ from core.utils import create_manager_msg, send_mail_to_manager, create_constrai
     save_shifts_request, delete_other_requests, validate_language, get_next_week_slots
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
-    get_curr_business, wait_for_tasks_to_be_completed, wrong_method
+    get_curr_business, wrong_method
 from core import tasks
 
 logger = logging.getLogger('cool')
