@@ -334,22 +334,28 @@ def get_slot_request_employees(request, slot_id):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def generate_shifts(request):
-    def execute_shift_generation(business_name):
+    def execute_shift_generation(business):
+
+        business.set_shift_generation_pending()
+        business.save()
+
         if settings.CELERY:
-            tasks.generate_next_week_shifts.delay(business_name)
+            tasks.generate_next_week_shifts.delay(business.business_name)
         else:
-            tasks.generate_next_week_shifts(business_name)
+            tasks.generate_next_week_shifts(business.business_name)
 
     if request.method == 'POST':
         next_week_slots = get_next_week_slots(get_curr_business(request))
         if not len(next_week_slots):
+            messages.error(request, 'No slots next week !')
             return HttpResponseBadRequest('No slots next week !')
         else:
-            execute_shift_generation(get_curr_business(request).business_name)
+            execute_shift_generation(get_curr_business(request))
 
             create_manager_msg(recipients=get_curr_business(request).get_employees(),
                                subject='New Shifts', text='Your manager has generated shifts for next week',
                                wait_for_mail_results=False)
+            messages.success(request, 'Shifts generation requested successfully')
             return HttpResponse('Request triggered')
 
     return wrong_method(request)
@@ -357,7 +363,7 @@ def generate_shifts(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
-def get_shift_employees(request, slot_id):
+def get_slot_employees(request, slot_id):
     if request.method == 'GET':
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if not requested_slot.is_next_week():

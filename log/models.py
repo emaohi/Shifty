@@ -70,6 +70,15 @@ class Business(models.Model):
 
         return today_weekday >= int(self.deadline_day)
 
+    def set_shift_generation_success(self):
+        self.shifts_generated = '1'
+
+    def set_shift_generation_failure(self):
+        self.shifts_generated = '2'
+
+    def set_shift_generation_pending(self):
+        self.shifts_generated = '3'
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)
