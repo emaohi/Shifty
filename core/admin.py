@@ -31,5 +31,5 @@ admin.site.register(ShiftRequest, ShiftRequestAdmin)
 
 
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ('id', 'slot')
+    list_display = ['slot']
 admin.site.register(Shift, ShiftAdmin)

@@ -3,13 +3,13 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+ADMINS = ['emaohi@gmail.com']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=uk5_$pry_5=k(8g5&-$=(&^4=8320(n4&80!01xnbnb&*)1*7'
-
 
 # Application definition
 
@@ -94,7 +94,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
@@ -119,39 +118,48 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': 'Shifty-log %(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
         },
         'regular': {
             'format': '%(levelname)s %(asctime)s %(message)s'
         },
     },
     'handlers': {
-        'console1': {
+        'console-regular-info': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'regular'
         },
-        'console2': {
-            'level': 'INFO',
+        'console-verbose': {
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
+        },
+        'sentry': {
+            'level': 'WARNING',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         }
     },
     'loggers': {
-        'django': {
-            'handlers': ['console1'],
-            'propagate': True,
-            'level': 'INFO'
+        '': {
+            'level': 'WARNING',
+            'handlers': ['console-verbose', 'sentry'],
         },
-        'cool': {
-            'handlers': ['console2'],
-            'propagate': True,
-            'level': 'INFO'
+        'log': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
         },
-
+        'core': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
+        },
+        'menu': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
+        }
     },
 }
 

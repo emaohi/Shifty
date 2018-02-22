@@ -16,7 +16,7 @@ from core.shift_generator import NaiveShiftGenerator
 from core.utils import save_holidays
 from log.models import Business
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @periodic_task(run_every=crontab(minute=0, hour=0))
@@ -36,6 +36,14 @@ def get_holidays():
     logger.info('one res is: %s', json.loads(res.text)['items'][0])
 
     save_holidays(res.text)
+
+
+@periodic_task(run_every=crontab(minute=0, hour=0, day_of_week=0))
+def reset_shift_generation_status():
+    logger.info('resetting shift generation statuses for all businesses...')
+    for b in Business.objects.all():
+        b.reset_shift_generation_status()
+        b.save()
 
 
 @shared_task

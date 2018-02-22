@@ -79,6 +79,9 @@ class Business(models.Model):
     def set_shift_generation_pending(self):
         self.shifts_generated = '3'
 
+    def reset_shift_generation_status(self):
+        self.shifts_generated = '0'
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)

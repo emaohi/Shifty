@@ -4,6 +4,7 @@ import datetime
 import json
 
 from django.db import models
+from django.utils import timezone
 
 from core.date_utils import get_next_week_num, get_week_range
 from log.models import Business, EmployeeProfile
@@ -12,7 +13,7 @@ from log.models import Business, EmployeeProfile
 class EmployeeRequest(models.Model):
 
     issuers = models.ManyToManyField(EmployeeProfile, related_name='request_issued')
-    sent_time = models.DateTimeField(default=datetime.datetime.now())
+    sent_time = models.DateTimeField(auto_now_add=True)
     subject = models.TextField(max_length=50)
     text = models.TextField(max_length=200)
     STATUS_CHOICES = (
@@ -130,17 +131,13 @@ class ShiftSlot(models.Model):
         return self.get_constraints_json()[role]['num']
 
     def was_shift_generated(self):
-        try:
-            s = self.shift #pylint: disable=unused-variable
-            return True
-        except Shift.DoesNotExist:
-            return False
+        return hasattr(self, 'shift')
 
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
     requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests')
-    submission_time = models.DateTimeField()
+    submission_time = models.DateTimeField(auto_now_add=True, )
 
     def __str__(self):
         return 'request in: ' + str(self.submission_time)

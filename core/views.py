@@ -11,18 +11,18 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
-from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
+from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, get_curr_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
-    save_shifts_request, delete_other_requests, validate_language, get_next_week_slots
+    save_shifts_request, delete_other_requests, validate_language, get_week_slots
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
 from core import tasks
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/login')
@@ -230,7 +230,7 @@ def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
 
-    next_week_slots = get_next_week_slots(get_curr_business(request))
+    next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
     for slot in next_week_slots:
         text_color, title = get_color_and_title_from_slot(slot)
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
@@ -328,7 +328,8 @@ def get_slot_request_employees(request, slot_id):
         slot_requests = ShiftRequest.objects.filter(requested_slots=requested_slot)
 
         return render(request, 'manager/slot_request_emp_list.html',
-                      {'emps': [req.employee for req in slot_requests]})
+                      {'emps': [req.employee for req in slot_requests],
+                       'empty_msg': 'No employees chose this slot'})
 
 
 @login_required(login_url='/login')
@@ -345,7 +346,7 @@ def generate_shifts(request):
             tasks.generate_next_week_shifts(business.business_name)
 
     if request.method == 'POST':
-        next_week_slots = get_next_week_slots(get_curr_business(request))
+        next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
         if not len(next_week_slots):
             messages.error(request, 'No slots next week !')
             return HttpResponseBadRequest('No slots next week !')
@@ -371,9 +372,33 @@ def get_slot_employees(request, slot_id):
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
             return render(request, 'manager/slot_request_emp_list.html',
-                          {'emps': shift.employees.all()})
+                          {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :('})
         else:
             logger.error('cant find shift for slot id %s', slot_id)
             return HttpResponse('Cant find shift for this slot')
+
+    return wrong_method(request)
+
+
+@login_required(login_url='/login')
+def get_calendar_current_week_shifts(request):
+    if request.method == 'GET':
+        shifts_json = []
+
+        current_week_slots = get_week_slots(get_curr_business(request), get_curr_week_num())
+
+        logger.warning('checking sentry')
+
+        for slot in current_week_slots:
+            if not slot.was_shift_generated():
+                continue
+
+            jsoned_shift = json.dumps({'id': str(slot.shift.id), 'title': 'Cool Shift',
+                                       'start': slot.start_time_str(),
+                                       'end': slot.end_time_str(),
+                                       'backgroundColor': 'mediumseagreen',
+                                       'textColor': 'white'})
+            shifts_json.append(jsoned_shift)
+        return JsonResponse(json.dumps(shifts_json), safe=False)
 
     return wrong_method(request)

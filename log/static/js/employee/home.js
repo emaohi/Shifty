@@ -7,6 +7,8 @@ $(document).ready(function () {
     showNextWeekSlotsList();
 
     populateTimerDiv();
+
+    populate_calendar();
 });
 
 function showNextWeekSlotsList() {
@@ -38,4 +40,52 @@ function populateTimerDiv() {
     } else {
         $('#timerH').text('Time for shift requests is over !');
     }
+}
+
+function populate_calendar() {
+    $.ajax({
+        url: next_shifts_url,
+        type: "get",
+        success: display_cal,
+        error: function (xhr) {
+            //Do Something to handle error
+        }
+    });
+}
+
+function display_cal(shifts_json) {
+    shifts_json = JSON.parse(shifts_json);
+    var r_list = [];
+    for (var i = 0; i < shifts_json.length; i++) {
+        r_list.push(JSON.parse(shifts_json[i]));
+    }
+    $('#calDiv').easycal({
+
+        minTime: '06:00:00',
+        maxTime: '23:59:00',
+        timeGranularity: 30,
+        slotDuration : 60,
+        startDate : start_date,
+        eventClick: function (shiftId) {
+            console.log('cooooooool');
+            showShiftDetails(shiftId);
+        },
+        events: r_list
+    });
+}
+
+function showShiftDetails(shiftId) {
+    $.ajax({
+       url: shift_employees_url,
+        type:"get",
+        success: insertEmployeesToModal,
+        error: function () {
+            console.error('couldnt get employees of shift id ' + shiftId);
+        }
+    });
+    $("#shiftModal").modal('show');
+}
+
+function insertEmployeesToModal(emp_json) {
+
 }

@@ -11,7 +11,7 @@ from django.contrib.auth.models import Group, User
 from kombu.exceptions import OperationalError
 
 from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string, \
-    get_current_week_range
+    get_current_week_range, get_curr_week_sunday
 from core.models import ShiftRequest
 from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
@@ -20,7 +20,7 @@ from log.models import EmployeeProfile
 from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback
 from log.utils import NewEmployeeHandler
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url="/login")
@@ -37,8 +37,7 @@ def manager_home(request):
     done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
 
     curr_week_string = get_current_week_string()
-    next_week_date = get_next_week_string().split(' --')[0].replace('/', '-')
-    logger.info(next_week_date)
+    next_week_sunday = get_curr_week_sunday()
 
     deadline_date = get_current_deadline_date_string(curr_manager.business.deadline_day)
     logger.info('deadline date is %s', deadline_date)
@@ -47,7 +46,7 @@ def manager_home(request):
     logger.info('are slot adding is finished? %s', is_finish_slots)
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
-               'curr_week_str': curr_week_string, 'start_date': next_week_date,
+               'curr_week_str': curr_week_string, 'start_date': next_week_sunday,
                'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated}
     return render(request, "manager/home.html", context)
 
@@ -62,13 +61,16 @@ def emp_home(request):
                                                    submission_time__range=[start_week, end_week]).first()
 
     deadline_date_str = get_current_deadline_date_string(get_curr_profile(request).business.deadline_day)
+    curr_week_string = get_current_week_string()
+    curr_week_sunday = get_curr_week_sunday()
 
     request_enabled = get_curr_business(request).slot_request_enabled and deadline_date_str
 
     return render(request, "employee/home.html", {'manager_msgs': manager_messages,
                                                   'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
-                                                  'deadline_date': deadline_date_str})
+                                                  'curr_week_str': curr_week_string,
+                                                  'deadline_date': deadline_date_str, 'start_date': curr_week_sunday})
 
 
 def register(request):

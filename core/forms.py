@@ -7,7 +7,7 @@ from core.models import ManagerMessage, ShiftSlot, ShiftRequest
 from core.utils import get_cached_non_mandatory_slots
 from log.models import EmployeeProfile
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 class BroadcastMessageForm(forms.ModelForm):
@@ -260,6 +260,7 @@ class SelectSlotsForm(forms.ModelForm):
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
         self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(self.business, week)
         logger.info("query set is %s", self.fields['requested_slots'].queryset)
+        logger.debug('this is debug log')
         self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'
 
     def clean(self):

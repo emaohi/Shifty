@@ -7,19 +7,28 @@ def get_days_range_by_week_num(week_no, year_no):
     sunday = str(datetime.datetime.strptime(prev_week + '-0', "%Y-W%W-%w").date().strftime("%d/%m/%Y"))
     saturday = str(datetime.datetime.strptime(curr_week + '-6', "%Y-W%W-%w").date().strftime("%d/%m/%Y"))
 
-    return '%s --> %s' % (sunday, saturday)
+    return sunday, saturday
 
 
 def get_current_week_string():
-
     curr_year = datetime.datetime.now().year
-    return get_days_range_by_week_num(get_curr_week_num(), curr_year)
+    sunday, saturday = get_days_range_by_week_num(get_curr_week_num(), curr_year)
+    return make_week_range_string(sunday, saturday)
 
 
 def get_next_week_string():
 
     curr_year = datetime.datetime.now().year
-    return get_days_range_by_week_num(get_next_week_num(), curr_year)
+    sunday, saturday = get_days_range_by_week_num(get_next_week_num(), curr_year)
+    return make_week_range_string(sunday, saturday)
+
+
+def make_week_range_string(first, last):
+    return '%s --> %s' % (first, last)
+
+
+def get_curr_week_sunday():
+    return get_current_week_string().split(' --')[0].replace('/', '-')
 
 
 def get_next_week_num():

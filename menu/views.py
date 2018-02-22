@@ -17,7 +17,7 @@ from menu.models import Quiz, Question
 from menu.utils import get_quiz_score, build_quiz_result, remove_score_from_emp, remove_prev_emp_request, \
     deserialize_objects
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url="/login")

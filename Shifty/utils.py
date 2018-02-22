@@ -6,7 +6,7 @@ from django.http import HttpResponseBadRequest
 
 from Shifty import tasks
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_results=True):

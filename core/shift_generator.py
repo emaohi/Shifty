@@ -4,7 +4,7 @@ from django.db import transaction
 
 from core.models import Shift
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 class AbstractShiftGenerator:

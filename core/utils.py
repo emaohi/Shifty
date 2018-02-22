@@ -14,7 +14,7 @@ from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, Shi
 from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
 from django.conf import settings
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
@@ -161,10 +161,15 @@ def get_dist_data(home_address, work_address, is_drive, is_walk):
     return json_res
 
 
-def get_next_week_slots(business):
-    next_week_no = get_next_week_num()
-    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=business)
+def get_week_slots(business, week_num):
+    next_week_slots = ShiftSlot.objects.filter(week=week_num, business=business)
     return next_week_slots
+
+
+def get_current_week_slots(business):
+    curr_week_no = get_curr_week_num()
+    curr_week_slots = ShiftSlot.objects.filter(week=curr_week_no, business=business)
+    return curr_week_slots
 
 
 def parse_duration_data(raw_distance_response):
