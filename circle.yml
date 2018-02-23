@@ -5,7 +5,7 @@ machine:
 test:
   pre:
     - python manage.py migrate
-    - pylint --disable=R,C,no-member,no-init,arguments-differ --ignore=core/migrations core log menu
+    - pylint --disable=R,C,no-member,no-init,arguments-differ --ignore=migrations core log menu
 
 deployment:
   staging:
