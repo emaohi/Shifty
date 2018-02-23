@@ -363,16 +363,14 @@ def generate_shifts(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
 def get_slot_employees(request, slot_id):
     if request.method == 'GET':
         requested_slot = ShiftSlot.objects.get(id=slot_id)
-        if not requested_slot.is_next_week():
-            return HttpResponseBadRequest('slot is not next week')
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
             return render(request, 'manager/slot_request_emp_list.html',
-                          {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :('})
+                          {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
+                           'curr_emp': get_curr_profile(request)})
         else:
             logger.error('cant find shift for slot id %s', slot_id)
             return HttpResponse('Cant find shift for this slot')
@@ -392,12 +390,14 @@ def get_calendar_current_week_shifts(request):
         for slot in current_week_slots:
             if not slot.was_shift_generated():
                 continue
+            bg_color, text_color = ('mediumseagreen', 'white') if get_curr_profile(request) in\
+                slot.shift.employees.all() else ('#7b8a8b', 'black')
 
-            jsoned_shift = json.dumps({'id': str(slot.shift.id), 'title': 'Cool Shift',
+            jsoned_shift = json.dumps({'id': str(slot.id), 'title': slot.name,
                                        'start': slot.start_time_str(),
                                        'end': slot.end_time_str(),
-                                       'backgroundColor': 'mediumseagreen',
-                                       'textColor': 'white'})
+                                       'backgroundColor': bg_color,
+                                       'textColor': text_color})
             shifts_json.append(jsoned_shift)
         return JsonResponse(json.dumps(shifts_json), safe=False)
 

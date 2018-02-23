@@ -5,7 +5,7 @@ import json
 
 from django.db import models
 
-from core.date_utils import get_next_week_num, get_week_range
+from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
 
 
@@ -129,6 +129,9 @@ class ShiftSlot(models.Model):
     def get_constraint_num_of_role(self, role):
         return self.get_constraints_json()[role]['num']
 
+    def get_week_str(self):
+        return get_week_string(self.week, self.year)
+
     def was_shift_generated(self):
         return hasattr(self, 'shift')
 
@@ -154,3 +157,9 @@ class Shift(models.Model):
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
     total_tips = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return 'shift of slot: ' + str(self.slot)
+
+    def get_employees_string(self):
+        return ", ".join([str(emp) for emp in self.employees.all()])

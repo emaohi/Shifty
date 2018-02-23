@@ -2,7 +2,7 @@ import json
 
 from django.test import TestCase
 
-from core.date_utils import get_days_range_by_week_num
+from core.date_utils import __get_days_range_by_week_num
 from core.utils import create_constraint_json_from_form
 
 
@@ -34,6 +34,6 @@ class UtilsTest(TestCase):
         expected_range = ('07/08/2016', '13/08/2016')
         week = 32
         year = '2016'
-        actual_day_range = get_days_range_by_week_num(week, year)
+        actual_day_range = __get_days_range_by_week_num(week, year)
 
         self.assertEqual(expected_range, actual_day_range)

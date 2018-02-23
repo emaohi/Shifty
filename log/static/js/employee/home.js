@@ -76,7 +76,7 @@ function display_cal(shifts_json) {
 
 function showShiftDetails(shiftId) {
     $.ajax({
-       url: shift_employees_url,
+       url: shift_employees_url.slice(0, -1) + shiftId,
         type:"get",
         success: insertEmployeesToModal,
         error: function () {
@@ -86,6 +86,6 @@ function showShiftDetails(shiftId) {
     $("#shiftModal").modal('show');
 }
 
-function insertEmployeesToModal(emp_json) {
-
+function insertEmployeesToModal(emp_list) {
+    $("#shiftModalBody").html(emp_list);
 }

@@ -54,6 +54,14 @@
                     <h3>Shifts for current week - <i>{{ curr_week_str }}</i></h3>
                 </div>
                 <div class="row" style="margin-top: 20px">
+                    <div class="col-sm-2">
+                        <span class="legend legend1">You're in it</span>
+                    </div>
+                    <div class="col-sm-2">
+                        <span class="legend legend2">You're not</span>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px">
                     <div id="calDiv"></div>
                 </div>
                 <div class="modal fade" id="shiftModal" tabindex="-1" role="dialog">
@@ -146,7 +154,7 @@
     <script>
         var next_slots_url = "{% url 'slots_request' %}";
         var next_shifts_url = "{% url 'get_current_shifts' %}";
-        var shift_employees_url = "{% url 'get_current_shifts' %}";
+        var shift_employees_url = "{% url 'slot_employees' 0%}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";
     </script>
