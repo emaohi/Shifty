@@ -11,7 +11,7 @@ from django.contrib.auth.models import Group, User
 from kombu.exceptions import OperationalError
 
 from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
-    get_current_week_range, get_curr_week_sunday
+    get_current_week_range, get_curr_week_sunday, get_next_week_sunday
 from core.models import ShiftRequest
 from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
@@ -37,7 +37,7 @@ def manager_home(request):
     done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
 
     curr_week_string = get_current_week_string()
-    next_week_sunday = get_curr_week_sunday()
+    next_week_sunday = get_next_week_sunday()
 
     deadline_date = get_current_deadline_date_string(curr_manager.business.deadline_day)
     logger.info('deadline date is %s', deadline_date)

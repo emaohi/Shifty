@@ -18,8 +18,7 @@ def get_current_week_string():
 
 def get_next_week_string():
 
-    curr_year = datetime.datetime.now().year
-    sunday, saturday = get_days_range_by_week_num(get_next_week_num(), curr_year)
+    sunday, saturday = get_days_range_by_week_num(get_next_week_num(), get_curr_year())
     return make_week_range_string(sunday, saturday)
 
 
@@ -27,8 +26,18 @@ def make_week_range_string(first, last):
     return '%s --> %s' % (first, last)
 
 
+def convert_date_for_calendar(date):
+    return date.replace('/', '-')
+
+
 def get_curr_week_sunday():
-    return get_current_week_string().split(' --')[0].replace('/', '-')
+    curr_sunday = get_days_range_by_week_num(get_curr_week_num(), get_curr_year())[0]
+    return convert_date_for_calendar(curr_sunday)
+
+
+def get_next_week_sunday():
+    next_sunday = get_days_range_by_week_num(get_next_week_num(), get_curr_year())[0]
+    return convert_date_for_calendar(next_sunday)
 
 
 def get_next_week_num():
