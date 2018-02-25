@@ -166,7 +166,7 @@
 {% block javascript %}
     <script>
         var next_slots_url = "{% url 'slots_request' %}";
-        var next_shifts_url = "{% url 'get_current_shifts' %}";
+        var current_shifts_url = "{% url 'get_current_shifts' %}";
         var shift_employees_url = "{% url 'slot_employees' 0%}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";

@@ -197,7 +197,24 @@
 
                 <div id="current" class="tab-pane fade in active">
                     <div class="row">
-                        <h2>{{ curr_week_str }}</h2>
+                        <h3>Shifts for current week - <i>{{ curr_week_str }}</i></h3>
+                    </div>
+                    <div class="row" style="margin-top: 20px">
+                        <div id="currentCalDiv"></div>
+                    </div>
+                    <div class="modal fade" id="shiftModal" tabindex="-1" role="dialog">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Shift employees</h5>
+                                    <button type="button" class="close" data-dismiss="modal">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                                <div id="shiftModalBody" class="modal-body">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -306,10 +323,12 @@
         var delete_slot_url = "{% url 'delete_shift_slot'%}";
         var next_slots_url = "{% url 'get_next_slots' %}";
         var finish_slots_url = "{% url 'finish_slots' %}";
+        var current_shifts_url = "{% url 'get_current_shifts' %}";
         var slot_request_employees = "{% url 'slot_request_employees' 0%}";
         var slot_employees = "{% url 'slot_employees' 0%}";
         var generate_shifts_url = "{% url 'generate_shifts' %}";
         var start_date = "{{ start_date }}";
+        var current_start_date = "{{ current_start_date }}";
         var deadline_date = "{{ deadline_date }}";
         var shifts_generated = "{{ shifts_generated }}";
     </script>

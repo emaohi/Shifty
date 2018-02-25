@@ -390,8 +390,11 @@ def get_calendar_current_week_shifts(request):
         for slot in current_week_slots:
             if not slot.was_shift_generated():
                 continue
-            bg_color, text_color = ('mediumseagreen', 'white') if get_curr_profile(request) in\
-                slot.shift.employees.all() else ('#7b8a8b', 'black')
+            if get_curr_profile(request).role != 'MA':
+                bg_color, text_color = ('mediumseagreen', 'white') if get_curr_profile(request) in\
+                    slot.shift.employees.all() else ('#7b8a8b', 'black')
+            else:
+                bg_color, text_color = 'cornflowerblue', 'white'
 
             jsoned_shift = json.dumps({'id': str(slot.id), 'title': slot.name,
                                        'start': slot.start_time_str(),

@@ -19,6 +19,9 @@ $(document).ready(function () {
         }
     });
 
+    populate_current_calendar();
+
+
     $('.edit-slot').click(function () {
         var shiftId = $('#putShiftId').text();
         window.location.href = getUpdateShiftUrl(shiftId);
@@ -30,7 +33,7 @@ $(document).ready(function () {
     });
 
     $('.generateBtn').click(function () {
-       generate_shifts();
+        generate_shifts();
     });
 
     $(document.body).on("click", "a[data-toggle]", function (event) {
@@ -61,6 +64,17 @@ $(window).on("popstate", function () {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
     $("a[href='" + anchor + "']").tab("show");
 });
+
+function populate_current_calendar() {
+    $.ajax({
+        url: current_shifts_url,
+        type: "get",
+        success: display_current_cal,
+        error: function (xhr) {
+            //Do Something to handle error
+        }
+    });
+}
 
 function updateFinishedSlots(isFinished) {
     $.ajax({
@@ -98,17 +112,17 @@ function generate_shifts() {
         headers: {
             'X-CSRFToken': csrf_token
         },
-        success: function() {
+        success: function () {
             location.reload();
         },
-        error: function() {
+        error: function () {
             location.reload();
         }
     });
 }
 
 function finishSlots(isFinished) {
-    if (shifts_generated === '0'){
+    if (shifts_generated === '0') {
         if (isFinished === 'True') {
             $('#calDiv').addClass("disabledbutton");
             $('#finishSlots').hide();
@@ -178,9 +192,9 @@ function display_cal(event_list) {
         minTime: '06:00:00',
         maxTime: '23:59:00',
         timeGranularity: 30,
-        slotDuration : 60,
-        startDate : start_date,
-        dayClick : function(el, startTime){
+        slotDuration: 60,
+        startDate: start_date,
+        dayClick: function (el, startTime) {
             var dateStr = el.parent().attr('data-date');
             var d = toDate(dateStr);
             window.location.href = getNewShiftUrl(d.getDay(), startTime);
@@ -192,7 +206,7 @@ function display_cal(event_list) {
     });
 }
 
-function showSlotDetails(slotId, constraints_json){
+function showSlotDetails(slotId, constraints_json) {
 
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
     $('#constraintModal').find('.modal-title').html('Slot #' + slotId + ' constraints');
@@ -292,4 +306,41 @@ function populateTimerDiv() {
     } else {
         $('#timerH').text('Time for shift requests is over !');
     }
+}
+
+function display_current_cal(shifts_json) {
+    shifts_json = JSON.parse(shifts_json);
+    var r_list = [];
+    for (var i = 0; i < shifts_json.length; i++) {
+        r_list.push(JSON.parse(shifts_json[i]));
+    }
+    $('#currentCalDiv').easycal({
+
+        minTime: '06:00:00',
+        maxTime: '23:59:00',
+        timeGranularity: 30,
+        slotDuration: 60,
+        startDate: current_start_date,
+        eventClick: function (shiftId) {
+            console.log('cooooooool');
+            showShiftDetails(shiftId);
+        },
+        events: r_list
+    });
+}
+
+function showShiftDetails(shiftId) {
+    $.ajax({
+        url: shift_employees_url.slice(0, -1) + shiftId,
+        type: "get",
+        success: insertEmployeesToModal,
+        error: function () {
+            console.error('couldnt get employees of shift id ' + shiftId);
+        }
+    });
+    $("#shiftModal").modal('show');
+}
+
+function insertEmployeesToModal(emp_list) {
+    $("#shiftModalBody").html(emp_list);
 }

@@ -44,7 +44,7 @@ function populateTimerDiv() {
 
 function populate_calendar() {
     $.ajax({
-        url: next_shifts_url,
+        url: current_shifts_url,
         type: "get",
         success: display_cal,
         error: function (xhr) {
