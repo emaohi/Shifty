@@ -163,3 +163,6 @@ class Shift(models.Model):
 
     def get_employees_string(self):
         return ", ".join([str(emp) for emp in self.employees.all()])
+
+    def get_date(self):
+        return self.slot.get_date()
