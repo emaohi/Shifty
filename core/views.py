@@ -12,8 +12,8 @@ from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, get_curr_week_num
-from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
+from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots
@@ -229,6 +229,7 @@ def delete_slot(request):
 def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
+    slot_id_to_generated_status_dict = {}
 
     next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
     for slot in next_week_slots:
@@ -240,7 +241,9 @@ def get_next_week_slots_calendar(request):
                                    'textColor': text_color})
         shifts_json.append(jsoned_shift)
         slot_id_to_constraints_dict[slot.id] = slot.constraints
+        slot_id_to_generated_status_dict[slot.id] = slot.was_shift_generated()
     shifts_json.append(json.dumps(slot_id_to_constraints_dict))
+    shifts_json.append(json.dumps(slot_id_to_generated_status_dict))
     logger.debug('jsoned shifts are %s', shifts_json)
     return JsonResponse(shifts_json, safe=False)
 
@@ -405,3 +408,25 @@ def get_calendar_current_week_shifts(request):
         return JsonResponse(json.dumps(shifts_json), safe=False)
 
     return wrong_method(request)
+
+
+def submit_shift_summary(request, slot_id):
+    shift = Shift.objects.get(slot=ShiftSlot.objects.get(pk=slot_id))
+    old_rank = shift.rank
+    if request.method == 'POST':
+        summary_form = ShiftSummaryForm(request.POST, id=slot_id, instance=shift)
+        if summary_form.is_valid():
+            summary_form.save()
+            shift.update_emp_rates(old_rank)
+            messages.success(request, message='Shift summary submitted')
+            return HttpResponseRedirect('/')
+        else:
+            logger.error('Shift summary form is not valid: %s', str(summary_form.errors))
+            messages.error(request, message='couldn\'t submit shift summary: %s' % str(summary_form.errors.as_text()))
+            return HttpResponseRedirect('/')
+
+    if not shift.slot.is_finished():
+        return HttpResponseBadRequest('shift is not over yet...')
+    summary_form = ShiftSummaryForm(id=slot_id, instance=shift)
+    return render(request, 'manager/shift_summary_form.html', context={'summary_form': summary_form,
+                                                                       'slot_id': slot_id})

@@ -43,21 +43,21 @@ def get_next_week_sunday():
 
 
 def get_next_week_num():
-    week_no = datetime.date.today().isocalendar()[1] + 1
+    week_no = get_today_date().isocalendar()[1] + 1
 
     is_sunday = True if datetime.datetime.today().weekday() == 6 else False
     return week_no if not is_sunday else week_no + 1
 
 
 def get_curr_week_num():
-    week_no = datetime.date.today().isocalendar()[1]
+    week_no = get_today_date().isocalendar()[1]
 
     is_sunday = True if datetime.datetime.today().weekday() == 6 else False
     return week_no if not is_sunday else week_no + 1
 
 
 def get_curr_year():
-    return datetime.date.today().year
+    return get_today_date().year
 
 
 def get_date(year, day, week):
@@ -71,7 +71,11 @@ def get_birth_day_from_age(age):
 
 
 def get_started_month_from_month_amount(month_cnt):
-    return datetime.date.today() - datetime.timedelta(month_cnt*365/12)
+    return get_today_date() - datetime.timedelta(month_cnt*365/12)
+
+
+def get_today_date():
+    return datetime.date.today()
 
 
 def get_current_deadline_date_string(day_of_week):
@@ -85,13 +89,13 @@ def get_current_deadline_date(day_of_week):
     is_sunday = True if day_of_week == 1 else False
     r_date = get_date(get_curr_year(), day_of_week,
                       get_curr_week_num() if not is_sunday else get_curr_week_num() - 1)
-    if r_date.date() > datetime.date.today():
+    if r_date.date() > get_today_date():
         return r_date
     return None
 
 
 def get_current_week_range():
-    date = datetime.date.today()
+    date = get_today_date()
     return get_week_range(date)
 
 

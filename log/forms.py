@@ -82,7 +82,7 @@ class EditProfileForm(forms.ModelForm):
     class Meta:
         model = EmployeeProfile
         fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address',
-                  'avg_rate', 'enable_mailing']
+                  'rate', 'enable_mailing']
         widgets = {
             'started_work_date': DateInput(),
             'birth_date': DateInput(),
@@ -101,10 +101,10 @@ class EditProfileForm(forms.ModelForm):
         fields_to_disable = ()
 
         if not requester_is_manager and not subject_is_manager:
-            fields_to_delete = ('avg_rate', )
+            fields_to_delete = ('rate', )
             fields_to_disable = ('started_work_date', 'role')
         if requester_is_manager and subject_is_manager:
-            fields_to_delete = ('avg_rate', 'role')
+            fields_to_delete = ('rate', 'role')
 
         for field in fields_to_delete:
             del self.fields[field]

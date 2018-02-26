@@ -93,6 +93,26 @@ function updateFinishedSlots(isFinished) {
     });
 }
 
+function updateShiftSummaryForm(slotId) {
+    $.ajax({
+        url: summary_url.slice(0, -1) + slotId,
+        type: "get",
+        success: setSummaryForm,
+        error: function (xhr) {
+            console.warn(xhr.responseText);
+            var summaryTab =  $('a[href="#shiftSummaryTab"]');
+            if (!summaryTab.hasClass("disabledbutton")) {
+                summaryTab.addClass("disabledbutton");
+            }
+        }
+    });
+}
+
+function setSummaryForm(formResponse) {
+    $('a[href="#shiftSummaryTab"]').removeClass("disabledbutton");
+    $("#shiftSummaryTab").html(formResponse);
+}
+
 function getSlotsStatus() {
     $.ajax({
         url: finish_slots_url, //from template
@@ -209,13 +229,13 @@ function display_cal(event_list) {
 function showSlotDetails(slotId, constraints_json) {
 
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
-    $('#constraintModal').find('.modal-title').html('Slot #' + slotId + ' constraints');
+    $('#slotModal').find('.modal-title').html('Slot #' + slotId + ' constraints');
 
     setSlotEmpList(slotId);
     setShiftEmpList(slotId);
 
     $('#putShiftId').text(slotId);
-    $('#constraintModal').modal('show');
+    $('#slotModal').modal('show');
 }
 function setSlotEmpList(slotId) {
     $.ajax({
@@ -235,7 +255,7 @@ function setShiftEmpList(slotId) {
         url: slot_employees.slice(0, -1) + slotId, //from template
         type: "get", //send it through get method,
         success: function (res) {
-            $("#shiftEmpsTab").html(res);
+            $("#nextShiftEmpsTab").html(res);
         },
         error: function (err) {
             $("#empsTab").html(err);
@@ -322,8 +342,8 @@ function display_current_cal(shifts_json) {
         slotDuration: 60,
         startDate: current_start_date,
         eventClick: function (shiftId) {
-            console.log('cooooooool');
             showShiftDetails(shiftId);
+            updateShiftSummaryForm(shiftId);
         },
         events: r_list
     });
@@ -331,7 +351,7 @@ function display_current_cal(shifts_json) {
 
 function showShiftDetails(shiftId) {
     $.ajax({
-        url: shift_employees_url.slice(0, -1) + shiftId,
+        url: slot_employees.slice(0, -1) + shiftId,
         type: "get",
         success: insertEmployeesToModal,
         error: function () {
@@ -342,5 +362,5 @@ function showShiftDetails(shiftId) {
 }
 
 function insertEmployeesToModal(emp_list) {
-    $("#shiftModalBody").html(emp_list);
+    $("#shiftEmpsTab").html(emp_list);
 }

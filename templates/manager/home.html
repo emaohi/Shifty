@@ -212,6 +212,25 @@
                                     </button>
                                 </div>
                                 <div id="shiftModalBody" class="modal-body">
+                                    <div role="tabpanel">
+                                        <!-- Nav tabs -->
+                                        <ul class="nav nav-tabs" role="tablist">
+                                            <li role="presentation" class="active">
+                                                <a href="#shiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
+                                            </li>
+                                            <li role="presentation">
+                                                <a href="#shiftSummaryTab" role="tab" class="disabledbutton">Shift
+                                                    Summary</a>
+                                            </li>
+                                        </ul>
+                                        <div class="tab-content">
+                                            <div role="tabpanel" class="tab-pane active" id="shiftEmpsTab"></div>
+                                            <div role="tabpanel" class="tab-pane"
+                                                 id="shiftSummaryTab">
+                                            </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -269,7 +288,7 @@
     </div>
 
     <!-- Constraints Modal -->
-    <div class="modal fade" id="constraintModal" role="dialog">
+    <div class="modal fade" id="slotModal" role="dialog">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
                 <div class="modal-header">
@@ -282,7 +301,7 @@
                             <!-- Nav tabs -->
                             <ul class="nav nav-tabs" role="tablist">
                                 <li role="presentation" class="active">
-                                    <a href="#shiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
+                                    <a href="#nextShiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
                                 </li>
                                 <li role="presentation" style="float: right">
                                     <a href="#constraintTab" role="tab" data-toggle="tab">Slot Constraints</a>
@@ -293,7 +312,7 @@
                             </ul>
                             <!-- Tab panes -->
                             <div class="tab-content">
-                                <div role="tabpanel" class="tab-pane active" id="shiftEmpsTab"></div>
+                                <div role="tabpanel" class="tab-pane active" id="nextShiftEmpsTab"></div>
                                 <div role="tabpanel" class="tab-pane" id="constraintTab"></div>
                                 <div role="tabpanel" class="tab-pane" id="empsTab"></div>
 
@@ -327,6 +346,7 @@
         var slot_request_employees = "{% url 'slot_request_employees' 0%}";
         var slot_employees = "{% url 'slot_employees' 0%}";
         var generate_shifts_url = "{% url 'generate_shifts' %}";
+        var summary_url = "{% url 'submit_shift_summary' 0%}";
         var start_date = "{{ start_date }}";
         var current_start_date = "{{ current_start_date }}";
         var deadline_date = "{{ deadline_date }}";

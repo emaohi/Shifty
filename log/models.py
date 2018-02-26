@@ -102,7 +102,7 @@ class EmployeeProfile(models.Model):
         ('MA', 'Manager'), ('WA', 'Waiter'), ('BT', 'Bartender'), ('CO', 'Cook')
     )
 
-    avg_rate = models.FloatField(default=2.5, validators=[MaxValueValidator(5.0), MinValueValidator(0.0)])
+    rate = models.FloatField(default=0)
 
     role = models.CharField(
         max_length=2,
@@ -151,7 +151,7 @@ class EmployeeProfile(models.Model):
 
     @staticmethod
     def get_filtered_upon_fields():
-        return ['birth_date', 'started_work_date', 'gender', 'avg_rate']
+        return ['birth_date', 'started_work_date', 'gender', 'rate']
 
 
 # pylint: disable=unused-argument,unused-variable

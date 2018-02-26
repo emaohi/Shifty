@@ -27,10 +27,10 @@ admin.site.register(Holiday, HolidayAdmin)
 
 
 class ShiftRequestAdmin(admin.ModelAdmin):
-    list_display = ('id', 'employee', 'week_range', 'get_slots')
+    list_display = ('id', 'employee', 'week_range', 'get_slots', 'submission_time')
 admin.site.register(ShiftRequest, ShiftRequestAdmin)
 
 
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ['slot', 'get_employees_string', 'get_date']
+    list_display = ['slot', 'rank', 'get_employees_string', 'get_date']
 admin.site.register(Shift, ShiftAdmin)

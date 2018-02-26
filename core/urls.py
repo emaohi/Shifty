@@ -19,4 +19,5 @@ urlpatterns = [
     url(r'^slot_employees/(?P<slot_id>[0-9]+)$',
         views.get_slot_employees, name='slot_employees'),
     url(r'^get_current_calendar_shifts/$', views.get_calendar_current_week_shifts, name='get_current_shifts'),
+    url(r'^shift_summary/(?P<slot_id>[0-9]+)$', views.submit_shift_summary, name='submit_shift_summary'),
 ]

@@ -3,10 +3,13 @@ from __future__ import unicode_literals
 import datetime
 import json
 
+import logging
 from django.db import models
 
-from core.date_utils import get_next_week_num, get_week_range, get_week_string
+from core.date_utils import get_next_week_num, get_week_range, get_week_string, get_today_date
 from log.models import Business, EmployeeProfile
+
+logger = logging.getLogger(__name__)
 
 
 class EmployeeRequest(models.Model):
@@ -113,9 +116,15 @@ class ShiftSlot(models.Model):
         return '%s %s' % (self.get_date(), self.end_hour)
 
     def get_date(self):
+        return self.get_date_obj().strftime('%d-%m-%Y')
+
+    def get_datetime(self):
+        return datetime.datetime.combine(self.get_date_obj(), self.start_hour)
+
+    def get_date_obj(self):
         correct_week = self.week if int(self.day) > 1 else self.week - 1
         d = '%s-W%s' % (str(self.year), str(correct_week))
-        return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
+        return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date()
 
     def get_day_str(self):
         return self.get_day_display()
@@ -134,6 +143,9 @@ class ShiftSlot(models.Model):
 
     def was_shift_generated(self):
         return hasattr(self, 'shift')
+
+    def is_finished(self):
+        return self.get_datetime() < datetime.datetime.now()
 
 
 class ShiftRequest(models.Model):
@@ -155,6 +167,7 @@ class ShiftRequest(models.Model):
 class Shift(models.Model):
     slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
+    rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=50)
     total_tips = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
@@ -166,3 +179,13 @@ class Shift(models.Model):
 
     def get_date(self):
         return self.slot.get_date()
+
+    def update_emp_rates(self, old_rank):
+        new_rank = self.rank / self.employees.count()
+        old_rate = old_rank / self.employees.count()
+        emps = self.employees.all()
+        logger.info('Going to set rate of %f to employees %s', new_rank, emps)
+        for emp in emps:
+            emp.rate += new_rank - old_rate
+            logger.debug('%s employee new rate: %f', emp, emp.rate)
+            emp.save()
