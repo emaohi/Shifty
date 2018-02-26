@@ -232,3 +232,15 @@ def get_cached_non_mandatory_slots(business, week):
         cache.set(key, slots, half_an_hour)
         return slots
     return cache.get(key)
+
+
+def get_slot_calendar_colors(curr_profile, slot):
+    if curr_profile.role != 'MA':
+        bg_color, text_color = ('mediumseagreen', 'white') if curr_profile in \
+                                                              slot.shift.employees.all() else ('#7b8a8b', 'black')
+    else:
+        if slot.is_finished():
+            bg_color, text_color = 'cornflowerblue', 'white'
+        else:
+            bg_color, text_color = 'blue', 'white'
+    return bg_color, text_color

@@ -264,6 +264,9 @@ function setShiftEmpList(slotId) {
 }
 
 function listifyConstraintJson(constraints_json) {
+
+    console.log(constraints_json);
+
     var $div = '<div class="container">';
     $div += '<div class="row">';
     $div += '<div class=col-md-8>';

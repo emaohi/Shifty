@@ -16,7 +16,7 @@ from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, Shi
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
-    save_shifts_request, delete_other_requests, validate_language, get_week_slots
+    save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -229,7 +229,6 @@ def delete_slot(request):
 def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
-    slot_id_to_generated_status_dict = {}
 
     next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
     for slot in next_week_slots:
@@ -241,9 +240,7 @@ def get_next_week_slots_calendar(request):
                                    'textColor': text_color})
         shifts_json.append(jsoned_shift)
         slot_id_to_constraints_dict[slot.id] = slot.constraints
-        slot_id_to_generated_status_dict[slot.id] = slot.was_shift_generated()
     shifts_json.append(json.dumps(slot_id_to_constraints_dict))
-    shifts_json.append(json.dumps(slot_id_to_generated_status_dict))
     logger.debug('jsoned shifts are %s', shifts_json)
     return JsonResponse(shifts_json, safe=False)
 
@@ -393,11 +390,8 @@ def get_calendar_current_week_shifts(request):
         for slot in current_week_slots:
             if not slot.was_shift_generated():
                 continue
-            if get_curr_profile(request).role != 'MA':
-                bg_color, text_color = ('mediumseagreen', 'white') if get_curr_profile(request) in\
-                    slot.shift.employees.all() else ('#7b8a8b', 'black')
-            else:
-                bg_color, text_color = 'cornflowerblue', 'white'
+
+            bg_color, text_color = get_slot_calendar_colors(get_curr_profile(request), slot)
 
             jsoned_shift = json.dumps({'id': str(slot.id), 'title': slot.name,
                                        'start': slot.start_time_str(),
