@@ -1,7 +1,7 @@
 import datetime
 
 
-def __get_days_range_by_week_num(week_no, year_no):
+def get_days_range_by_week_num(week_no, year_no):
     curr_week = "%s-W%s" % (year_no, str(week_no))
     prev_week = "%s-W%s" % (year_no, str(week_no-1))
     sunday = str(datetime.datetime.strptime(prev_week + '-0', "%Y-W%W-%w").date().strftime("%d/%m/%Y"))
@@ -20,7 +20,7 @@ def get_next_week_string():
 
 
 def get_week_string(week, year):
-    sunday, saturday = __get_days_range_by_week_num(week, year)
+    sunday, saturday = get_days_range_by_week_num(week, year)
     return __make_week_range_string(sunday, saturday)
 
 
@@ -33,12 +33,12 @@ def __convert_date_for_calendar(date):
 
 
 def get_curr_week_sunday():
-    curr_sunday = __get_days_range_by_week_num(get_curr_week_num(), get_curr_year())[0]
+    curr_sunday = get_days_range_by_week_num(get_curr_week_num(), get_curr_year())[0]
     return __convert_date_for_calendar(curr_sunday)
 
 
 def get_next_week_sunday():
-    next_sunday = __get_days_range_by_week_num(get_next_week_num(), get_curr_year())[0]
+    next_sunday = get_days_range_by_week_num(get_next_week_num(), get_curr_year())[0]
     return __convert_date_for_calendar(next_sunday)
 
 
