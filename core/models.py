@@ -6,7 +6,7 @@ import json
 import logging
 from django.db import models
 
-from core.date_utils import get_next_week_num, get_week_range, get_week_string, get_today_date
+from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
 
 logger = logging.getLogger(__name__)

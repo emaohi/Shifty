@@ -278,6 +278,3 @@ class ShiftSummaryForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.id = kwargs.pop('id')
         super(ShiftSummaryForm, self).__init__(*args, **kwargs)
-
-    def clean(self):
-        super(ShiftSummaryForm, self).clean()
