@@ -189,3 +189,6 @@ class Shift(models.Model):
             emp.rate += new_rank - old_rate
             logger.debug('%s employee new rate: %f', emp, emp.rate)
             emp.save()
+
+    def calculate_employee_tip(self):
+        return self.total_tips / self.employees.count()

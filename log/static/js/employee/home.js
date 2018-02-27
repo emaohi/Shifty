@@ -9,7 +9,16 @@ $(document).ready(function () {
     populateTimerDiv();
 
     populate_calendar();
+
+    showSuggestions();
 });
+
+function showSuggestions() {
+    console.log('first login: ' + first_login);
+    if (first_login == 'True') {
+        $("#suggestionsModal").modal('show');
+    }
+}
 
 function showNextWeekSlotsList() {
     $.ajax({

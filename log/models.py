@@ -112,6 +112,8 @@ class EmployeeProfile(models.Model):
     enable_mailing = models.BooleanField(default=True)
     menu_score = models.IntegerField(null=True, blank=True)
 
+    ever_logged_in = models.BooleanField(default=False)
+
     def __str__(self):
         return self.user.username
 

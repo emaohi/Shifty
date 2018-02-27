@@ -67,11 +67,19 @@ def emp_home(request):
 
     request_enabled = get_curr_business(request).slot_request_enabled and deadline_date_str
 
+    is_first_login = False
+    if not get_curr_profile(request).ever_logged_in:
+        logger.info('first login')
+        is_first_login = True
+        get_curr_profile(request).ever_logged_in = True
+        get_curr_profile(request).save()
+
     return render(request, "employee/home.html", {'manager_msgs': manager_messages,
                                                   'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
                                                   'curr_week_str': curr_week_string,
-                                                  'deadline_date': deadline_date_str, 'start_date': curr_week_sunday})
+                                                  'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
+                                                  'first_login': is_first_login})
 
 
 def register(request):
