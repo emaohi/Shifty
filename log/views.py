@@ -4,6 +4,7 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.core.cache import cache
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -236,6 +237,8 @@ def edit_profile_form(request):
             is_edited_other = is_manager and request.user.profile != edited_profile
             messages.success(request, message='successfully edited %s' %
                                               (edited_profile.user.username if is_edited_other else 'yourself'))
+            logger.info('going to delete cached ETA duration...')
+            cache.delete("ETA-{0}".format(edited_profile.id))
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))

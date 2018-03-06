@@ -4,6 +4,7 @@ import logging
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.cache import cache
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
@@ -15,8 +16,9 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
-    save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors
+    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
+    save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
+    get_duration_data, get_eta_cache_key
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -289,29 +291,37 @@ def is_finish_slots(request):
     return HttpResponse(curr_business.slot_request_enabled)
 
 
-@cache_page(60 * 15, key_prefix='shifty')
-@vary_on_cookie
+# @cache_page(60 * 15, key_prefix='shifty')
+# @vary_on_cookie
 @login_required(login_url='/login')
 def get_work_duration_data(request):
     if request.method == 'GET':
-        home_address = request.user.profile.home_address
-        work_address = request.user.profile.business.address
 
-        if not home_address or not work_address:
-            return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
+        key = get_eta_cache_key(get_curr_profile(request))
 
-        is_walk = request.GET.get('walking', True)
-        is_drive = request.GET.get('driving', True)
+        if key not in cache:
+            home_address = get_curr_profile(request).home_address
+            work_address = get_curr_business(request).address
 
-        distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
+            if not home_address or not work_address:
+                return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
 
-        parse_duration_data(distance_data)
-        if not distance_data['walking'] and not distance_data['driving']:
-            return HttpResponseBadRequest('cant find home to work durations - make sure both business'
-                                          'and home addresses are available')
+            arrival_method = get_curr_profile(request).arriving_method
 
-        logger.info('found distance data: ' + str(distance_data))
-        return JsonResponse(distance_data)
+            raw_distance_data = get_dist_data(home_address, work_address, arrival_method)
+
+            driving_duration, walking_duration = get_duration_data(raw_distance_data)
+
+            if not walking_duration and not driving_duration:
+                return HttpResponseBadRequest('cant find home to work durations - make sure both business'
+                                              'and home addresses are available')
+            cache.set(key, (driving_duration, walking_duration), settings.DURATION_CACHE_TTL)
+
+        driving_duration, walking_duration = cache.get(key)
+
+        logger.info('found distance data: driving duration is %s and walking duration is %s' %
+                    (driving_duration, walking_duration))
+        return JsonResponse({'driving': driving_duration, 'walking': walking_duration})
 
     return HttpResponseBadRequest('cannot get distance data with ' + request.method)
 

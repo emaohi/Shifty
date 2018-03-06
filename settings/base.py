@@ -1,6 +1,8 @@
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import sys
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 ADMINS = ['emaohi@gmail.com']
@@ -182,3 +184,7 @@ DIRECTIONS_URL = 'https://maps.google.com/maps/dir/?api=1&origin=%s&destination=
 PROFANITY_SERVICE_URL = 'http://www.purgomalum.com/service/containsprofanity?text=%s'
 
 RAVEN_CONFIG = {}
+
+DURATION_CACHE_TTL = 15 * 60
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'

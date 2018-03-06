@@ -81,7 +81,7 @@ class EditProfileForm(forms.ModelForm):
 
     class Meta:
         model = EmployeeProfile
-        fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address',
+        fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address', 'arriving_method',
                   'rate', 'enable_mailing']
         widgets = {
             'started_work_date': DateInput(),
@@ -89,8 +89,9 @@ class EditProfileForm(forms.ModelForm):
         }
         help_texts = {
             'phone_num': 'in form of 05x-xxxxxxx',
-            'enable_mailing': 'It is strictly recommended to enable mailing from Shifty',
-            'home_address': 'Exact address will enable checking ETA to work'
+            'enable_mailing': 'It is recommended to enable mailing from Shifty',
+            'home_address': 'Exact address will enable checking ETA to work',
+            'arriving_method': 'Show you ETA and notification for your next shift'
         }
 
     def __init__(self, *args, **kwargs):

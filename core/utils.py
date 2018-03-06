@@ -145,14 +145,14 @@ def handle_named_slot(business, name):
     pinned_slot.save()
 
 
-def get_dist_data(home_address, work_address, is_drive, is_walk):
+def get_dist_data(home_address, work_address, arriving_method):
     json_res = {}
-    if is_drive:
+    if arriving_method == 'D' or arriving_method == 'B':
         driving_api_url = settings.DISTANCE_URL % (home_address, work_address, 'driving', settings.DISTANCE_API_KEY)
         json_res['driving'] = requests.get(driving_api_url)
         json_res['driving_url'] = settings.DIRECTIONS_URL %\
             (home_address, work_address, 'driving')
-    if is_walk:
+    if arriving_method == 'W' or arriving_method == 'B':
         walking_api_url = settings.DISTANCE_URL % (home_address, work_address, 'walking', settings.DISTANCE_API_KEY)
         json_res['walking'] = requests.get(walking_api_url)
         json_res['walking_url'] = settings.DIRECTIONS_URL %\
@@ -172,9 +172,10 @@ def get_current_week_slots(business):
     return curr_week_slots
 
 
-def parse_duration_data(raw_distance_response):
+def get_duration_data(raw_distance_response):
     driving_duration = None
     walking_duration = None
+
     if 'driving' in raw_distance_response:
         try:
             driving_duration = json.loads(raw_distance_response.get('driving').text).get('rows')[0].get(
@@ -182,8 +183,6 @@ def parse_duration_data(raw_distance_response):
         except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get driving duration: ' + str(e))
             driving_duration = ''
-        finally:
-            raw_distance_response['driving'] = driving_duration
     if 'walking' in raw_distance_response:
         try:
             walking_duration = json.loads(raw_distance_response.get('walking').text).get('rows')[0].get(
@@ -191,8 +190,8 @@ def parse_duration_data(raw_distance_response):
         except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get walking duration: ' + str(e))
             walking_duration = ''
-        finally:
-            raw_distance_response['walking'] = walking_duration
+
+    return driving_duration, walking_duration
 
 
 def save_shifts_request(form, request):
@@ -224,7 +223,6 @@ def delete_other_requests(request, slots_request):
 def get_cached_non_mandatory_slots(business, week):
 
     half_an_hour = 30 * 60
-
     key = "next-week-slots-{0}-{1}".format(business, week)
     if key not in cache:
         slots = ShiftSlot.objects.filter(week=week, business=business). \
@@ -244,3 +242,7 @@ def get_slot_calendar_colors(curr_profile, slot):
         else:
             bg_color, text_color = 'blue', 'white'
     return bg_color, text_color
+
+
+def get_eta_cache_key(profile_id):
+    return "{0}ETA-{1}".format('TEST-' if settings.TESTING else '', get_curr_profile(profile_id))

@@ -1,7 +1,9 @@
+import json
 import urllib
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from mock import patch
 
 from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
@@ -204,6 +206,7 @@ class DeleteShiftSlotViewTest(TestCase):
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('delete_shift_slot'), ""))
 
 
+@override_settings(DURATION_CACHE_TTL=1)
 class GetDurationDataViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -214,11 +217,17 @@ class GetDurationDataViewTest(TestCase):
         create_new_manager(self.manager_credentials)
         set_address_to_business(username=self.manager_credentials['username'], address='Tel-Aviv')
 
-    def test_view_should_succeed(self):
+    @patch('core.views.get_duration_data')
+    def test_view_should_succeed(self, mock_func):
+
+        mock_func.return_value = ('1', '2')
+
         set_address_to_employee(username=self.manager_credentials['username'], address='Haifa')
         self.client.login(**self.manager_credentials)
         resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
         self.assertEqual(resp.status_code, 200)
+        self.assertJSONEqual(resp.content, {'driving': '1',
+                                            'walking': '2'})
 
     def test_view_should_bad_request_when_no_emp_address(self):
         self.client.login(**self.manager_credentials)

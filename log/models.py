@@ -113,6 +113,10 @@ class EmployeeProfile(models.Model):
     menu_score = models.IntegerField(null=True, blank=True)
 
     ever_logged_in = models.BooleanField(default=False)
+    ARRIVAL_METHOD_CHOCIES = (
+        ('D', 'driving'), ('W', 'walking'), ('B', 'both')
+    )
+    arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
 
     def __str__(self):
         return self.user.username
