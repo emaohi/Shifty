@@ -9,8 +9,6 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, get_curr_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
@@ -291,8 +289,6 @@ def is_finish_slots(request):
     return HttpResponse(curr_business.slot_request_enabled)
 
 
-# @cache_page(60 * 15, key_prefix='shifty')
-# @vary_on_cookie
 @login_required(login_url='/login')
 def get_work_duration_data(request):
     if request.method == 'GET':
@@ -319,8 +315,8 @@ def get_work_duration_data(request):
 
         driving_duration, walking_duration = cache.get(key)
 
-        logger.info('found distance data: driving duration is %s and walking duration is %s' %
-                    (driving_duration, walking_duration))
+        logger.info('found distance data: driving duration is %s and walking duration is %s',
+                    driving_duration, walking_duration)
         return JsonResponse({'driving': driving_duration, 'walking': walking_duration})
 
     return HttpResponseBadRequest('cannot get distance data with ' + request.method)
