@@ -205,7 +205,7 @@ class DeleteShiftSlotViewTest(TestCase):
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('delete_shift_slot'), ""))
 
 
-@override_settings(DURATION_CACHE_TTL=1)
+@override_settings(DURATION_CACHE_TTL=3)
 class GetDurationDataViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
