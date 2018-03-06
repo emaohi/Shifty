@@ -172,7 +172,7 @@ def get_current_week_slots(business):
     return curr_week_slots
 
 
-def get_duration_data(raw_distance_response):
+def parse_duration_data(raw_distance_response):
     driving_duration = None
     walking_duration = None
 

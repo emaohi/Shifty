@@ -205,7 +205,7 @@ class DeleteShiftSlotViewTest(TestCase):
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('delete_shift_slot'), ""))
 
 
-@override_settings(DURATION_CACHE_TTL=3)
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
 class GetDurationDataViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -216,7 +216,7 @@ class GetDurationDataViewTest(TestCase):
         create_new_manager(self.manager_credentials)
         set_address_to_business(username=self.manager_credentials['username'], address='Tel-Aviv')
 
-    @patch('core.views.get_duration_data')
+    @patch('core.views.parse_duration_data')
     def test_view_should_succeed(self, mock_func):
 
         mock_func.return_value = ('1', '2')

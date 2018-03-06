@@ -42,11 +42,15 @@
             var walkingUrl = durationData.walking_url;
             var drivingUrl = durationData.driving_url;
 
-            $("#etaText").text("ETAs to business:");
-            $("#duration-drive").html('<a class= "duration-text" target="_blank" href="' + drivingUrl + '">' +
-                drivingText + '</a>');
-            $("#duration-walk").html('<a class= "duration-text" target="_blank" href="' + walkingUrl + '">' +
-                walkingText + '</a>');
+            $("#etaText").text("ETA to business:");
+            if (walkingText !== null) {
+                $("#duration-walk").html('<a class= "duration-text" target="_blank" href="' + walkingUrl + '">' +
+                    walkingText + '</a>');
+            }
+            if (drivingText !== null) {
+                $("#duration-drive").html('<a class= "duration-text" target="_blank" href="' + drivingUrl + '">' +
+                    drivingText + '</a>');
+            }
         }
     </script>
     {% block javascript %}

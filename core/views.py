@@ -16,7 +16,7 @@ from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
-    get_duration_data, get_eta_cache_key
+    parse_duration_data, get_eta_cache_key
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -306,14 +306,14 @@ def get_work_duration_data(request):
 
             raw_distance_data = get_dist_data(home_address, work_address, arrival_method)
 
-            driving_duration, walking_duration = get_duration_data(raw_distance_data)
+            driving_duration, walking_duration = parse_duration_data(raw_distance_data)
 
             if not walking_duration and not driving_duration:
                 return HttpResponseBadRequest('cant find home to work durations - make sure both business'
                                               'and home addresses are available')
             cache.set(key, (driving_duration, walking_duration), settings.DURATION_CACHE_TTL)
-
-        driving_duration, walking_duration = cache.get(key)
+        else:
+            driving_duration, walking_duration = cache.get(key)
 
         logger.info('found distance data: driving duration is %s and walking duration is %s',
                     driving_duration, walking_duration)
