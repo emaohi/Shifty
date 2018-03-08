@@ -265,7 +265,7 @@ class GetNextShiftTimer(TestCase):
         self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
 
     def test_view_should_succeed_when_one_slot(self):
-        self.client.post(reverse('generate_shifts'))
+        self._create_upcoming_shifts_for_existing_slots(1)
 
         self.client.login(**self.emp_credentials)
         resp = self.client.get(reverse('time_to_next_shift'))
@@ -277,11 +277,8 @@ class GetNextShiftTimer(TestCase):
         second_slot = {k: v for k, v in self.dummy_slot.items()}
         second_slot['day'] = '2'
         self.client.post(reverse('add_shift_slot'), data=second_slot, follow=True)
-        slots = ShiftSlot.objects.all()[:2]
-        for num_hours, slot in enumerate(slots):
-            make_slot_this_in_n_hour_from_now(slot, num_hours+1)
-        create_shifts_for_slots(slots, emps=EmployeeProfile.objects.filter(
-            user__username=self.emp_credentials['username']))
+
+        self._create_upcoming_shifts_for_existing_slots(2)
 
         self.client.login(**self.emp_credentials)
         resp = self.client.get(reverse('time_to_next_shift'))
@@ -289,6 +286,12 @@ class GetNextShiftTimer(TestCase):
         days, hours = get_days_hours_from_delta(ShiftSlot.objects.first().get_datetime() - datetime.now())
         self.assertEqual(resp.content, '%s days, %s hours' % (days, hours))
 
+    def _create_upcoming_shifts_for_existing_slots(self, num):
+        slots = ShiftSlot.objects.all()[:num]
+        for num_hours, slot in enumerate(slots):
+            make_slot_this_in_n_hour_from_now(slot, num_hours + 1)
+        create_shifts_for_slots(slots, emps=EmployeeProfile.objects.filter(
+            user__username=self.emp_credentials['username']))
 
 class GetSlotRequestersViewTest(TestCase):
     dummy_slot = {
