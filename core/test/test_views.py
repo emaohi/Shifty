@@ -1,12 +1,17 @@
 import urllib
+from datetime import datetime
+from time import sleep
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from mock import patch
 
+from core.date_utils import get_days_hours_from_delta, get_curr_week_num
 from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
-    create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee
+    create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee, \
+    make_slot_this_in_n_hour_from_now, create_shifts_for_slots
+from log.models import EmployeeProfile
 
 
 class EmployeeRequestViewTest(TestCase):
@@ -238,6 +243,52 @@ class GetDurationDataViewTest(TestCase):
         self.client.login(**self.manager_credentials)
         resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
         self.assertEqual(resp.status_code, 400)
+
+
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
+class GetNextShiftTimer(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+    dummy_slot = {
+        'day': '1', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
+        add_fields_to_slot(cls.dummy_slot)
+
+    def setUp(self):
+        self.client.login(**self.manager_credentials)
+        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+
+    def test_view_should_succeed_when_one_slot(self):
+        self.client.post(reverse('generate_shifts'))
+
+        self.client.login(**self.emp_credentials)
+        resp = self.client.get(reverse('time_to_next_shift'))
+        self.assertEqual(resp.status_code, 200)
+        days, hours = get_days_hours_from_delta(ShiftSlot.objects.first().get_datetime() - datetime.now())
+        self.assertEqual(resp.content, '%s days, %s hours' % (days, hours))
+
+    def test_view_should_choose_earliest_when_two_slots(self):
+        second_slot = {k: v for k, v in self.dummy_slot.items()}
+        second_slot['day'] = '2'
+        self.client.post(reverse('add_shift_slot'), data=second_slot, follow=True)
+        slots = ShiftSlot.objects.all()[:2]
+        for num_hours, slot in enumerate(slots):
+            make_slot_this_in_n_hour_from_now(slot, num_hours+1)
+        create_shifts_for_slots(slots, emps=EmployeeProfile.objects.filter(
+            user__username=self.emp_credentials['username']))
+
+        self.client.login(**self.emp_credentials)
+        resp = self.client.get(reverse('time_to_next_shift'))
+        self.assertEqual(resp.status_code, 200)
+        days, hours = get_days_hours_from_delta(ShiftSlot.objects.first().get_datetime() - datetime.now())
+        self.assertEqual(resp.content, '%s days, %s hours' % (days, hours))
 
 
 class GetSlotRequestersViewTest(TestCase):

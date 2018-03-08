@@ -1,5 +1,6 @@
 import json
 import logging
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -10,13 +11,14 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
 
-from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, get_curr_week_num
+from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, get_curr_week_num, \
+    get_days_hours_from_delta
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
-    parse_duration_data, get_eta_cache_key
+    parse_duration_data, get_eta_cache_key, get_next_shift
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -410,6 +412,8 @@ def get_calendar_current_week_shifts(request):
     return wrong_method(request)
 
 
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
 def submit_shift_summary(request, slot_id):
     shift = Shift.objects.get(slot=ShiftSlot.objects.get(pk=slot_id))
     old_rank = shift.rank
@@ -430,3 +434,17 @@ def submit_shift_summary(request, slot_id):
     summary_form = ShiftSummaryForm(id=slot_id, instance=shift)
     return render(request, 'manager/shift_summary_form.html', context={'summary_form': summary_form,
                                                                        'slot_id': slot_id})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def get_time_to_next_shift(request):
+    curr_emp = get_curr_profile(request)
+    next_shift = get_next_shift(curr_emp)
+    if not next_shift:
+        logger.warning('no upcoming shift for emp %s', request.user.username)
+        return HttpResponseBadRequest('No upcoming shift was found...')
+    logger.info('next shift for user %s is %s', request.user.username, str(next_shift))
+    days, hours = get_days_hours_from_delta(next_shift.slot.get_datetime() - datetime.now())
+
+    return HttpResponse('%s days, %s hours' % (days, hours))

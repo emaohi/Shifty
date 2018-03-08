@@ -1,4 +1,9 @@
+import datetime
+
 from django.contrib.auth.models import Group, User
+
+from core.date_utils import get_today_day_num_str, get_curr_week_num
+from core.models import Shift
 
 
 def create_manager_and_employee_groups():
@@ -57,3 +62,18 @@ def set_address_to_employee(username, address):
     profile = user.profile
     profile.home_address = address
     profile.save()
+
+
+def make_slot_this_in_n_hour_from_now(slot, num_hours):
+    slot.day = get_today_day_num_str(datetime.datetime.today().weekday())
+    slot.start_hour = (datetime.datetime.now() + datetime.timedelta(hours=num_hours))
+    slot.week = get_curr_week_num()
+    slot.save()
+
+
+def create_shifts_for_slots(slots, emps):
+    for slot in slots:
+        shift = Shift.objects.create(slot=slot)
+        shift.employees.add(*list(emps))
+        shift.save()
+        print '------ shift: %s created' % str(shift)

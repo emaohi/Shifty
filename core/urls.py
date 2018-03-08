@@ -20,4 +20,5 @@ urlpatterns = [
         views.get_slot_employees, name='slot_employees'),
     url(r'^get_current_calendar_shifts/$', views.get_calendar_current_week_shifts, name='get_current_shifts'),
     url(r'^shift_summary/(?P<slot_id>[0-9]+)$', views.submit_shift_summary, name='submit_shift_summary'),
+    url(r'^time_to_next_shift/$', views.get_time_to_next_shift, name='time_to_next_shift'),
 ]

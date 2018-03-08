@@ -13,7 +13,7 @@
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
     <link href="{% static 'css/easycal.css' %}" rel="stylesheet">
 
-{#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
+    {#    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>#}
     <script src="{% static 'js/jquery.min.js' %}"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.0-rc.2/jquery-ui.min.js"></script>
@@ -22,11 +22,16 @@
     <!-- Latest compiled and minified JavaScript -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/js/bootstrap-select.min.js"></script>
     <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.4/css/bootstrap-select.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.7.0/underscore-min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
     <script>
         $(document).ready(function () {
+            get_duration_data();
+            get_next_shift_data();
+        });
+        function get_duration_data() {
             $.ajax({
                 url: "{% url 'duration_data' %}", //from template
                 type: "get", //send it through get method,
@@ -35,7 +40,7 @@
                     //Do Something to handle error
                 }
             });
-        });
+        }
         function display_duration(durationData) {
             var walkingText = durationData.walking;
             var drivingText = durationData.driving;
@@ -50,6 +55,35 @@
             if (drivingText !== null) {
                 $("#duration-drive").html('<a class= "duration-text" target="_blank" href="' + drivingUrl + '">' +
                     drivingText + '</a>');
+            }
+        }
+
+        function get_next_shift_data() {
+            $.ajax({
+                url: "{% url 'time_to_next_shift' %}", //from template
+                type: "get", //send it through get method,
+                success: display_next_shift_text,
+                error: handle_next_shift_failure
+            });
+        }
+        function display_next_shift_text(text) {
+            $("#nextShiftText").text(text);
+
+            var spliced = text.split(" ");
+            var dayNum = parseInt(spliced[0]);
+            var hourNum = parseInt(spliced[2]);
+            if (dayNum === 0 && hourNum < 3){
+                $("#nextShiftText").css('color', 'red');
+                $("#nextShiftText").css("font-weight","Bold");
+            } else {
+                $("#nextShiftText").css('color', 'yellow');
+            }
+        }
+        function handle_next_shift_failure(xhr) {
+            if (xhr.status === 400) {
+                $("#nextShiftText").text("No upcoming shifts");
+            } else {
+                $("#nextShiftText").text("Couldn\'t get next shift data...");
             }
         }
     </script>
@@ -88,12 +122,11 @@
             padding-right: 20px;
         }
 
+        .navbar-text * {
+            color: white;
+        }
         .duration-text {
             color: yellow;
-        }
-
-        #etaText {
-            color: white;
         }
     </style>
     {% block style %}
@@ -130,14 +163,19 @@
                     </ul>
                 </li>
             </ul>
-            <span class="navbar-text navbar-right"><i class="fa fa-blind fa-walk fa-lg fa-inverse"></i>
-                    <strong id="duration-walk" class="duration-text"></strong>
-                </span>
-            <span class="navbar-text navbar-right"><i class="fa fa-car fa-lg fa-inverse"></i>
-                    <strong id="duration-drive" class="duration-text"></strong>
-                </span>
+            <span class="navbar-text">
+                <span id="nextShiftLabel">Next shift in:</span>
+                <span id="nextShiftText"></span>
+            </span>
+
             <span class="navbar-text navbar-right">
-                    <p id="etaText"></p>
+                <span id="etaText"></span>
+                <span style="margin-left: 20px"><i class="fa fa-car fa-lg fa-inverse"></i>
+                        <strong id="duration-drive" class="duration-text"></strong>
+                    </span>
+                <span style="margin-left: 20px"><i class="fa fa-blind fa-walk fa-lg fa-inverse"></i>
+                        <strong id="duration-walk" class="duration-text"></strong>
+                    </span>
                 </span>
         </div>
     </div>

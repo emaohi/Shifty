@@ -78,6 +78,10 @@ def get_today_date():
     return datetime.date.today()
 
 
+def get_today_day_num_str(origin_weekday):
+    return ((origin_weekday + 1) % 7) + 1
+
+
 def get_current_deadline_date_string(day_of_week):
     date = get_current_deadline_date(day_of_week)
     if date:
@@ -104,3 +108,7 @@ def get_week_range(date):
     end_week = start_week + datetime.timedelta(7)
 
     return start_week, end_week
+
+
+def get_days_hours_from_delta(td):
+    return td.days, td.seconds//3600

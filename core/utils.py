@@ -10,7 +10,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range
-from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest
+from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest, Shift
 from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
 from django.conf import settings
 
@@ -246,3 +246,13 @@ def get_slot_calendar_colors(curr_profile, slot):
 
 def get_eta_cache_key(profile_id):
     return "{0}ETA-{1}".format('TEST-' if settings.TESTING else '', get_curr_profile(profile_id))
+
+
+def get_next_shift(profile):
+    Shift.objects.all().order_by('slot__day', 'slot__ho')
+    ordered_current_week_emp_shifts = profile.shifts.filter(slot__week__exact=get_curr_week_num())\
+        .order_by('slot__day', 'slot__start_hour')
+    for shift in ordered_current_week_emp_shifts:
+        if shift.slot.get_datetime() > datetime.datetime.now():
+            return shift
+    return None

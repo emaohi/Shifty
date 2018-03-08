@@ -71,8 +71,6 @@
                 <div class="row" style="margin-top: 20px">
                     <div class="col-sm-2">
                         <span class="legend legend1">You're in it</span>
-                    </div>
-                    <div class="col-sm-2">
                         <span class="legend legend2">You're not</span>
                     </div>
                 </div>
@@ -176,7 +174,7 @@
                     <p>Some suggestions</p>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">Edit profile</button>
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit profile</a>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Later</button>
                 </div>
             </div>
