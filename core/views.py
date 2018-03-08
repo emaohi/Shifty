@@ -18,7 +18,7 @@ from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
-    parse_duration_data, get_eta_cache_key, get_next_shift
+    parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -448,3 +448,16 @@ def get_time_to_next_shift(request):
     days, hours = get_days_hours_from_delta(next_shift.slot.get_datetime() - datetime.now())
 
     return HttpResponse('%s days, %s hours' % (days, hours))
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def get_prev_shifts(request):
+    curr_emp = get_curr_profile(request)
+    prev_shifts = get_emp_previous_shifts(curr_emp)
+    if len(prev_shifts) == 0:
+        logger.warning('no previous shifts for emp %s', request.user.username)
+        return HttpResponseBadRequest('No previous shifts was found...')
+    logger.info('Found %d previous shifts for user %s', len(prev_shifts), request.user.username)
+
+    return render(request, 'employee/previous_shifts.html', {'prev_shifts': prev_shifts})

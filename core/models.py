@@ -118,6 +118,9 @@ class ShiftSlot(models.Model):
     def get_date(self):
         return self.get_date_obj().strftime('%d-%m-%Y')
 
+    def get_datetime_str(self):
+        return self.get_datetime().strftime('%d-%m-%Y, %H:%M')
+
     def get_datetime(self):
         return datetime.datetime.combine(self.get_date_obj(), self.start_hour)
 
@@ -192,3 +195,6 @@ class Shift(models.Model):
 
     def calculate_employee_tip(self):
         return self.total_tips / self.employees.count()
+
+    def get_employees_comma_string(self):
+        return ', '.join([emp.user.username for emp in self.employees.all()])

@@ -11,6 +11,8 @@ $(document).ready(function () {
     populate_calendar();
 
     showSuggestions();
+
+    getPreviousShifts();
 });
 
 function showSuggestions() {
@@ -97,4 +99,22 @@ function showShiftDetails(shiftId) {
 
 function insertEmployeesToModal(emp_list) {
     $("#shiftModalBody").html(emp_list);
+}
+
+function getPreviousShifts() {
+    $.ajax({
+        url: prev_shifts_url,
+        type:"get",
+        success: function (res) {
+            $("#previous").html(res);
+        },
+        error: function (xhr) {
+            if (xhr.status === 400){
+                $("#previous").html("<h3>No previous shifts...</h3>");
+            } else {
+                $("#previous").html("<h3>Server error trying to get previous shifts...</h3>");
+                console.error('No previous shifts...');
+            }
+        }
+    });
 }

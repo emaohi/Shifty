@@ -256,3 +256,8 @@ def get_next_shift(profile):
         if shift.slot.get_datetime() > datetime.datetime.now():
             return shift
     return None
+
+
+def get_emp_previous_shifts(profile):
+    return profile.shifts.filter(slot__week__lt=get_curr_week_num())\
+        .order_by('-slot__day', '-slot__start_hour')

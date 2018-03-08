@@ -293,6 +293,7 @@ class GetNextShiftTimer(TestCase):
         create_shifts_for_slots(slots, emps=EmployeeProfile.objects.filter(
             user__username=self.emp_credentials['username']))
 
+
 class GetSlotRequestersViewTest(TestCase):
     dummy_slot = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
