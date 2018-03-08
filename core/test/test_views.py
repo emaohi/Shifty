@@ -1,12 +1,11 @@
 import urllib
 from datetime import datetime
-from time import sleep
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
 from mock import patch
 
-from core.date_utils import get_days_hours_from_delta, get_curr_week_num
+from core.date_utils import get_days_hours_from_delta
 from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
     create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee, \
