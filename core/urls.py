@@ -22,4 +22,5 @@ urlpatterns = [
     url(r'^shift_summary/(?P<slot_id>[0-9]+)$', views.submit_shift_summary, name='submit_shift_summary'),
     url(r'^time_to_next_shift/$', views.get_time_to_next_shift, name='time_to_next_shift'),
     url(r'^previous_shifts/$', views.get_prev_shifts, name='prev_shifts'),
+    url(r'^export_shifts_csv/$', views.export_shifts_csv, name='shifts_csv'),
 ]

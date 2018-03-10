@@ -55,7 +55,9 @@
                    {% if not request_enabled %}class="not-active"{% endif %}>Shift Requests
                 {% if request_enabled %}<span class="label label-success">Enabled</span>
                 {% else %}<span class="label label-danger">Disabled
-                    {% if not deadline_date %}(deadline){% endif %}</span>
+                    {% if not deadline_date %}(deadline){% endif %}
+                    {% if generation != '0' %}(generated){% endif %}
+                         </span>
                 {% endif %}
             </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>

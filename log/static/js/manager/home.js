@@ -55,7 +55,6 @@ $(document).ready(function () {
         updateFinishedSlots(true);
     });
 
-
     $('#resetSlots').click(function () {
         updateFinishedSlots(false);
     });

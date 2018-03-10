@@ -66,6 +66,8 @@ def emp_home(request):
     curr_week_string = get_current_week_string()
     curr_week_sunday = get_curr_week_sunday()
 
+    generation_status = get_curr_business(request).shifts_generated
+
     request_enabled = get_curr_business(request).slot_request_enabled and deadline_date_str
 
     is_first_login = False
@@ -80,7 +82,7 @@ def emp_home(request):
                                                   if existing_request else None, 'request_enabled': request_enabled,
                                                   'curr_week_str': curr_week_string,
                                                   'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
-                                                  'first_login': is_first_login})
+                                                  'first_login': is_first_login, 'generation': generation_status})
 
 
 def register(request):

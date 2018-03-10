@@ -1,7 +1,9 @@
 <div class="container" style="margin-top: 20px">
-    <h3>Previous Shifts</h3>
+    <h3>Previous Shifts
+        <a class="btn btn-primary" href="{% url 'shifts_csv' %}">Download CSV file</a>
+    </h3>
     {% for shift in prev_shifts %}
-        <div class="row" style="margin-top: 20px">
+        <div class="row" style="margin-top: 10px">
             <div class="col-xs-5 col-xs-offset-3">
                 <div class="panel panel-default" style="text-align: center">
                     <div class="panel-heading">

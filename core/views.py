@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 from datetime import datetime
@@ -461,3 +462,31 @@ def get_prev_shifts(request):
     logger.info('Found %d previous shifts for user %s', len(prev_shifts), request.user.username)
 
     return render(request, 'employee/previous_shifts.html', {'prev_shifts': prev_shifts})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def export_shifts_csv(request):
+    curr_emp = get_curr_profile(request)
+    prev_shifts = get_emp_previous_shifts(curr_emp)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="prev_shifts.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['shift date', 'tip'])
+    for shift in prev_shifts:
+        writer.writerow([shift.slot.get_datetime_str(), shift.calculate_employee_tip()])
+
+    return response
+
+
+# @login_required(login_url='/login')
+# @user_passes_test(must_be_employee_callback)
+# def get_logo_suggestion(request):
+#     business_name = get_curr_business(request).business_name
+#     try:
+#         logo_url = get_logo_url(business_name)
+#     except NoLogoFoundError as e:
+#         return HttpResponseBadRequest('Couldn\'t find logo... %s' % e.message)
+#     return JsonResponse({'logo_url': logo_url})
