@@ -23,4 +23,5 @@ urlpatterns = [
     url(r'^time_to_next_shift/$', views.get_time_to_next_shift, name='time_to_next_shift'),
     url(r'^previous_shifts/$', views.get_prev_shifts, name='prev_shifts'),
     url(r'^export_shifts_csv/$', views.export_shifts_csv, name='shifts_csv'),
+    url(r'^logo_url/$', views.get_logo_suggestion, name='logo_suggestion'),
 ]

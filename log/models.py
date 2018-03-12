@@ -1,7 +1,10 @@
 from __future__ import unicode_literals, division
 
+import urllib2
 from datetime import datetime
+from urlparse import urlparse
 
+from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
@@ -24,6 +27,8 @@ class Business(models.Model):
     )
 
     address = models.CharField(max_length=30, blank=True, null=True)
+
+    logo = models.ImageField(upload_to='logos/', null=True, blank=True)
 
     TIP_METHOD_CHOICES = (
         ('P', 'Personal'), ('G', 'Group')
@@ -81,6 +86,11 @@ class Business(models.Model):
 
     def reset_shift_generation_status(self):
         self.shifts_generated = '0'
+
+    def save_logo_from_url(self, url):
+        name = urlparse(url).path.split('/')[-1]
+        content = ContentFile(urllib2.urlopen(url).read())
+        self.logo.save(name, content, save=False)
 
 
 class EmployeeProfile(models.Model):

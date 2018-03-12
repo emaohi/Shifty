@@ -1,3 +1,4 @@
+import json
 import urllib
 from datetime import datetime
 
@@ -357,3 +358,18 @@ class GenerateShiftsViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
 
         self.assertTrue(Shift.objects.exists())
+
+
+class GetLogoUrlViewTest(TestCase):
+
+    def test_should_get_url(self):
+        restaurant = 'japanika'
+        res = self.client.get(reverse('logo_suggestion') + '?name=%s' % restaurant)
+        suggested_url = json.loads(res.content).get('logo_url')
+        self.assertEqual(suggested_url,
+                        'https://images.rest.co.il/Customers/80086964/8e56a14f8c674c10a8ba1a57ff265365_5.jpg')
+
+    def test_should_raise_no_logo_found_error(self):
+        restaurant = 'blabla'
+        res = self.client.get(reverse('logo_suggestion') + '?name=%s' % restaurant)
+        self.assertEqual(res.status_code, 400)

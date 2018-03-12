@@ -15,12 +15,13 @@ class LoginForm(AuthenticationForm):
 class BusinessRegistrationForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('business_name', 'business_type', 'address', 'tip_method', 'deadline_day')
+        fields = ('business_name', 'business_type', 'address', 'logo', 'tip_method', 'deadline_day')
 
     def __init__(self, *args, **kwargs):
         super(BusinessRegistrationForm, self).__init__(*args, **kwargs)
-        for _, v in self.fields.iteritems():
+        for k, v in self.fields.iteritems():
             v.widget.attrs.update({'class': 'form-control'})
+        self.fields['logo_url'] = forms.CharField(required=False, widget=forms.HiddenInput)
 
 
 class BusinessEditForm(forms.ModelForm):

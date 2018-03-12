@@ -88,13 +88,19 @@ def emp_home(request):
 def register(request):
     if request.POST:
         manager_form = ManagerSignUpForm(request.POST)
-        business_form = BusinessRegistrationForm(request.POST)
+        business_form = BusinessRegistrationForm(request.POST, request.FILES)
         if manager_form.is_valid() and business_form.is_valid():
 
             manager = manager_form.save()
 
             logger.info('creating business')
-            business = business_form.save()
+
+            business = business_form.save(commit=False)
+
+            logo_url = business_form.cleaned_data['logo_url']
+            if logo_url:
+                logger.info('logo_url is --- %s', logo_url)
+                business.save_logo_from_url(logo_url)
             business.manager = manager
             business.save()
 

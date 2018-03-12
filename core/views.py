@@ -19,7 +19,7 @@ from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
-    parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts
+    parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -481,12 +481,13 @@ def export_shifts_csv(request):
     return response
 
 
-# @login_required(login_url='/login')
-# @user_passes_test(must_be_employee_callback)
-# def get_logo_suggestion(request):
-#     business_name = get_curr_business(request).business_name
-#     try:
-#         logo_url = get_logo_url(business_name)
-#     except NoLogoFoundError as e:
-#         return HttpResponseBadRequest('Couldn\'t find logo... %s' % e.message)
-#     return JsonResponse({'logo_url': logo_url})
+def get_logo_suggestion(request):
+    business_name = request.GET.get('name', '')
+    try:
+        logo_url = get_logo_url(business_name)
+    except NoLogoFoundError as e:
+        logger.warning('couldn\'t found url for name: %s', business_name)
+        return HttpResponseBadRequest('Couldn\'t find logo... %s' % e.message)
+
+    logger.info('found url: %s', logo_url)
+    return JsonResponse({'logo_url': logo_url})

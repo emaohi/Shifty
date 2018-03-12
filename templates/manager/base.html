@@ -155,6 +155,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
+            {% block comp_logo %} {% endblock %}
             <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
         </div>
         {% if user.is_authenticated %}

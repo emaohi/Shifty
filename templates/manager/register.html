@@ -1,7 +1,7 @@
 {% extends "manager/base.html" %}
 
 {% block title %}
-<title>Register nw business</title>
+    <title>Register nw business</title>
 {% endblock %}
 
 {% block style %}
@@ -10,46 +10,99 @@
             color: black;
             margin-left: 10px;
         }
+{#        input[name='logo'], label[for='id_logo'] {#}
+{#            display: none;#}
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="container">
-    <div class="row">
-        <div class="col-md-8 col-md-offset-2">
-            <div class="login-panel panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title" style="display: inline">Register yor business to Shifty</h3>
-                    <a href="/login" style="float: right">Already registered?</a>
-                </div>
-                <div class="panel-body" >
-                    <form action="." method="post">
-                        {% csrf_token %}
-                        <h4 style="text-align: center">Manager Details</h4>
-                    {{ manager_form.as_p }}
-                    <hr>
-                        <h4 style="text-align: center">Business Details</h4>
-                    {{ business_form.as_p }}
-                    <hr>
-                    <div class="text-center">
-                    <input type="submit" class="btn btn-info btn-lg" value="Submit">
-                        </div>
-                    </form>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title" style="display: inline">Register yor business to Shifty</h3>
+                        <a href="/login" style="float: right">Already registered?</a>
+                    </div>
+                    <div class="panel-body">
+                        <form action="." method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <h4 style="text-align: center">Manager Details</h4>
+                            {{ manager_form.as_p }}
+                            <hr>
+                            <h4 style="text-align: center">Business Details</h4>
+                            {{ business_form.as_p }}
+                            <hr>
+                            <div class="text-center">
+                                <input type="submit" class="btn btn-info btn-lg" value="Submit">
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+    <div class="modal fade" role="dialog" aria-hidden="true" id="suggestionModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Business logo</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Is this your business logo?</p>
+                    <img id="myImage" src="" alt="">
+                </div>
+                <div class="modal-footer">
+                    <button id="yesLogo" class="btn btn-primary" data-dismiss="modal">Yes, amazing!</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Nope</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascript %}
     <script>
         $(document).ready(function () {
             var tooltip_desc = "How your employees get their tip? Whether individually or get a portion from grouped amount";
-            $("label[for='id_tip_method']").
-            after('<a class="my-tool-tip" data-toggle="tooltip" data-placement="right" title="' + tooltip_desc + '">' +
+            $("label[for='id_tip_method']").after('<a class="my-tool-tip" data-toggle="tooltip" data-placement="right" title="' + tooltip_desc + '">' +
                 '<i class="glyphicon glyphicon-info-sign"></i> </a>');
             $("a.my-tool-tip").tooltip();
+
+            $("input[name='business_name']").blur(showSuggestion);
+
+            $("#yesLogo").click(saveLink);
+
+            function showSuggestion() {
+                var name = $("input[name='business_name']").val();
+                $.ajax({
+                    url: "{% url 'logo_suggestion' %}" +"?name=" + name,
+                    type: "get",
+                    success: popSuggestionModal,
+                    error:   showLogoInput
+                });
+            }
+
+            function popSuggestionModal(res) {
+                $("input[name='logo']").hide();
+                $("label[for='id_logo']").hide();
+                var url = res['logo_url'];
+                $('#myImage').attr('src',url);
+
+                $('#suggestionModal').modal('show');
+            }
+            function showLogoInput(xhr) {
+                console.error(xhr.responseText);
+            }
+            function saveLink() {
+                var imageSrc = $("#myImage").attr('src');
+                $("input[name='logo_url").val(imageSrc);
+                console.log($("input[name='logo_url").val());
+            }
         })
     </script>
 {% endblock %}

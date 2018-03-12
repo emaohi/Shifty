@@ -5,6 +5,7 @@ import logging
 import urllib
 
 import requests
+from bs4 import BeautifulSoup
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
@@ -261,3 +262,20 @@ def get_next_shift(profile):
 def get_emp_previous_shifts(profile):
     return profile.shifts.filter(slot__week__lt=get_curr_week_num())\
         .order_by('-slot__day', '-slot__start_hour')
+
+
+def get_logo_url(business_name):
+    lookup_url = settings.LOGO_LOOKUP_URL % business_name
+    try:
+        response = requests.get(lookup_url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
+    except (KeyError, IndexError):
+        raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
+
+
+class NoLogoFoundError(Exception):
+    pass
+
+
+

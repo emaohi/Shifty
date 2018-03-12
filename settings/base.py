@@ -43,6 +43,10 @@ ROOT_URLCONF = 'Shifty.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+MEDIA_URL = '/media/'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -182,6 +186,9 @@ DIRECTIONS_URL = 'https://maps.google.com/maps/dir/?api=1&origin=%s&destination=
 
 # profanity filter
 PROFANITY_SERVICE_URL = 'http://www.purgomalum.com/service/containsprofanity?text=%s'
+
+# restaurant logo lookup url
+LOGO_LOOKUP_URL = 'https://www.rest.co.il/restaurants/israel/?kw=%s'
 
 RAVEN_CONFIG = {}
 

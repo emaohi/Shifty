@@ -10,6 +10,10 @@
     <b>{{ user.profile.business.business_name }}</b> manager dashboard
 {% endblock %}
 
+{% block comp_logo %}
+    <img src="{{ user.profile.business.logo.url }}" alt="" width="80" height="50">
+{% endblock %}
+
 {% block style %}
     <style>
         .btn-xl {
