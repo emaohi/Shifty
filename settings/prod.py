@@ -37,6 +37,4 @@ RAVEN_CONFIG = {
     'dsn': 'https://95afae5f8bb040c6a70166c7272a10b7:533971d79e4840cfb05b555bcb87f122@sentry.io/286477'
 }
 
-CLOUDINARY_STORAGE = {
-    'CLOUDINARY_URL': os.environ.get('CLOUDINARY_URL')
-}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'

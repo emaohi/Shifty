@@ -19,7 +19,7 @@
                     <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
                 </div>
                 <div class="panel-body" >
-                    <form action="." method="post">
+                    <form action="." method="post" enctype="multipart/form-data">
                         {% csrf_token %}
                     {{ business_form.as_p }}
                     <hr>

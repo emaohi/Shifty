@@ -46,10 +46,16 @@ def manager_home(request):
     is_finish_slots = curr_manager.business.slot_request_enabled
     logger.info('are slot adding is finished? %s', is_finish_slots)
 
+    logo_conf = dict(format="png", transformation=[
+            dict(crop="fit", width=80, height=50, radius=10),
+            dict(angle=20)
+        ])
+
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
                'curr_week_str': curr_week_string, 'start_date': next_week_sunday,
                'current_start_date': get_curr_week_sunday(),
-               'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated}
+               'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated,
+               'logo_conf': logo_conf}
     return render(request, "manager/home.html", context)
 
 
@@ -145,7 +151,7 @@ def edit_business(request):
 
         logger.info('editing business')
 
-        business_form = BusinessEditForm(request.POST, instance=curr_business)
+        business_form = BusinessEditForm(request.POST, request.FILES, instance=curr_business)
         if business_form.is_valid():
 
             business = business_form.save()

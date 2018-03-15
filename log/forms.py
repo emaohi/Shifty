@@ -27,10 +27,11 @@ class BusinessRegistrationForm(forms.ModelForm):
 class BusinessEditForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('address', 'business_type', 'tip_method', 'deadline_day')
+        fields = ('address', 'business_type', 'tip_method', 'deadline_day', 'logo')
         help_texts = {
             'tip_method': 'Whether your employees get their tips personally or share group tips',
-            'deadline_day': 'The day until which shift requests must be submitted by your employees'
+            'deadline_day': 'The day until which shift requests must be submitted by your employees',
+            'logo': 'Edit logo'
         }
 
     def __init__(self, *args, **kwargs):

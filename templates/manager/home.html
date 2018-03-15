@@ -1,5 +1,6 @@
 {% extends 'manager/base.html' %}
 {% load staticfiles %}
+{% load cloudinary %}
 
 
 {% block title %}
@@ -11,7 +12,7 @@
 {% endblock %}
 
 {% block comp_logo %}
-    <img src="{{ user.profile.business.logo.url }}" alt="" width="80" height="50">
+    {% cloudinary user.profile.business.logo.name logo_conf %}
 {% endblock %}
 
 {% block style %}
