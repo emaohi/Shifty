@@ -2,6 +2,7 @@ import traceback
 
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.cache import cache
@@ -49,7 +50,7 @@ def manager_home(request):
     logo_conf = dict(format="png", transformation=[
             dict(crop="fit", width=80, height=50, radius=10),
             dict(angle=20)
-        ])
+        ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
 
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
                'curr_week_str': curr_week_string, 'start_date': next_week_sunday,

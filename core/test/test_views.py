@@ -367,7 +367,7 @@ class GetLogoUrlViewTest(TestCase):
         res = self.client.get(reverse('logo_suggestion') + '?name=%s' % restaurant)
         suggested_url = json.loads(res.content).get('logo_url')
         self.assertEqual(suggested_url,
-                        'https://images.rest.co.il/Customers/80086964/8e56a14f8c674c10a8ba1a57ff265365_5.jpg')
+                        'https://images.rest.co.il/Customers/80113279/14ce44cf325b4db5aee62f6275f1a7fd_5.jpg')
 
     def test_should_raise_no_logo_found_error(self):
         restaurant = 'blabla'

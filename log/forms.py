@@ -19,7 +19,7 @@ class BusinessRegistrationForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(BusinessRegistrationForm, self).__init__(*args, **kwargs)
-        for k, v in self.fields.iteritems():
+        for _, v in self.fields.iteritems():
             v.widget.attrs.update({'class': 'form-control'})
         self.fields['logo_url'] = forms.CharField(required=False, widget=forms.HiddenInput)
 
@@ -121,4 +121,3 @@ class EditProfileForm(forms.ModelForm):
                 v.widget.attrs.update({'class': 'form-control', 'style': 'width: 450px; display: inline'})
             else:
                 v.widget.attrs.update({'style': 'display: inline'})
-
