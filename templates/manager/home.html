@@ -11,16 +11,6 @@
     <b>{{ user.profile.business.business_name }}</b> manager dashboard
 {% endblock %}
 
-{% block comp_logo %}
-    {% if user.profile.business.logo %}
-        {% if logo_conf == '' %}
-        <img src="{{ user.profile.business.logo.url }}" height="50" width="80">
-        {% else %}
-        {% cloudinary user.profile.business.logo.name logo_conf %}
-        {% endif %}
-    {% endif %}
-{% endblock %}
-
 {% block style %}
     <style>
         .btn-xl {
