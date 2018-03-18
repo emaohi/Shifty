@@ -498,7 +498,6 @@ def get_logo_suggestion(request):
 @user_passes_test(must_be_employee_callback)
 def ask_shift_swap(request):
     print request
-    pass
 #     if request.method == 'POST':
 #         requested_username = request.POST.get('requested_employee')
 #         requested_shift_id = request.POST.get('requested_shift')
