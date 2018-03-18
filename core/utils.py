@@ -274,6 +274,13 @@ def get_logo_url(business_name):
         raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
 
 
+def get_next_shifts_of_emp(employee):
+    curr_emp_week_slots = ShiftSlot.objects.filter(
+        shift__employees__id__iexact=employee.id, week=get_curr_week_num())
+    curr_emp_future_slots = filter(lambda slot: not slot.is_finished(), curr_emp_week_slots)
+    return curr_emp_future_slots
+
+
 class NoLogoFoundError(Exception):
     pass
 

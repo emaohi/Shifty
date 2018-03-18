@@ -175,7 +175,7 @@ class Shift(models.Model):
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return 'shift of slot: ' + str(self.slot)
+        return 'shift: ' + str(self.slot.start_time_str())
 
     def get_employees_string(self):
         return ", ".join([str(emp) for emp in self.employees.all()])
@@ -194,7 +194,7 @@ class Shift(models.Model):
             emp.save()
 
     def calculate_employee_tip(self):
-        return self.total_tips / self.employees.count()
+        return self.total_tips / self.employees.count() if self.total_tips else 0
 
     def get_employees_comma_string(self):
         return ', '.join([emp.user.username for emp in self.employees.all()])

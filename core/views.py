@@ -13,14 +13,14 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
     HttpResponseBadRequest
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
-    get_days_hours_from_delta
+    get_days_hours_from_delta, get_curr_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
     parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_current_week_slots
+    get_current_week_slots, get_next_shifts_of_emp
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
@@ -378,9 +378,12 @@ def get_slot_employees(request, slot_id):
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
+            curr_emp_future_slots = get_next_shifts_of_emp(get_curr_profile(request))
+            is_in_shift = get_curr_profile(request) in shift.employees.all()
             return render(request, 'manager/slot_request_emp_list.html',
                           {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
-                           'curr_emp': get_curr_profile(request)})
+                           'curr_emp': get_curr_profile(request),
+                           'future_shifts': curr_emp_future_slots, 'offer_swap': not is_in_shift})
         else:
             logger.error('cant find shift for slot id %s', slot_id)
             return HttpResponse('Cant find shift for this slot')

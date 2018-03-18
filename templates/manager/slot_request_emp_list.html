@@ -1,13 +1,24 @@
 {% if emps|length > 0 %}
-<ul class="list-group" style="text-align: center">
-    {% for emp in emps %}
-        {% if emp == curr_emp %}
-            <li class="list-group-item list-group-item-info">{{ emp.get_role_display }}: <strong>YOU</strong></li>
-        {% else %}
-            <li class="list-group-item">{{ emp.get_role_display }}: {{ emp }}</li>
-        {% endif %}
-    {% endfor %}
-</ul>
+    <ul class="list-group" style="text-align: center">
+        {% for emp in emps %}
+            {% if emp == curr_emp %}
+            <li class="list-group-item list-group-item-success">{{ emp.get_role_display }}: <strong>YOU</strong></li>
+            {% else %}
+            <li class="list-group-item list-group-item-info">
+                {{ emp.get_role_display }}: {{ emp }}
+                {% if emp.role == user.profile.role and offer_swap %}
+                    <select style="float: right">
+                        <option value="" selected disabled>Select Shift</option>
+                        {% for shift in future_shifts %}
+                            <option value="{{ shift.id }}">{{ shift.shift }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn-info btn-xs" style="float: right">Request for swap</button>
+                    </li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </ul>
 {% else %}
-{{ empty_msg }}
+    {{ empty_msg }}
 {% endif %}
