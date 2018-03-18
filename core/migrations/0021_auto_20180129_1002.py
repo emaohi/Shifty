@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='employeerequest',
             name='sent_time',
-            field=models.DateTimeField(default=datetime.datetime(2018, 1, 29, 10, 2, 9, 776780)),
+            field=models.DateTimeField(),
         ),
         migrations.AlterField(
             model_name='shiftslot',

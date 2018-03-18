@@ -3,16 +3,19 @@ from __future__ import unicode_literals
 import datetime
 import json
 
+import logging
 from django.db import models
 
-from core.date_utils import get_next_week_num, get_week_range
+from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
+
+logger = logging.getLogger(__name__)
 
 
 class EmployeeRequest(models.Model):
 
     issuers = models.ManyToManyField(EmployeeProfile, related_name='request_issued')
-    sent_time = models.DateTimeField(default=datetime.datetime.now())
+    sent_time = models.DateTimeField(auto_now_add=True)
     subject = models.TextField(max_length=50)
     text = models.TextField(max_length=200)
     STATUS_CHOICES = (
@@ -113,9 +116,18 @@ class ShiftSlot(models.Model):
         return '%s %s' % (self.get_date(), self.end_hour)
 
     def get_date(self):
+        return self.get_date_obj().strftime('%d-%m-%Y')
+
+    def get_datetime_str(self):
+        return self.get_datetime().strftime('%d-%m-%Y, %H:%M')
+
+    def get_datetime(self):
+        return datetime.datetime.combine(self.get_date_obj(), self.start_hour)
+
+    def get_date_obj(self):
         correct_week = self.week if int(self.day) > 1 else self.week - 1
         d = '%s-W%s' % (str(self.year), str(correct_week))
-        return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date().strftime('%d-%m-%Y')
+        return datetime.datetime.strptime(d + '-%s' % str(int(self.day) - 1), "%Y-W%W-%w").date()
 
     def get_day_str(self):
         return self.get_day_display()
@@ -129,18 +141,20 @@ class ShiftSlot(models.Model):
     def get_constraint_num_of_role(self, role):
         return self.get_constraints_json()[role]['num']
 
+    def get_week_str(self):
+        return get_week_string(self.week, self.year)
+
     def was_shift_generated(self):
-        try:
-            s = self.shift #pylint: disable=unused-variable
-            return True
-        except Shift.DoesNotExist:
-            return False
+        return hasattr(self, 'shift')
+
+    def is_finished(self):
+        return self.get_datetime() < datetime.datetime.now()
 
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
     requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests')
-    submission_time = models.DateTimeField()
+    submission_time = models.DateTimeField(auto_now_add=True, )
 
     def __str__(self):
         return 'request in: ' + str(self.submission_time)
@@ -156,5 +170,45 @@ class ShiftRequest(models.Model):
 class Shift(models.Model):
     slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
+    rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=50)
     total_tips = models.IntegerField(null=True, blank=True)
     remarks = models.TextField(max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return 'shift of slot: ' + str(self.slot)
+
+    def get_employees_string(self):
+        return ", ".join([str(emp) for emp in self.employees.all()])
+
+    def get_date(self):
+        return self.slot.get_date()
+
+    def update_emp_rates(self, old_rank):
+        new_rank = self.rank / self.employees.count()
+        old_rate = old_rank / self.employees.count()
+        emps = self.employees.all()
+        logger.info('Going to set rate of %f to employees %s', new_rank, emps)
+        for emp in emps:
+            emp.rate += new_rank - old_rate
+            logger.debug('%s employee new rate: %f', emp, emp.rate)
+            emp.save()
+
+    def calculate_employee_tip(self):
+        return self.total_tips / self.employees.count()
+
+    def get_employees_comma_string(self):
+        return ', '.join([emp.user.username for emp in self.employees.all()])
+
+
+class ShiftSwap(models.Model):
+    requester = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequesting')
+    responder = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequested')
+
+    ACCEPT_STEP_OPTIONS = (
+        (0, 'employee requested'),
+        (1, 'employee accepted'),
+        (2, 'manager accepted'),
+        (-1, 'employee rejected'),
+        (-2, 'manager rejected'),
+    )
+    accept_step = models.ImageField(choices=ACCEPT_STEP_OPTIONS, default=0)

@@ -9,7 +9,7 @@ from core.models import EmployeeRequest
 from log.models import EmployeeProfile
 from menu.models import Answer, Question
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 def get_quiz_score(post_data):

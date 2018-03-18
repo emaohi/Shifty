@@ -2,25 +2,27 @@ import traceback
 
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.core.cache import cache
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
 from kombu.exceptions import OperationalError
 
-from core.date_utils import get_current_week_string, get_next_week_string, get_current_deadline_date_string, \
-    get_current_week_range
+from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
+    get_current_week_range, get_curr_week_sunday, get_next_week_sunday
 from core.models import ShiftRequest
-from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee
+from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee, get_eta_cache_key
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
 
 from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback
 from log.utils import NewEmployeeHandler
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url="/login")
@@ -37,8 +39,7 @@ def manager_home(request):
     done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
 
     curr_week_string = get_current_week_string()
-    next_week_date = get_next_week_string().split(' --')[0].replace('/', '-')
-    logger.info(next_week_date)
+    next_week_sunday = get_next_week_sunday()
 
     deadline_date = get_current_deadline_date_string(curr_manager.business.deadline_day)
     logger.info('deadline date is %s', deadline_date)
@@ -46,9 +47,16 @@ def manager_home(request):
     is_finish_slots = curr_manager.business.slot_request_enabled
     logger.info('are slot adding is finished? %s', is_finish_slots)
 
+    logo_conf = dict(format="png", transformation=[
+            dict(crop="fit", width=80, height=50, radius=10),
+            dict(angle=20)
+        ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
+
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
-               'curr_week_str': curr_week_string, 'start_date': next_week_date,
-               'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated}
+               'curr_week_str': curr_week_string, 'start_date': next_week_sunday,
+               'current_start_date': get_curr_week_sunday(),
+               'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated,
+               'logo_conf': logo_conf}
     return render(request, "manager/home.html", context)
 
 
@@ -62,25 +70,44 @@ def emp_home(request):
                                                    submission_time__range=[start_week, end_week]).first()
 
     deadline_date_str = get_current_deadline_date_string(get_curr_profile(request).business.deadline_day)
+    curr_week_string = get_current_week_string()
+    curr_week_sunday = get_curr_week_sunday()
+
+    generation_status = get_curr_business(request).shifts_generated
 
     request_enabled = get_curr_business(request).slot_request_enabled and deadline_date_str
+
+    is_first_login = False
+    if not get_curr_profile(request).ever_logged_in:
+        logger.info('first login')
+        is_first_login = True
+        get_curr_profile(request).ever_logged_in = True
+        get_curr_profile(request).save()
 
     return render(request, "employee/home.html", {'manager_msgs': manager_messages,
                                                   'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
-                                                  'deadline_date': deadline_date_str})
+                                                  'curr_week_str': curr_week_string,
+                                                  'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
+                                                  'first_login': is_first_login, 'generation': generation_status})
 
 
 def register(request):
     if request.POST:
         manager_form = ManagerSignUpForm(request.POST)
-        business_form = BusinessRegistrationForm(request.POST)
+        business_form = BusinessRegistrationForm(request.POST, request.FILES)
         if manager_form.is_valid() and business_form.is_valid():
 
             manager = manager_form.save()
 
             logger.info('creating business')
-            business = business_form.save()
+
+            business = business_form.save(commit=False)
+
+            logo_url = business_form.cleaned_data['logo_url']
+            if logo_url:
+                logger.info('logo_url is --- %s', logo_url)
+                business.save_logo_from_url(logo_url)
             business.manager = manager
             business.save()
 
@@ -125,7 +152,7 @@ def edit_business(request):
 
         logger.info('editing business')
 
-        business_form = BusinessEditForm(request.POST, instance=curr_business)
+        business_form = BusinessEditForm(request.POST, request.FILES, instance=curr_business)
         if business_form.is_valid():
 
             business = business_form.save()
@@ -225,6 +252,8 @@ def edit_profile_form(request):
             is_edited_other = is_manager and request.user.profile != edited_profile
             messages.success(request, message='successfully edited %s' %
                                               (edited_profile.user.username if is_edited_other else 'yourself'))
+            logger.info('going to delete cached ETA duration...')
+            cache.delete(get_eta_cache_key(get_curr_profile(request)))
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))

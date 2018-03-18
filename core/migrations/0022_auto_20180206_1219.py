@@ -28,6 +28,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='employeerequest',
             name='sent_time',
-            field=models.DateTimeField(default=datetime.datetime(2018, 2, 6, 12, 19, 27, 691971)),
+            field=models.DateTimeField(),
         ),
     ]

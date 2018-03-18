@@ -1,9 +1,13 @@
 {% if emps|length > 0 %}
 <ul class="list-group" style="text-align: center">
     {% for emp in emps %}
-    <li class="list-group-item">{{ emp.get_role_display }}: {{ emp }}</li>
+        {% if emp == curr_emp %}
+            <li class="list-group-item list-group-item-info">{{ emp.get_role_display }}: <strong>YOU</strong></li>
+        {% else %}
+            <li class="list-group-item">{{ emp.get_role_display }}: {{ emp }}</li>
+        {% endif %}
     {% endfor %}
 </ul>
 {% else %}
-No employees chose this slot
+{{ empty_msg }}
 {% endif %}

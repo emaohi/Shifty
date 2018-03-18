@@ -1,8 +1,11 @@
 from __future__ import unicode_literals, division
 
+import urllib2
 from datetime import datetime
+from urlparse import urlparse
 
-from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator
+from django.core.files.base import ContentFile
+from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
@@ -24,6 +27,8 @@ class Business(models.Model):
     )
 
     address = models.CharField(max_length=30, blank=True, null=True)
+
+    logo = models.ImageField(upload_to='logos/', null=True, blank=True)
 
     TIP_METHOD_CHOICES = (
         ('P', 'Personal'), ('G', 'Group')
@@ -70,6 +75,23 @@ class Business(models.Model):
 
         return today_weekday >= int(self.deadline_day)
 
+    def set_shift_generation_success(self):
+        self.shifts_generated = '1'
+
+    def set_shift_generation_failure(self):
+        self.shifts_generated = '2'
+
+    def set_shift_generation_pending(self):
+        self.shifts_generated = '3'
+
+    def reset_shift_generation_status(self):
+        self.shifts_generated = '0'
+
+    def save_logo_from_url(self, url):
+        name = urlparse(url).path.split('/')[-1]
+        content = ContentFile(urllib2.urlopen(url).read())
+        self.logo.save(name, content, save=False)
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)
@@ -90,7 +112,7 @@ class EmployeeProfile(models.Model):
         ('MA', 'Manager'), ('WA', 'Waiter'), ('BT', 'Bartender'), ('CO', 'Cook')
     )
 
-    avg_rate = models.FloatField(default=2.5, validators=[MaxValueValidator(5.0), MinValueValidator(0.0)])
+    rate = models.FloatField(default=0)
 
     role = models.CharField(
         max_length=2,
@@ -99,6 +121,12 @@ class EmployeeProfile(models.Model):
     )
     enable_mailing = models.BooleanField(default=True)
     menu_score = models.IntegerField(null=True, blank=True)
+
+    ever_logged_in = models.BooleanField(default=False)
+    ARRIVAL_METHOD_CHOCIES = (
+        ('D', 'driving'), ('W', 'walking'), ('B', 'both')
+    )
+    arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
 
     def __str__(self):
         return self.user.username
@@ -139,7 +167,7 @@ class EmployeeProfile(models.Model):
 
     @staticmethod
     def get_filtered_upon_fields():
-        return ['birth_date', 'started_work_date', 'gender', 'avg_rate']
+        return ['birth_date', 'started_work_date', 'gender', 'rate']
 
 
 # pylint: disable=unused-argument,unused-variable

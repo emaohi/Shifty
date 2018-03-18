@@ -7,7 +7,20 @@ $(document).ready(function () {
     showNextWeekSlotsList();
 
     populateTimerDiv();
+
+    populate_calendar();
+
+    showSuggestions();
+
+    getPreviousShifts();
 });
+
+function showSuggestions() {
+    console.log('first login: ' + first_login);
+    if (first_login == 'True') {
+        $("#suggestionsModal").modal('show');
+    }
+}
 
 function showNextWeekSlotsList() {
     $.ajax({
@@ -38,4 +51,70 @@ function populateTimerDiv() {
     } else {
         $('#timerH').text('Time for shift requests is over !');
     }
+}
+
+function populate_calendar() {
+    $.ajax({
+        url: current_shifts_url,
+        type: "get",
+        success: display_cal,
+        error: function (xhr) {
+            //Do Something to handle error
+        }
+    });
+}
+
+function display_cal(shifts_json) {
+    shifts_json = JSON.parse(shifts_json);
+    var r_list = [];
+    for (var i = 0; i < shifts_json.length; i++) {
+        r_list.push(JSON.parse(shifts_json[i]));
+    }
+    $('#calDiv').easycal({
+
+        minTime: '06:00:00',
+        maxTime: '23:59:00',
+        timeGranularity: 30,
+        slotDuration : 60,
+        startDate : start_date,
+        eventClick: function (shiftId) {
+            console.log('cooooooool');
+            showShiftDetails(shiftId);
+        },
+        events: r_list
+    });
+}
+
+function showShiftDetails(shiftId) {
+    $.ajax({
+       url: shift_employees_url.slice(0, -1) + shiftId,
+        type:"get",
+        success: insertEmployeesToModal,
+        error: function () {
+            console.error('couldnt get employees of shift id ' + shiftId);
+        }
+    });
+    $("#shiftModal").modal('show');
+}
+
+function insertEmployeesToModal(emp_list) {
+    $("#shiftModalBody").html(emp_list);
+}
+
+function getPreviousShifts() {
+    $.ajax({
+        url: prev_shifts_url,
+        type:"get",
+        success: function (res) {
+            $("#previous").html(res);
+        },
+        error: function (xhr) {
+            if (xhr.status === 400){
+                $("#previous").html("<h3>No previous shifts...</h3>");
+            } else {
+                $("#previous").html("<h3>Server error trying to get previous shifts...</h3>");
+                console.error('No previous shifts...');
+            }
+        }
+    });
 }

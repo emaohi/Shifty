@@ -19,6 +19,9 @@ $(document).ready(function () {
         }
     });
 
+    populate_current_calendar();
+
+
     $('.edit-slot').click(function () {
         var shiftId = $('#putShiftId').text();
         window.location.href = getUpdateShiftUrl(shiftId);
@@ -29,8 +32,8 @@ $(document).ready(function () {
         deleteSlot(shiftId);
     });
 
-    $('#generate').click(function () {
-       generate_slots();
+    $('.generateBtn').click(function () {
+        generate_shifts();
     });
 
     $(document.body).on("click", "a[data-toggle]", function (event) {
@@ -52,7 +55,6 @@ $(document).ready(function () {
         updateFinishedSlots(true);
     });
 
-
     $('#resetSlots').click(function () {
         updateFinishedSlots(false);
     });
@@ -61,6 +63,17 @@ $(window).on("popstate", function () {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
     $("a[href='" + anchor + "']").tab("show");
 });
+
+function populate_current_calendar() {
+    $.ajax({
+        url: current_shifts_url,
+        type: "get",
+        success: display_current_cal,
+        error: function (xhr) {
+            //Do Something to handle error
+        }
+    });
+}
 
 function updateFinishedSlots(isFinished) {
     $.ajax({
@@ -79,6 +92,26 @@ function updateFinishedSlots(isFinished) {
     });
 }
 
+function updateShiftSummaryForm(slotId) {
+    $.ajax({
+        url: summary_url.slice(0, -1) + slotId,
+        type: "get",
+        success: setSummaryForm,
+        error: function (xhr) {
+            console.warn(xhr.responseText);
+            var summaryTab =  $('a[href="#shiftSummaryTab"]');
+            if (!summaryTab.hasClass("disabledbutton")) {
+                summaryTab.addClass("disabledbutton");
+            }
+        }
+    });
+}
+
+function setSummaryForm(formResponse) {
+    $('a[href="#shiftSummaryTab"]').removeClass("disabledbutton");
+    $("#shiftSummaryTab").html(formResponse);
+}
+
 function getSlotsStatus() {
     $.ajax({
         url: finish_slots_url, //from template
@@ -90,7 +123,7 @@ function getSlotsStatus() {
     });
 }
 
-function generate_slots() {
+function generate_shifts() {
     $.ajax({
         url: generate_shifts_url, //from template
         type: "post",
@@ -98,25 +131,31 @@ function generate_slots() {
         headers: {
             'X-CSRFToken': csrf_token
         },
-        success: location.reload(),
-        error: function (xhr) {
-            console.error("something fishy: " + xhr);
+        success: function () {
+            location.reload();
+        },
+        error: function () {
+            location.reload();
         }
     });
 }
 
 function finishSlots(isFinished) {
-    if (isFinished == 'True') {
-        $('#calDiv').addClass("disabledbutton");
-        $('#finishSlots').hide();
-        $('#slotMsg').show();
-    } else if (isFinished == 'False'){
-        $('#calDiv').removeClass("disabledbutton");
-        $('#finishSlots').show();
+    if (shifts_generated === '0') {
+        if (isFinished === 'True') {
+            $('#calDiv').addClass("disabledbutton");
+            $('#finishSlots').hide();
+            $('#slotMsg').show();
+        } else {
+            $('#calDiv').removeClass("disabledbutton");
+            $('#finishSlots').show();
+            $('#slotMsg').hide();
+        }
+    }
+    else {
         $('#slotMsg').hide();
-    } else {
-        $('#finishSlots').hide();
-        $("#generatedMsg").show();
+        $('#notFinished').hide();
+        $('#afterGeneration').show();
     }
 }
 
@@ -172,9 +211,9 @@ function display_cal(event_list) {
         minTime: '06:00:00',
         maxTime: '23:59:00',
         timeGranularity: 30,
-        slotDuration : 60,
-        startDate : start_date,
-        dayClick : function(el, startTime){
+        slotDuration: 60,
+        startDate: start_date,
+        dayClick: function (el, startTime) {
             var dateStr = el.parent().attr('data-date');
             var d = toDate(dateStr);
             window.location.href = getNewShiftUrl(d.getDay(), startTime);
@@ -186,20 +225,20 @@ function display_cal(event_list) {
     });
 }
 
-function showSlotDetails(shiftId, constraints_json){
+function showSlotDetails(slotId, constraints_json) {
 
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
-    $('#constraintModal').find('.modal-title').html('Shift #' + shiftId + ' constraints');
+    $('#slotModal').find('.modal-title').html('Slot #' + slotId + ' constraints');
 
-    setSlotEmpList(shiftId);
-    setShiftEmpList(shiftId);
+    setSlotEmpList(slotId);
+    setShiftEmpList(slotId);
 
-    $('#putShiftId').text(shiftId);
-    $('#constraintModal').modal('show');
+    $('#putShiftId').text(slotId);
+    $('#slotModal').modal('show');
 }
-function setSlotEmpList(shiftId) {
+function setSlotEmpList(slotId) {
     $.ajax({
-        url: slot_request_employees.slice(0, -1) + shiftId, //from template
+        url: slot_request_employees.slice(0, -1) + slotId, //from template
         type: "get", //send it through get method,
         success: function (res) {
             $("#empsTab").html(res);
@@ -212,10 +251,10 @@ function setSlotEmpList(shiftId) {
 
 function setShiftEmpList(slotId) {
     $.ajax({
-        url: shift_employees.slice(0, -1) + slotId, //from template
+        url: slot_employees.slice(0, -1) + slotId, //from template
         type: "get", //send it through get method,
         success: function (res) {
-            $("#shiftEmpsTab").html(res);
+            $("#nextShiftEmpsTab").html(res);
         },
         error: function (err) {
             $("#empsTab").html(err);
@@ -224,6 +263,9 @@ function setShiftEmpList(slotId) {
 }
 
 function listifyConstraintJson(constraints_json) {
+
+    console.log(constraints_json);
+
     var $div = '<div class="container">';
     $div += '<div class="row">';
     $div += '<div class=col-md-8>';
@@ -286,4 +328,41 @@ function populateTimerDiv() {
     } else {
         $('#timerH').text('Time for shift requests is over !');
     }
+}
+
+function display_current_cal(shifts_json) {
+    shifts_json = JSON.parse(shifts_json);
+    var r_list = [];
+    for (var i = 0; i < shifts_json.length; i++) {
+        r_list.push(JSON.parse(shifts_json[i]));
+    }
+    $('#currentCalDiv').easycal({
+
+        minTime: '06:00:00',
+        maxTime: '23:59:00',
+        timeGranularity: 30,
+        slotDuration: 60,
+        startDate: current_start_date,
+        eventClick: function (shiftId) {
+            showShiftDetails(shiftId);
+            updateShiftSummaryForm(shiftId);
+        },
+        events: r_list
+    });
+}
+
+function showShiftDetails(shiftId) {
+    $.ajax({
+        url: slot_employees.slice(0, -1) + shiftId,
+        type: "get",
+        success: insertEmployeesToModal,
+        error: function () {
+            console.error('couldnt get employees of shift id ' + shiftId);
+        }
+    });
+    $("#shiftModal").modal('show');
+}
+
+function insertEmployeesToModal(emp_list) {
+    $("#shiftEmpsTab").html(emp_list);
 }

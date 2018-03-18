@@ -1,15 +1,17 @@
 import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
+import sys
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+ADMINS = ['emaohi@gmail.com']
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '=uk5_$pry_5=k(8g5&-$=(&^4=8320(n4&80!01xnbnb&*)1*7'
-
 
 # Application definition
 
@@ -20,6 +22,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'raven.contrib.django.raven_compat',
     'log',
     'core',
@@ -40,6 +44,10 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'Shifty.urls'
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+MEDIA_URL = '/media/'
 
 TEMPLATES = [
     {
@@ -94,7 +102,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
@@ -119,39 +126,48 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': 'Shifty-log %(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
-        },
-        'simple': {
-            'format': '%(levelname)s %(message)s'
+            'format': '%(levelname)s %(asctime)s %(module)s line num:%(lineno)s msg:[%(message)s]'
         },
         'regular': {
             'format': '%(levelname)s %(asctime)s %(message)s'
         },
     },
     'handlers': {
-        'console1': {
+        'console-regular-info': {
             'level': 'INFO',
             'class': 'logging.StreamHandler',
             'formatter': 'regular'
         },
-        'console2': {
-            'level': 'INFO',
+        'console-verbose': {
+            'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'verbose'
+        },
+        'sentry': {
+            'level': 'WARNING',
+            'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
         }
     },
     'loggers': {
-        'django': {
-            'handlers': ['console1'],
-            'propagate': True,
-            'level': 'INFO'
+        '': {
+            'level': 'WARNING',
+            'handlers': ['console-verbose', 'sentry'],
         },
-        'cool': {
-            'handlers': ['console2'],
-            'propagate': True,
-            'level': 'INFO'
+        'log': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
         },
-
+        'core': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
+        },
+        'menu': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
+        }
     },
 }
 
@@ -173,4 +189,11 @@ DIRECTIONS_URL = 'https://maps.google.com/maps/dir/?api=1&origin=%s&destination=
 # profanity filter
 PROFANITY_SERVICE_URL = 'http://www.purgomalum.com/service/containsprofanity?text=%s'
 
+# restaurant logo lookup url
+LOGO_LOOKUP_URL = 'https://www.rest.co.il/restaurants/israel/?kw=%s'
+
 RAVEN_CONFIG = {}
+
+DURATION_CACHE_TTL = 15 * 60
+
+TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'

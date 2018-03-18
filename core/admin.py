@@ -16,7 +16,8 @@ admin.site.register(ManagerMessage, ManagerMessageAdmin)
 
 
 class ShiftSlotAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints', 'holiday')
+    list_display = ('id', 'name', 'business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints',
+                    'holiday', 'get_date', 'get_week_str')
 admin.site.register(ShiftSlot, ShiftSlotAdmin)
 
 
@@ -26,10 +27,10 @@ admin.site.register(Holiday, HolidayAdmin)
 
 
 class ShiftRequestAdmin(admin.ModelAdmin):
-    list_display = ('id', 'employee', 'week_range', 'get_slots')
+    list_display = ('id', 'employee', 'week_range', 'get_slots', 'submission_time')
 admin.site.register(ShiftRequest, ShiftRequestAdmin)
 
 
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ('id', 'slot')
+    list_display = ['slot', 'rank', 'get_employees_string', 'get_date']
 admin.site.register(Shift, ShiftAdmin)

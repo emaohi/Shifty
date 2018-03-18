@@ -3,11 +3,11 @@ from django import forms
 from django.forms import TextInput
 
 from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount, get_next_week_num
-from core.models import ManagerMessage, ShiftSlot, ShiftRequest
+from core.models import ManagerMessage, ShiftSlot, ShiftRequest, Shift
 from core.utils import get_cached_non_mandatory_slots
 from log.models import EmployeeProfile
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 class BroadcastMessageForm(forms.ModelForm):
@@ -260,6 +260,7 @@ class SelectSlotsForm(forms.ModelForm):
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
         self.fields['requested_slots'].queryset = get_cached_non_mandatory_slots(self.business, week)
         logger.info("query set is %s", self.fields['requested_slots'].queryset)
+        logger.debug('this is debug log')
         self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'
 
     def clean(self):
@@ -267,3 +268,13 @@ class SelectSlotsForm(forms.ModelForm):
 
         if not self.business.slot_request_enabled:
             raise forms.ValidationError('Slots request is currently unavailable')
+
+
+class ShiftSummaryForm(forms.ModelForm):
+    class Meta:
+        model = Shift
+        fields = ['rank', 'total_tips', 'remarks']
+
+    def __init__(self, *args, **kwargs):
+        self.id = kwargs.pop('id')
+        super(ShiftSummaryForm, self).__init__(*args, **kwargs)

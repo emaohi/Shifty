@@ -1,0 +1,12 @@
+<form method="post" action={% url 'submit_shift_summary' slot_id%}>
+    {% csrf_token %}
+    {% if summary_form.errors %}
+        {% for err in summary_form.errors %}
+                    <div class="alert alert-danger">
+                <strong>{{ err }}</strong>
+            </div>
+        {% endfor %}
+    {% endif %}
+    {{ summary_form.as_p }}
+    <button class="btn btn-primary" type="submit">Submit</button>
+</form>

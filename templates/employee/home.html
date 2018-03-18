@@ -25,6 +25,21 @@
             cursor: default;
 
         }
+
+        .legend {
+            padding: 3px;
+            border-radius: 5px;
+        }
+
+        .legend1 {
+            background-color: mediumseagreen;
+            color: white;
+        }
+
+        .legend2 {
+            background-color: darkgrey;
+            color: black;
+        }
     </style>
 {% endblock %}
 
@@ -40,8 +55,10 @@
                    {% if not request_enabled %}class="not-active"{% endif %}>Shift Requests
                 {% if request_enabled %}<span class="label label-success">Enabled</span>
                 {% else %}<span class="label label-danger">Disabled
-                    {% if not deadline_date %}(deadline){% endif %}</span>
-               {% endif %}
+                    {% if not deadline_date %}(deadline){% endif %}
+                    {% if generation != '0' %}(generated){% endif %}
+                         </span>
+                {% endif %}
             </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li><a data-toggle="tab" href="#swaps">Shift swaps</a></li>
@@ -50,7 +67,32 @@
         </ul>
         <div class="tab-content">
             <div id="current" class="tab-pane fade in active">
-                <h3>Shifts for current week - {{ curr_week_str }}</h3>
+                <div class="row">
+                    <h3>Shifts for current week - <i>{{ curr_week_str }}</i></h3>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div class="col-sm-2">
+                        <span class="legend legend1">You're in it</span>
+                        <span class="legend legend2">You're not</span>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div id="calDiv"></div>
+                </div>
+                <div class="modal fade" id="shiftModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Shift employees</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div id="shiftModalBody" class="modal-body">
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div id="requests" class="tab-pane fade">
                 <div class="container">
@@ -59,7 +101,9 @@
                             <h3>Request for next week</h3>
                         </div>
                         <div class="col-md-4">
-                            <strong><small id="timerH" style="margin-top: 20px"></small></strong>
+                            <strong>
+                                <small id="timerH" style="margin-top: 20px"></small>
+                            </strong>
                         </div>
                     </div>
                     <div class="row" style="margin-top: 30px">
@@ -86,14 +130,15 @@
                     </div>
                 </div>
             </div>
+
             <div id="previous" class="tab-pane fade">
-                <h3>Previous shifts</h3>
-                <p>Done shifts by you</p>
             </div>
+
             <div id="swaps" class="tab-pane fade">
                 <h3>Swap shifts</h3>
                 <p>Swap shifts with colleagues</p>
             </div>
+
             <div id="messages" class="tab-pane fade">
                 <div class="container" style="margin-top: 20px">
                     <h3>Manager messages</h3>
@@ -119,13 +164,39 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" role="dialog" aria-hidden="true" id="suggestionsModal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Welcome to Shifty</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Some suggestions</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">Edit profile</a>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Later</button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block javascript %}
     <script>
         var next_slots_url = "{% url 'slots_request' %}";
+        var current_shifts_url = "{% url 'get_current_shifts' %}";
+        var shift_employees_url = "{% url 'slot_employees' 0%}";
+        var prev_shifts_url = "{% url 'prev_shifts' %}";
         var deadline_date = "{{ deadline_date }}";
+        var start_date = "{{ start_date }}";
+        var first_login = "{{ first_login }}";
     </script>
     <script src="{% static 'js/employee/home.js' %}" type="text/javascript"></script>
+    {#  calendar resources  #}
+    <script src="{% static 'js/easycal.js' %}" type="text/javascript"></script>
     <script src="{% static 'js/jquery.countdown.js' %}" type="text/javascript"></script>
 {% endblock %}

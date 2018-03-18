@@ -8,7 +8,7 @@ from django.contrib.auth.models import User
 
 from Shifty.utils import send_multiple_mails_with_html
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 class NewEmployeeHandler:

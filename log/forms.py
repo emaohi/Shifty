@@ -15,21 +15,23 @@ class LoginForm(AuthenticationForm):
 class BusinessRegistrationForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('business_name', 'business_type', 'address', 'tip_method', 'deadline_day')
+        fields = ('business_name', 'business_type', 'address', 'logo', 'tip_method', 'deadline_day')
 
     def __init__(self, *args, **kwargs):
         super(BusinessRegistrationForm, self).__init__(*args, **kwargs)
         for _, v in self.fields.iteritems():
             v.widget.attrs.update({'class': 'form-control'})
+        self.fields['logo_url'] = forms.CharField(required=False, widget=forms.HiddenInput)
 
 
 class BusinessEditForm(forms.ModelForm):
     class Meta:
         model = Business
-        fields = ('address', 'business_type', 'tip_method', 'deadline_day')
+        fields = ('address', 'business_type', 'tip_method', 'deadline_day', 'logo')
         help_texts = {
             'tip_method': 'Whether your employees get their tips personally or share group tips',
-            'deadline_day': 'The day until which shift requests must be submitted by your employees'
+            'deadline_day': 'The day until which shift requests must be submitted by your employees',
+            'logo': 'Edit logo'
         }
 
     def __init__(self, *args, **kwargs):
@@ -81,16 +83,17 @@ class EditProfileForm(forms.ModelForm):
 
     class Meta:
         model = EmployeeProfile
-        fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address',
-                  'avg_rate', 'enable_mailing']
+        fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address', 'arriving_method',
+                  'rate', 'enable_mailing']
         widgets = {
             'started_work_date': DateInput(),
             'birth_date': DateInput(),
         }
         help_texts = {
             'phone_num': 'in form of 05x-xxxxxxx',
-            'enable_mailing': 'It is strictly recommended to enable mailing from Shifty',
-            'home_address': 'Exact address will enable checking ETA to work'
+            'enable_mailing': 'It is recommended to enable mailing from Shifty',
+            'home_address': 'Exact address will enable checking ETA to work',
+            'arriving_method': 'Show you ETA and notification for your next shift'
         }
 
     def __init__(self, *args, **kwargs):
@@ -101,10 +104,10 @@ class EditProfileForm(forms.ModelForm):
         fields_to_disable = ()
 
         if not requester_is_manager and not subject_is_manager:
-            fields_to_delete = ('avg_rate', )
+            fields_to_delete = ('rate', )
             fields_to_disable = ('started_work_date', 'role')
         if requester_is_manager and subject_is_manager:
-            fields_to_delete = ('avg_rate', 'role')
+            fields_to_delete = ('rate', 'role')
 
         for field in fields_to_delete:
             del self.fields[field]
@@ -118,4 +121,3 @@ class EditProfileForm(forms.ModelForm):
                 v.widget.attrs.update({'class': 'form-control', 'style': 'width: 450px; display: inline'})
             else:
                 v.widget.attrs.update({'style': 'display: inline'})
-

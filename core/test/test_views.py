@@ -1,11 +1,17 @@
+import json
 import urllib
+from datetime import datetime
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from mock import patch
 
+from core.date_utils import get_days_hours_from_delta
 from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
-    create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee
+    create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee, \
+    make_slot_this_in_n_hour_from_now, create_shifts_for_slots
+from log.models import EmployeeProfile
 
 
 class EmployeeRequestViewTest(TestCase):
@@ -204,6 +210,7 @@ class DeleteShiftSlotViewTest(TestCase):
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('delete_shift_slot'), ""))
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}})
 class GetDurationDataViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):
@@ -214,11 +221,17 @@ class GetDurationDataViewTest(TestCase):
         create_new_manager(self.manager_credentials)
         set_address_to_business(username=self.manager_credentials['username'], address='Tel-Aviv')
 
-    def test_view_should_succeed(self):
+    @patch('core.views.parse_duration_data')
+    def test_view_should_succeed(self, mock_func):
+
+        mock_func.return_value = ('1', '2')
+
         set_address_to_employee(username=self.manager_credentials['username'], address='Haifa')
         self.client.login(**self.manager_credentials)
         resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
         self.assertEqual(resp.status_code, 200)
+        self.assertJSONEqual(resp.content, {'driving': '1',
+                                            'walking': '2'})
 
     def test_view_should_bad_request_when_no_emp_address(self):
         self.client.login(**self.manager_credentials)
@@ -230,6 +243,56 @@ class GetDurationDataViewTest(TestCase):
         self.client.login(**self.manager_credentials)
         resp = self.client.get(reverse('duration_data'), {'walking': 'True', 'driving': 'True'})
         self.assertEqual(resp.status_code, 400)
+
+
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
+class GetNextShiftTimer(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+    dummy_slot = {
+        'day': '1', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
+        'num_of_bartenders': '0', 'num_of_cooks': '0'
+    }
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_new_employee(cls.emp_credentials)
+        add_fields_to_slot(cls.dummy_slot)
+
+    def setUp(self):
+        self.client.login(**self.manager_credentials)
+        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+
+    def test_view_should_succeed_when_one_slot(self):
+        self._create_upcoming_shifts_for_existing_slots(1)
+
+        self.client.login(**self.emp_credentials)
+        resp = self.client.get(reverse('time_to_next_shift'))
+        self.assertEqual(resp.status_code, 200)
+        days, hours = get_days_hours_from_delta(ShiftSlot.objects.first().get_datetime() - datetime.now())
+        self.assertEqual(resp.content, '%s days, %s hours' % (days, hours))
+
+    def test_view_should_choose_earliest_when_two_slots(self):
+        second_slot = {k: v for k, v in self.dummy_slot.items()}
+        second_slot['day'] = '2'
+        self.client.post(reverse('add_shift_slot'), data=second_slot, follow=True)
+
+        self._create_upcoming_shifts_for_existing_slots(2)
+
+        self.client.login(**self.emp_credentials)
+        resp = self.client.get(reverse('time_to_next_shift'))
+        self.assertEqual(resp.status_code, 200)
+        days, hours = get_days_hours_from_delta(ShiftSlot.objects.first().get_datetime() - datetime.now())
+        self.assertEqual(resp.content, '%s days, %s hours' % (days, hours))
+
+    def _create_upcoming_shifts_for_existing_slots(self, num):
+        slots = ShiftSlot.objects.all()[:num]
+        for num_hours, slot in enumerate(slots):
+            make_slot_this_in_n_hour_from_now(slot, num_hours + 1)
+        create_shifts_for_slots(slots, emps=EmployeeProfile.objects.filter(
+            user__username=self.emp_credentials['username']))
 
 
 class GetSlotRequestersViewTest(TestCase):
@@ -295,3 +358,28 @@ class GenerateShiftsViewTest(TestCase):
         self.assertEqual(resp.status_code, 200)
 
         self.assertTrue(Shift.objects.exists())
+
+
+class GetLogoUrlViewTest(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+
+    def setUp(self):
+        self.client.login(**self.manager_credentials)
+
+    def test_should_get_url(self):
+        restaurant = 'japanika'
+        res = self.client.get(reverse('logo_suggestion') + '?name=%s' % restaurant)
+        suggested_url = json.loads(res.content).get('logo_url')
+        self.assertEqual(suggested_url,
+                        'https://images.rest.co.il/Customers/80113279/14ce44cf325b4db5aee62f6275f1a7fd_5.jpg')
+
+    def test_should_raise_no_logo_found_error(self):
+        restaurant = 'blabla'
+        res = self.client.get(reverse('logo_suggestion') + '?name=%s' % restaurant)
+        self.assertEqual(res.status_code, 400)

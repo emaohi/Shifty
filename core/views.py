@@ -1,28 +1,32 @@
+import csv
 import json
 import logging
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.cache import cache
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
-from django.views.decorators.cache import cache_page
-from django.views.decorators.vary import vary_on_cookie
 
-from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num
-from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest
+from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
+    get_days_hours_from_delta
+from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, parse_duration_data, \
-    save_shifts_request, delete_other_requests, validate_language, get_next_week_slots
+    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
+    save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
+    parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
+    get_current_week_slots
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
 from core import tasks
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url='/login')
@@ -230,7 +234,7 @@ def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
 
-    next_week_slots = get_next_week_slots(get_curr_business(request))
+    next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
     for slot in next_week_slots:
         text_color, title = get_color_and_title_from_slot(slot)
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
@@ -289,29 +293,35 @@ def is_finish_slots(request):
     return HttpResponse(curr_business.slot_request_enabled)
 
 
-@cache_page(60 * 15, key_prefix='shifty')
-@vary_on_cookie
 @login_required(login_url='/login')
 def get_work_duration_data(request):
     if request.method == 'GET':
-        home_address = request.user.profile.home_address
-        work_address = request.user.profile.business.address
 
-        if not home_address or not work_address:
-            return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
+        key = get_eta_cache_key(get_curr_profile(request))
 
-        is_walk = request.GET.get('walking', True)
-        is_drive = request.GET.get('driving', True)
+        if key not in cache:
+            home_address = get_curr_profile(request).home_address
+            work_address = get_curr_business(request).address
 
-        distance_data = get_dist_data(home_address, work_address, is_drive, is_walk)
+            if not home_address or not work_address:
+                return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
 
-        parse_duration_data(distance_data)
-        if not distance_data['walking'] and not distance_data['driving']:
-            return HttpResponseBadRequest('cant find home to work durations - make sure both business'
-                                          'and home addresses are available')
+            arrival_method = get_curr_profile(request).arriving_method
 
-        logger.info('found distance data: ' + str(distance_data))
-        return JsonResponse(distance_data)
+            raw_distance_data = get_dist_data(home_address, work_address, arrival_method)
+
+            driving_duration, walking_duration = parse_duration_data(raw_distance_data)
+
+            if not walking_duration and not driving_duration:
+                return HttpResponseBadRequest('cant find home to work durations - make sure both business'
+                                              'and home addresses are available')
+            cache.set(key, (driving_duration, walking_duration), settings.DURATION_CACHE_TTL)
+        else:
+            driving_duration, walking_duration = cache.get(key)
+
+        logger.info('found distance data: driving duration is %s and walking duration is %s',
+                    driving_duration, walking_duration)
+        return JsonResponse({'driving': driving_duration, 'walking': walking_duration})
 
     return HttpResponseBadRequest('cannot get distance data with ' + request.method)
 
@@ -328,46 +338,169 @@ def get_slot_request_employees(request, slot_id):
         slot_requests = ShiftRequest.objects.filter(requested_slots=requested_slot)
 
         return render(request, 'manager/slot_request_emp_list.html',
-                      {'emps': [req.employee for req in slot_requests]})
+                      {'emps': [req.employee for req in slot_requests],
+                       'empty_msg': 'No employees chose this slot'})
 
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def generate_shifts(request):
-    def execute_shift_generation(business_name):
+    def execute_shift_generation(business):
+
+        business.set_shift_generation_pending()
+        business.save()
+
         if settings.CELERY:
-            tasks.generate_next_week_shifts.delay(business_name)
+            tasks.generate_next_week_shifts.delay(business.business_name)
         else:
-            tasks.generate_next_week_shifts(business_name)
+            tasks.generate_next_week_shifts(business.business_name)
 
     if request.method == 'POST':
-        next_week_slots = get_next_week_slots(get_curr_business(request))
+        next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
         if not len(next_week_slots):
+            messages.error(request, 'No slots next week !')
             return HttpResponseBadRequest('No slots next week !')
         else:
-            execute_shift_generation(get_curr_business(request).business_name)
+            execute_shift_generation(get_curr_business(request))
 
             create_manager_msg(recipients=get_curr_business(request).get_employees(),
                                subject='New Shifts', text='Your manager has generated shifts for next week',
                                wait_for_mail_results=False)
+            messages.success(request, 'Shifts generation requested successfully')
             return HttpResponse('Request triggered')
 
     return wrong_method(request)
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
-def get_shift_employees(request, slot_id):
+def get_slot_employees(request, slot_id):
     if request.method == 'GET':
         requested_slot = ShiftSlot.objects.get(id=slot_id)
-        if not requested_slot.is_next_week():
-            return HttpResponseBadRequest('slot is not next week')
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
             return render(request, 'manager/slot_request_emp_list.html',
-                          {'emps': shift.employees.all()})
+                          {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
+                           'curr_emp': get_curr_profile(request)})
         else:
             logger.error('cant find shift for slot id %s', slot_id)
             return HttpResponse('Cant find shift for this slot')
 
     return wrong_method(request)
+
+
+@login_required(login_url='/login')
+def get_calendar_current_week_shifts(request):
+    if request.method == 'GET':
+        shifts_json = []
+
+        current_week_slots = get_current_week_slots(get_curr_business(request))
+
+        for slot in current_week_slots:
+            if not slot.was_shift_generated():
+                continue
+
+            bg_color, text_color = get_slot_calendar_colors(get_curr_profile(request), slot)
+
+            jsoned_shift = json.dumps({'id': str(slot.id), 'title': slot.name,
+                                       'start': slot.start_time_str(),
+                                       'end': slot.end_time_str(),
+                                       'backgroundColor': bg_color,
+                                       'textColor': text_color})
+            shifts_json.append(jsoned_shift)
+        return JsonResponse(json.dumps(shifts_json), safe=False)
+
+    return wrong_method(request)
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+def submit_shift_summary(request, slot_id):
+    shift = Shift.objects.get(slot=ShiftSlot.objects.get(pk=slot_id))
+    old_rank = shift.rank
+    if request.method == 'POST':
+        summary_form = ShiftSummaryForm(request.POST, id=slot_id, instance=shift)
+        if summary_form.is_valid():
+            summary_form.save()
+            shift.update_emp_rates(old_rank)
+            messages.success(request, message='Shift summary submitted')
+            return HttpResponseRedirect('/')
+        else:
+            logger.error('Shift summary form is not valid: %s', str(summary_form.errors))
+            messages.error(request, message='couldn\'t submit shift summary: %s' % str(summary_form.errors.as_text()))
+            return HttpResponseRedirect('/')
+
+    if not shift.slot.is_finished():
+        return HttpResponseBadRequest('shift is not over yet...')
+    summary_form = ShiftSummaryForm(id=slot_id, instance=shift)
+    return render(request, 'manager/shift_summary_form.html', context={'summary_form': summary_form,
+                                                                       'slot_id': slot_id})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def get_time_to_next_shift(request):
+    curr_emp = get_curr_profile(request)
+    next_shift = get_next_shift(curr_emp)
+    if not next_shift:
+        logger.warning('no upcoming shift for emp %s', request.user.username)
+        return HttpResponseBadRequest('No upcoming shift was found...')
+    logger.info('next shift for user %s is %s', request.user.username, str(next_shift))
+    days, hours = get_days_hours_from_delta(next_shift.slot.get_datetime() - datetime.now())
+
+    return HttpResponse('%s days, %s hours' % (days, hours))
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def get_prev_shifts(request):
+    curr_emp = get_curr_profile(request)
+    prev_shifts = get_emp_previous_shifts(curr_emp)
+    if len(prev_shifts) == 0:
+        logger.warning('no previous shifts for emp %s', request.user.username)
+        return HttpResponseBadRequest('No previous shifts was found...')
+    logger.info('Found %d previous shifts for user %s', len(prev_shifts), request.user.username)
+
+    return render(request, 'employee/previous_shifts.html', {'prev_shifts': prev_shifts})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def export_shifts_csv(request):
+    curr_emp = get_curr_profile(request)
+    prev_shifts = get_emp_previous_shifts(curr_emp)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="prev_shifts.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['shift date', 'tip'])
+    for shift in prev_shifts:
+        writer.writerow([shift.slot.get_datetime_str(), shift.calculate_employee_tip()])
+
+    return response
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+def get_logo_suggestion(request):
+    business_name = request.GET.get('name', '')
+    try:
+        logo_url = get_logo_url(business_name)
+    except NoLogoFoundError as e:
+        logger.warning('couldn\'t found url for name: %s', business_name)
+        return HttpResponseBadRequest('Couldn\'t find logo... %s' % e.message)
+
+    logger.info('found url: %s', logo_url)
+    return JsonResponse({'logo_url': logo_url})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+def ask_shift_swap(request):
+    print request
+#     if request.method == 'POST':
+#         requested_username = request.POST.get('requested_employee')
+#         requested_shift_id = request.POST.get('requested_shift')
+#         requester_shift_id = request.POST.get('requester_shift')
+#
+#     return wrong_method(request)

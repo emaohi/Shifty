@@ -5,16 +5,17 @@ import logging
 import urllib
 
 import requests
+from bs4 import BeautifulSoup
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
 from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range
-from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest
+from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest, Shift
 from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
 from django.conf import settings
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
@@ -145,14 +146,14 @@ def handle_named_slot(business, name):
     pinned_slot.save()
 
 
-def get_dist_data(home_address, work_address, is_drive, is_walk):
+def get_dist_data(home_address, work_address, arriving_method):
     json_res = {}
-    if is_drive:
+    if arriving_method == 'D' or arriving_method == 'B':
         driving_api_url = settings.DISTANCE_URL % (home_address, work_address, 'driving', settings.DISTANCE_API_KEY)
         json_res['driving'] = requests.get(driving_api_url)
         json_res['driving_url'] = settings.DIRECTIONS_URL %\
             (home_address, work_address, 'driving')
-    if is_walk:
+    if arriving_method == 'W' or arriving_method == 'B':
         walking_api_url = settings.DISTANCE_URL % (home_address, work_address, 'walking', settings.DISTANCE_API_KEY)
         json_res['walking'] = requests.get(walking_api_url)
         json_res['walking_url'] = settings.DIRECTIONS_URL %\
@@ -161,15 +162,21 @@ def get_dist_data(home_address, work_address, is_drive, is_walk):
     return json_res
 
 
-def get_next_week_slots(business):
-    next_week_no = get_next_week_num()
-    next_week_slots = ShiftSlot.objects.filter(week=next_week_no, business=business)
+def get_week_slots(business, week_num):
+    next_week_slots = ShiftSlot.objects.filter(week=week_num, business=business)
     return next_week_slots
+
+
+def get_current_week_slots(business):
+    curr_week_no = get_curr_week_num()
+    curr_week_slots = ShiftSlot.objects.filter(week=curr_week_no, business=business)
+    return curr_week_slots
 
 
 def parse_duration_data(raw_distance_response):
     driving_duration = None
     walking_duration = None
+
     if 'driving' in raw_distance_response:
         try:
             driving_duration = json.loads(raw_distance_response.get('driving').text).get('rows')[0].get(
@@ -177,8 +184,6 @@ def parse_duration_data(raw_distance_response):
         except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get driving duration: ' + str(e))
             driving_duration = ''
-        finally:
-            raw_distance_response['driving'] = driving_duration
     if 'walking' in raw_distance_response:
         try:
             walking_duration = json.loads(raw_distance_response.get('walking').text).get('rows')[0].get(
@@ -186,8 +191,8 @@ def parse_duration_data(raw_distance_response):
         except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get walking duration: ' + str(e))
             walking_duration = ''
-        finally:
-            raw_distance_response['walking'] = walking_duration
+
+    return driving_duration, walking_duration
 
 
 def save_shifts_request(form, request):
@@ -219,7 +224,6 @@ def delete_other_requests(request, slots_request):
 def get_cached_non_mandatory_slots(business, week):
 
     half_an_hour = 30 * 60
-
     key = "next-week-slots-{0}-{1}".format(business, week)
     if key not in cache:
         slots = ShiftSlot.objects.filter(week=week, business=business). \
@@ -227,3 +231,51 @@ def get_cached_non_mandatory_slots(business, week):
         cache.set(key, slots, half_an_hour)
         return slots
     return cache.get(key)
+
+
+def get_slot_calendar_colors(curr_profile, slot):
+    if curr_profile.role != 'MA':
+        bg_color, text_color = ('mediumseagreen', 'white') if curr_profile in \
+                                                              slot.shift.employees.all() else ('#7b8a8b', 'black')
+    else:
+        if slot.is_finished():
+            bg_color, text_color = 'cornflowerblue', 'white'
+        else:
+            bg_color, text_color = 'blue', 'white'
+    return bg_color, text_color
+
+
+def get_eta_cache_key(profile_id):
+    return "{0}ETA-{1}".format('TEST-' if settings.TESTING else '', get_curr_profile(profile_id))
+
+
+def get_next_shift(profile):
+    Shift.objects.all().order_by('slot__day', 'slot__ho')
+    ordered_current_week_emp_shifts = profile.shifts.filter(slot__week__exact=get_curr_week_num())\
+        .order_by('slot__day', 'slot__start_hour')
+    for shift in ordered_current_week_emp_shifts:
+        if shift.slot.get_datetime() > datetime.datetime.now():
+            return shift
+    return None
+
+
+def get_emp_previous_shifts(profile):
+    return profile.shifts.filter(slot__week__lt=get_curr_week_num())\
+        .order_by('-slot__day', '-slot__start_hour')
+
+
+def get_logo_url(business_name):
+    lookup_url = settings.LOGO_LOOKUP_URL % business_name
+    try:
+        response = requests.get(lookup_url)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
+    except (KeyError, IndexError):
+        raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
+
+
+class NoLogoFoundError(Exception):
+    pass
+
+
+

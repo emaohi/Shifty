@@ -17,7 +17,7 @@ from menu.models import Quiz, Question
 from menu.utils import get_quiz_score, build_quiz_result, remove_score_from_emp, remove_prev_emp_request, \
     deserialize_objects
 
-logger = logging.getLogger('cool')
+logger = logging.getLogger(__name__)
 
 
 @login_required(login_url="/login")
@@ -150,6 +150,10 @@ def quiz_submission(request):
         logger.info('QUIZ SCORE IS %d, going to save it in profile', quiz_score)
         curr_profile = get_curr_profile(request)
         curr_profile.menu_score = quiz_score
+
+        logger.info('updating %s rate...', curr_profile)
+        curr_profile.rate += quiz_score - curr_profile.menu_score
+
         curr_profile.save()
         return JsonResponse(build_quiz_result(request.body, quiz_score))
 
