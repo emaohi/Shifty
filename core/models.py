@@ -198,3 +198,17 @@ class Shift(models.Model):
 
     def get_employees_comma_string(self):
         return ', '.join([emp.user.username for emp in self.employees.all()])
+
+
+class ShiftSwap(models.Model):
+    requester = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequesting')
+    responder = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequested')
+
+    ACCEPT_STEP_OPTIONS = (
+        (0, 'employee requested'),
+        (1, 'employee accepted'),
+        (2, 'manager accepted'),
+        (-1, 'employee rejected'),
+        (-2, 'manager rejected'),
+    )
+    accept_step = models.ImageField(choices=ACCEPT_STEP_OPTIONS, default=0)

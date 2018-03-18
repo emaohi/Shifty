@@ -361,6 +361,16 @@ class GenerateShiftsViewTest(TestCase):
 
 
 class GetLogoUrlViewTest(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+
+    def setUp(self):
+        self.client.login(**self.manager_credentials)
 
     def test_should_get_url(self):
         restaurant = 'japanika'
