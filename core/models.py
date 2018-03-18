@@ -204,6 +204,9 @@ class ShiftSwap(models.Model):
     requester = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequesting')
     responder = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequested')
 
+    requester_shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='SwapRequesting')
+    requested_shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='SwapRequested')
+
     ACCEPT_STEP_OPTIONS = (
         (0, 'employee requested'),
         (1, 'employee accepted'),

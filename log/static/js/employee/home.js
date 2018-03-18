@@ -15,6 +15,10 @@ $(document).ready(function () {
     getPreviousShifts();
 });
 
+$(document).on("click", ".swapBtn", function () {
+    requestSwap($(this));
+});
+
 function showSuggestions() {
     console.log('first login: ' + first_login);
     if (first_login == 'True') {
@@ -89,7 +93,9 @@ function showShiftDetails(shiftId) {
     $.ajax({
        url: shift_employees_url.slice(0, -1) + shiftId,
         type:"get",
-        success: insertEmployeesToModal,
+        success: function(emp_list) {
+            insertEmployeesToModal(emp_list, shiftId);
+        },
         error: function () {
             console.error('couldnt get employees of shift id ' + shiftId);
         }
@@ -97,7 +103,8 @@ function showShiftDetails(shiftId) {
     $("#shiftModal").modal('show');
 }
 
-function insertEmployeesToModal(emp_list) {
+function insertEmployeesToModal(emp_list, shift_id) {
+    $("input[name='shiftId']").val(shift_id);
     $("#shiftModalBody").html(emp_list);
 }
 
@@ -117,4 +124,35 @@ function getPreviousShifts() {
             }
         }
     });
+}
+
+function requestSwap(btn) {
+    var s = btn.siblings('select');
+    var requesterShiftId = s.children('option').filter(':selected').val();
+    var requestedShiftId = $("input[name='shiftId']").val();
+    var requestedSwapUsername = btn.parent().siblings('span.username').text();
+    sendSwapRequest(requestedSwapUsername, requestedShiftId, requesterShiftId);
+}
+
+function sendSwapRequest(username, requestedShift, requesterShift){
+   $.ajax({
+        url: swapRequstUrl, //from template
+        type: "post", //send it through get method,
+        data: {
+            requested_employee: username,
+            requester_shift: requesterShift,
+            requested_shift: requestedShift
+        },
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: notifySwapRequestDelivered,
+        error: function (xhr) {
+            alert("something fishy: " + xhr);
+        }
+    });
+}
+
+function notifySwapRequestDelivered() {
+    alert("success!");
 }

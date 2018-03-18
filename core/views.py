@@ -15,7 +15,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
     get_days_hours_from_delta, get_curr_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
@@ -25,6 +25,7 @@ from core.utils import create_manager_msg, send_mail_to_manager, create_constrai
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
 from core import tasks
+from log.models import EmployeeProfile
 
 logger = logging.getLogger(__name__)
 
@@ -379,11 +380,11 @@ def get_slot_employees(request, slot_id):
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
             curr_emp_future_slots = get_next_shifts_of_emp(get_curr_profile(request))
-            is_in_shift = get_curr_profile(request) in shift.employees.all()
+            offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
             return render(request, 'manager/slot_request_emp_list.html',
                           {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
                            'curr_emp': get_curr_profile(request),
-                           'future_shifts': curr_emp_future_slots, 'offer_swap': not is_in_shift})
+                           'future_shifts': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
             logger.error('cant find shift for slot id %s', slot_id)
             return HttpResponse('Cant find shift for this slot')
@@ -498,10 +499,15 @@ def get_logo_suggestion(request):
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
 def ask_shift_swap(request):
-    print request
-#     if request.method == 'POST':
-#         requested_username = request.POST.get('requested_employee')
-#         requested_shift_id = request.POST.get('requested_shift')
-#         requester_shift_id = request.POST.get('requester_shift')
-#
-#     return wrong_method(request)
+    if request.method == 'POST':
+        responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
+        requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
+        requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
+        logger.info('new swap request for shift %d to shift %d', requester_shift.id, requested_shift.id)
+
+        ShiftSwap.objects.create(requester=get_curr_profile(request), responder=responder,
+                                 requested_shift=requested_shift,
+                                 requester_shift=requester_shift)
+        return HttpResponse('ok')
+
+    return wrong_method(request)

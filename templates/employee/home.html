@@ -88,6 +88,7 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
+                            <input type="hidden" name="shiftId" value="">
                             <div id="shiftModalBody" class="modal-body">
                             </div>
                         </div>
@@ -187,10 +188,12 @@
 
 {% block javascript %}
     <script>
+        var csrf_token = "{{ csrf_token }}";
         var next_slots_url = "{% url 'slots_request' %}";
         var current_shifts_url = "{% url 'get_current_shifts' %}";
         var shift_employees_url = "{% url 'slot_employees' 0%}";
         var prev_shifts_url = "{% url 'prev_shifts' %}";
+        var swapRequstUrl = "{% url 'ask_shift_swap' %}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";
         var first_login = "{{ first_login }}";
