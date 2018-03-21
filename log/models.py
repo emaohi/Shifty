@@ -127,6 +127,7 @@ class EmployeeProfile(models.Model):
         ('D', 'driving'), ('W', 'walking'), ('B', 'both')
     )
     arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
+    new_messages = models.IntegerField(default=0)
 
     def __str__(self):
         return self.user.username

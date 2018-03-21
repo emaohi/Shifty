@@ -13,10 +13,43 @@ $(document).ready(function () {
     showSuggestions();
 
     getPreviousShifts();
+
+    $("#toggleOld").click(function () {
+        var oldMsgs = $("#oldMsgs");
+        if (oldMsgs.is(":visible")) {
+            oldMsgs.hide();
+            $(this).text('Show Old');
+        } else {
+            oldMsgs.show();
+            $(this).text('Hide Old');
+        }
+    });
+
+    if (new_messages > 0) {
+        sessionStorage
+    }
 });
 
 $(document).on("click", ".swapBtn", function () {
     requestSwap($(this));
+});
+
+$(document).on( 'shown.bs.tab', 'a[href="#messages"]', function (e) {
+    if (sessionStorage.getItem("alreadyReset") === null) {
+        alert('a');
+        $.ajax({
+            url: resetNewMessagesUrl,
+            type: "post",
+            data: {},
+            headers: {
+                'X-CSRFToken': csrf_token
+            },
+            success: resetSuccess,
+            error: function (xhr) {
+                console.error("couldn't reset new messages");
+            }
+        });
+    }
 });
 
 function showSuggestions() {
@@ -40,6 +73,10 @@ function showNextWeekSlotsList() {
 function displaySlotList(slotsData) {
     $(".slotRows").html(slotsData);
     $('.selectpicker').selectpicker();
+}
+
+function resetSuccess() {
+    sessionStorage.setItem("alreadyReset", "True");
 }
 
 function populateTimerDiv() {

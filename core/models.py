@@ -5,6 +5,8 @@ import json
 
 import logging
 from django.db import models
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
@@ -215,3 +217,12 @@ class ShiftSwap(models.Model):
         (-2, 'manager rejected'),
     )
     accept_step = models.ImageField(choices=ACCEPT_STEP_OPTIONS, default=0)
+
+
+# pylint: disable=unused-argument
+@receiver(m2m_changed, sender=ManagerMessage.recipients.through)
+def update_employee(sender, **kwargs):
+    for emp in kwargs.pop('instance').recipients.all():
+        logger.debug('incrementing new message for emp %s', str(emp))
+        emp.new_messages += 1
+        emp.save()

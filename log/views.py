@@ -84,12 +84,24 @@ def emp_home(request):
         get_curr_profile(request).ever_logged_in = True
         get_curr_profile(request).save()
 
+    logo_conf = dict(format="png", transformation=[
+        dict(crop="fit", width=80, height=50, radius=10),
+        dict(angle=20)
+    ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
+
+    new_messages = get_curr_profile(request).new_messages
+    new_message_slice_str = ":%d" % new_messages
+    old_message_slice_str = "%d:" % new_messages
+
     return render(request, "employee/home.html", {'manager_msgs': manager_messages,
                                                   'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
                                                   'curr_week_str': curr_week_string,
                                                   'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
-                                                  'first_login': is_first_login, 'generation': generation_status})
+                                                  'first_login': is_first_login, 'generation': generation_status,
+                                                  'logo_conf': logo_conf, 'new_messages': new_messages,
+                                                  'new_msg_slice': new_message_slice_str,
+                                                  'old_msg_slice': old_message_slice_str})
 
 
 def register(request):

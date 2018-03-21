@@ -1,4 +1,5 @@
 {% load staticfiles %}
+{% load cloudinary %}
 
 <!DOCTYPE html>
 <html>
@@ -72,9 +73,9 @@
             var spliced = text.split(" ");
             var dayNum = parseInt(spliced[0]);
             var hourNum = parseInt(spliced[2]);
-            if (dayNum === 0 && hourNum < 3){
+            if (dayNum === 0 && hourNum < 3) {
                 $("#nextShiftText").css('color', 'red');
-                $("#nextShiftText").css("font-weight","Bold");
+                $("#nextShiftText").css("font-weight", "Bold");
             } else {
                 $("#nextShiftText").css('color', 'yellow');
             }
@@ -125,6 +126,7 @@
         .navbar-text * {
             color: white;
         }
+
         .duration-text {
             color: yellow;
         }
@@ -143,6 +145,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
+            {% if user.profile.business.logo %}
+                {% if logo_conf == '' %}
+                    <img src="{{ user.profile.business.logo.url }}" height="50" width="80">
+                {% else %}
+                    {% cloudinary user.profile.business.logo.name logo_conf %}
+                {% endif %}
+            {% endif %}
             <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
         </div>
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">

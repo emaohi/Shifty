@@ -11,6 +11,7 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
+from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
     get_days_hours_from_delta, get_curr_week_num
@@ -442,6 +443,7 @@ def submit_shift_summary(request, slot_id):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
+@require_GET
 def get_time_to_next_shift(request):
     curr_emp = get_curr_profile(request)
     next_shift = get_next_shift(curr_emp)
@@ -456,6 +458,7 @@ def get_time_to_next_shift(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
+@require_GET
 def get_prev_shifts(request):
     curr_emp = get_curr_profile(request)
     prev_shifts = get_emp_previous_shifts(curr_emp)
@@ -484,6 +487,9 @@ def export_shifts_csv(request):
     return response
 
 
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+@require_GET
 def get_logo_suggestion(request):
     business_name = request.GET.get('name', '')
     try:
@@ -498,6 +504,7 @@ def get_logo_suggestion(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
+@require_POST
 def ask_shift_swap(request):
     if request.method == 'POST':
         responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
@@ -510,4 +517,14 @@ def ask_shift_swap(request):
                                  requester_shift=requester_shift)
         return HttpResponse('ok')
 
-    return wrong_method(request)
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+@require_POST
+def reset_new_messages(request):
+    emp = get_curr_profile(request)
+    logger.info('resetting new messages for emp %s', str(emp))
+    emp.new_messages = 0
+    emp.save()
+
+    return HttpResponse('ok')
