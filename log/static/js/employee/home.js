@@ -25,8 +25,9 @@ $(document).ready(function () {
         }
     });
 
-    if (new_messages > 0) {
-        sessionStorage
+    if (sessionStorage.getItem("alreadyReset") !== null && new_messages > 0) {
+        console.log("got new message, removing storage flag");
+        sessionStorage.removeItem("alreadyReset");
     }
 });
 
@@ -36,7 +37,7 @@ $(document).on("click", ".swapBtn", function () {
 
 $(document).on( 'shown.bs.tab', 'a[href="#messages"]', function (e) {
     if (sessionStorage.getItem("alreadyReset") === null) {
-        alert('a');
+        console.log("going to reset new messages tab...");
         $.ajax({
             url: resetNewMessagesUrl,
             type: "post",
