@@ -145,53 +145,8 @@
             </div>
 
             <div id="messages" class="tab-pane fade">
-                <div class="container" style="margin-top: 20px">
-                    <h3>Manager messages</h3>
-                    {% for msg in manager_msgs|slice:new_msg_slice %}
-                        <div class="row" style="margin-top: 20px">
-                            <div class="col-xs-8">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title" style="display: inline">{{ msg.subject }}</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                        {{ msg.get_split_msg.0 }}<br>{{ msg.get_split_msg.1 }}
-                                    </div>
-                                    <div class="panel-footer">
-                                        <span class="hidden-id" style="visibility: hidden">{{ msg.id }}</span>
-                                        <span class="timestamp"> {{ msg.sent_time }} </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                    <div class="row">
-                        <div class="col-xs-5 col-xs-offset-3">
-                            <button class="btn btn-lg btn-primary" id="toggleOld">Show old</button>
-                        </div>
-                    </div>
-                    <div id="oldMsgs" style="display: none">
-                        {% for msg in manager_msgs|slice:old_msg_slice %}
-                            <div class="row" style="margin-top: 20px">
-                                <div class="col-xs-8">
-                                    <div class="panel panel-default">
-                                        <div class="panel-heading">
-                                            <h3 class="panel-title" style="display: inline">{{ msg.subject }}</h3>
-                                        </div>
-                                        <div class="panel-body">
-                                            {{ msg.get_split_msg.0 }}<br>{{ msg.get_split_msg.1 }}
-                                        </div>
-                                        <div class="panel-footer">
-                                            <span class="hidden-id" style="visibility: hidden">{{ msg.id }}</span>
-                                            <span class="timestamp"> {{ msg.sent_time }} </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
             </div>
+
             <div id="swapRequests" class="tab-pane fade">
                 <div class="container" style="margin-top: 20px">
                     <h3>Swap requests</h3>
@@ -228,7 +183,7 @@
         var shift_employees_url = "{% url 'slot_employees' 0%}";
         var prev_shifts_url = "{% url 'prev_shifts' %}";
         var swapRequstUrl = "{% url 'ask_shift_swap' %}";
-        var resetNewMessagesUrl = "{% url 'reset_new_messages' %}";
+        var getManagerMessagesUrl = "{% url 'manager_messages' %}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";
         var first_login = "{{ first_login }}";

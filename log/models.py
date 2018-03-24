@@ -158,6 +158,10 @@ class EmployeeProfile(models.Model):
         if self.get_manager():
             return self.get_manager().user
 
+    def reset_new_messages(self):
+        self.new_messages = 0
+        self.save()
+
     @classmethod
     def get_roles_reversed(cls):
         return dict((v, k) for k, v in cls.ROLE_CHOICES)

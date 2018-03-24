@@ -14,20 +14,16 @@ $(document).ready(function () {
 
     getPreviousShifts();
 
-    $("#toggleOld").click(function () {
-        var oldMsgs = $("#oldMsgs");
-        if (oldMsgs.is(":visible")) {
-            oldMsgs.hide();
-            $(this).text('Show Old');
-        } else {
-            oldMsgs.show();
-            $(this).text('Hide Old');
-        }
-    });
+});
 
-    if (sessionStorage.getItem("alreadyReset") !== null && new_messages > 0) {
-        console.log("got new message, removing storage flag");
-        sessionStorage.removeItem("alreadyReset");
+$(document).on("click", "#toggleOld", function () {
+    var oldMsgs = $("#oldMsgs");
+    if (oldMsgs.is(":visible")) {
+        oldMsgs.hide();
+        $(this).text('Show Old');
+    } else {
+        oldMsgs.show();
+        $(this).text('Hide Old');
     }
 });
 
@@ -35,22 +31,15 @@ $(document).on("click", ".swapBtn", function () {
     requestSwap($(this));
 });
 
-$(document).on( 'shown.bs.tab', 'a[href="#messages"]', function (e) {
-    if (sessionStorage.getItem("alreadyReset") === null) {
-        console.log("going to reset new messages tab...");
-        $.ajax({
-            url: resetNewMessagesUrl,
-            type: "post",
-            data: {},
-            headers: {
-                'X-CSRFToken': csrf_token
-            },
-            success: resetSuccess,
-            error: function (xhr) {
-                console.error("couldn't reset new messages");
-            }
-        });
-    }
+$(document).on('shown.bs.tab', 'a[href="#messages"]', function () {
+    $.ajax({
+        url: getManagerMessagesUrl,
+        type: "get",
+        success: messagesSuccess,
+        error: function (xhr) {
+            console.error("couldn't get manager messages");
+        }
+    });
 });
 
 function showSuggestions() {
@@ -76,8 +65,8 @@ function displaySlotList(slotsData) {
     $('.selectpicker').selectpicker();
 }
 
-function resetSuccess() {
-    sessionStorage.setItem("alreadyReset", "True");
+function messagesSuccess(res) {
+    $("#messages").html(res);
 }
 
 function populateTimerDiv() {
@@ -117,8 +106,8 @@ function display_cal(shifts_json) {
         minTime: '06:00:00',
         maxTime: '23:59:00',
         timeGranularity: 30,
-        slotDuration : 60,
-        startDate : start_date,
+        slotDuration: 60,
+        startDate: start_date,
         eventClick: function (shiftId) {
             console.log('cooooooool');
             showShiftDetails(shiftId);
@@ -129,9 +118,9 @@ function display_cal(shifts_json) {
 
 function showShiftDetails(shiftId) {
     $.ajax({
-       url: shift_employees_url.slice(0, -1) + shiftId,
-        type:"get",
-        success: function(emp_list) {
+        url: shift_employees_url.slice(0, -1) + shiftId,
+        type: "get",
+        success: function (emp_list) {
             insertEmployeesToModal(emp_list, shiftId);
         },
         error: function () {
@@ -149,12 +138,12 @@ function insertEmployeesToModal(emp_list, shift_id) {
 function getPreviousShifts() {
     $.ajax({
         url: prev_shifts_url,
-        type:"get",
+        type: "get",
         success: function (res) {
             $("#previous").html(res);
         },
         error: function (xhr) {
-            if (xhr.status === 400){
+            if (xhr.status === 400) {
                 $("#previous").html("<h3>No previous shifts...</h3>");
             } else {
                 $("#previous").html("<h3>Server error trying to get previous shifts...</h3>");
@@ -172,8 +161,8 @@ function requestSwap(btn) {
     sendSwapRequest(requestedSwapUsername, requestedShiftId, requesterShiftId);
 }
 
-function sendSwapRequest(username, requestedShift, requesterShift){
-   $.ajax({
+function sendSwapRequest(username, requestedShift, requesterShift) {
+    $.ajax({
         url: swapRequstUrl, //from template
         type: "post", //send it through get method,
         data: {

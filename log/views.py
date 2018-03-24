@@ -63,8 +63,6 @@ def manager_home(request):
 @login_required(login_url="/login")
 @user_passes_test(must_be_employee_callback, login_url='/')
 def emp_home(request):
-    manager_messages = get_manger_msgs_of_employee(request.user.profile)
-
     start_week, end_week = get_current_week_range()
     existing_request = ShiftRequest.objects.filter(employee=get_curr_profile(request),
                                                    submission_time__range=[start_week, end_week]).first()
@@ -90,18 +88,13 @@ def emp_home(request):
     ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
 
     new_messages = get_curr_profile(request).new_messages
-    new_message_slice_str = ":%d" % new_messages
-    old_message_slice_str = "%d:" % new_messages
 
-    return render(request, "employee/home.html", {'manager_msgs': manager_messages,
-                                                  'got_request_slots': existing_request.requested_slots.all()
+    return render(request, "employee/home.html", {'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
                                                   'curr_week_str': curr_week_string,
                                                   'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
                                                   'first_login': is_first_login, 'generation': generation_status,
-                                                  'logo_conf': logo_conf, 'new_messages': new_messages,
-                                                  'new_msg_slice': new_message_slice_str,
-                                                  'old_msg_slice': old_message_slice_str})
+                                                  'logo_conf': logo_conf, 'new_messages': new_messages})
 
 
 def register(request):

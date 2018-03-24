@@ -42,7 +42,15 @@ def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
 
 
 def get_manger_msgs_of_employee(employee):
-    return ManagerMessage.objects.filter(recipients__in=[employee]).order_by('-sent_time')
+    half_an_hour = 30 * 60
+    key = "{0}-manager-messages".format(employee)
+    if key not in cache:
+        messages = ManagerMessage.objects.filter(recipients__in=[employee]).order_by('-sent_time')
+        cache.set(key, list(messages), half_an_hour)
+        logger.debug('Taking manager messages from DB')
+        return messages
+    logger.debug('Taking manager messages from cache')
+    return cache.get(key)
 
 
 def get_employee_requests_with_status(manager, status):
