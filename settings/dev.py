@@ -23,12 +23,9 @@ CELERY_BROKER_URL = 'pyamqp://guest@localhost//'
 
 CACHES = {
     'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
+        'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': "redis://127.0.0.1:6379/1",
     },
-    "OPTIONS": {
-        "CLIENT_CLASS": "django_redis.client.DefaultClient",
-    }
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -57,6 +54,7 @@ if DEBUG:
         'debug_toolbar.panels.logging.LoggingPanel',
         'debug_toolbar.panels.redirects.RedirectsPanel',
     ]
+    USE_TOOLBAR = True
 
     DEBUG_TOOLBAR_CONFIG = {
         'INTERCEPT_REDIRECTS': False,

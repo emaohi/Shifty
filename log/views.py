@@ -15,7 +15,7 @@ from kombu.exceptions import OperationalError
 from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
     get_current_week_range, get_curr_week_sunday, get_next_week_sunday
 from core.models import ShiftRequest
-from core.utils import get_employee_requests_with_status, get_manger_msgs_of_employee, get_eta_cache_key
+from core.utils import get_employee_requests_with_status, get_eta_cache_key
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
 
