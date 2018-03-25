@@ -4,6 +4,7 @@ import urllib2
 from datetime import datetime
 from urlparse import urlparse
 
+from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from django.db import models
@@ -159,8 +160,13 @@ class EmployeeProfile(models.Model):
             return self.get_manager().user
 
     def reset_new_messages(self):
+        if self.new_messages > 0:
+            cache.delete(self.get_manager_msg_cache_key())
         self.new_messages = 0
         self.save()
+
+    def get_manager_msg_cache_key(self):
+        return "{0}-old-manager-messages".format(self)
 
     @classmethod
     def get_roles_reversed(cls):

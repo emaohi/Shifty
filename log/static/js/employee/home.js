@@ -17,14 +17,8 @@ $(document).ready(function () {
 });
 
 $(document).on("click", "#toggleOld", function () {
-    var oldMsgs = $("#oldMsgs");
-    if (oldMsgs.is(":visible")) {
-        oldMsgs.hide();
-        $(this).text('Show Old');
-    } else {
-        oldMsgs.show();
-        $(this).text('Hide Old');
-    }
+    $(this).hide();
+    ManagerMessagesAjax('false');
 });
 
 $(document).on("click", ".swapBtn", function () {
@@ -32,19 +26,32 @@ $(document).on("click", ".swapBtn", function () {
 });
 
 $(document).on('shown.bs.tab', 'a[href="#messages"]', function () {
+    ManagerMessagesAjax('true');
+});
+
+function ManagerMessagesAjax(queryParam) {
     $.ajax({
         url: getManagerMessagesUrl,
         type: "get",
-        success: messagesSuccess,
+        data: {
+            new: queryParam
+        },
+        success: function(res) {
+            if (queryParam === 'true') {
+                messagesSuccess(res);
+            } else {
+                oldMessagesSuccess(res);
+            }
+        },
         error: function (xhr) {
             console.error("couldn't get manager messages");
         }
     });
-});
+}
 
 function showSuggestions() {
     console.log('first login: ' + first_login);
-    if (first_login == 'True') {
+    if (first_login === 'True') {
         $("#suggestionsModal").modal('show');
     }
 }
@@ -66,7 +73,10 @@ function displaySlotList(slotsData) {
 }
 
 function messagesSuccess(res) {
-    $("#messages").html(res);
+    $("#newMessages").html(res);
+}
+function oldMessagesSuccess(res) {
+    $("#oldMessages").html(res);
 }
 
 function populateTimerDiv() {

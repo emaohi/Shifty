@@ -14,7 +14,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
-    get_days_hours_from_delta, get_curr_week_num
+    get_days_hours_from_delta
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
@@ -119,17 +119,13 @@ def broadcast_message(request):
 @require_GET
 def get_manager_messages(request):
     curr_emp_profile = get_curr_profile(request)
-    manager_messages = get_manger_msgs_of_employee(curr_emp_profile)
-    new_messages = curr_emp_profile.new_messages
-    new_message_slice_str = ":%d" % new_messages
-    old_message_slice_str = "%d:" % new_messages
+    is_new = request.GET.get('new')
+    manager_messages = get_manger_msgs_of_employee(curr_emp_profile, True if is_new == 'true' else False)
 
     logger.info('resetting new messages for emp %s', str(curr_emp_profile))
     curr_emp_profile.reset_new_messages()
 
-    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages,
-                                                              'new_msg_slice': new_message_slice_str,
-                                                              'old_msg_slice': old_message_slice_str})
+    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages})
 
 
 @login_required(login_url='/login')

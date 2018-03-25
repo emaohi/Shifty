@@ -41,15 +41,20 @@ def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
                                   wait_for_results=wait_for_mail_results)
 
 
-def get_manger_msgs_of_employee(employee):
-    half_an_hour = 30 * 60
-    key = "{0}-manager-messages".format(employee)
-    if key not in cache:
-        messages = ManagerMessage.objects.filter(recipients__in=[employee]).order_by('-sent_time')
-        cache.set(key, list(messages), half_an_hour)
-        logger.debug('Taking manager messages from DB')
+def get_manger_msgs_of_employee(employee, is_new):
+    if is_new:
+        messages = ManagerMessage.objects.filter(
+            recipients__in=[employee]).order_by('-sent_time')[:employee.new_messages]
         return messages
-    logger.debug('Taking manager messages from cache')
+
+    key = employee.get_manager_msg_cache_key()
+    if key not in cache:
+        messages = ManagerMessage.objects.filter(
+            recipients__in=[employee]).order_by('-sent_time')[employee.new_messages:]
+        cache.set(key, list(messages), settings.DURATION_CACHE_TTL)
+        logger.debug('Taking old manager messages from DB')
+        return messages
+    logger.debug('Taking old manager messages from cache')
     return cache.get(key)
 
 
