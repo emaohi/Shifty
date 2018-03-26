@@ -197,3 +197,5 @@ RAVEN_CONFIG = {}
 DURATION_CACHE_TTL = 15 * 60
 
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
+
+USE_TOOLBAR = False

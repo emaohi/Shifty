@@ -41,8 +41,21 @@ def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
                                   wait_for_results=wait_for_mail_results)
 
 
-def get_manger_msgs_of_employee(employee):
-    return ManagerMessage.objects.filter(recipients__in=[employee]).order_by('-sent_time')
+def get_manger_msgs_of_employee(employee, is_new):
+    if is_new:
+        messages = ManagerMessage.objects.filter(
+            recipients__in=[employee]).order_by('-sent_time')[:employee.new_messages]
+        return messages
+
+    key = employee.get_manager_msg_cache_key()
+    if key not in cache:
+        messages = ManagerMessage.objects.filter(
+            recipients__in=[employee]).order_by('-sent_time')[employee.new_messages:]
+        cache.set(key, list(messages), settings.DURATION_CACHE_TTL)
+        logger.debug('Taking old manager messages from DB')
+        return messages
+    logger.debug('Taking old manager messages from cache')
+    return cache.get(key)
 
 
 def get_employee_requests_with_status(manager, status):
@@ -272,6 +285,13 @@ def get_logo_url(business_name):
         return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
     except (KeyError, IndexError):
         raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
+
+
+def get_next_shifts_of_emp(employee):
+    curr_emp_week_slots = ShiftSlot.objects.filter(
+        shift__employees__id__iexact=employee.id, week=get_curr_week_num())
+    curr_emp_future_slots = [slot for slot in curr_emp_week_slots if not slot.is_finished()]
+    return curr_emp_future_slots
 
 
 class NoLogoFoundError(Exception):

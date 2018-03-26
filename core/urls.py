@@ -25,4 +25,5 @@ urlpatterns = [
     url(r'^export_shifts_csv/$', views.export_shifts_csv, name='shifts_csv'),
     url(r'^logo_url/$', views.get_logo_suggestion, name='logo_suggestion'),
     url(r'^ask_swap/$', views.ask_shift_swap, name='ask_shift_swap'),
+    url(r'^reset_new_msgs/$', views.get_manager_messages, name='manager_messages'),
 ]

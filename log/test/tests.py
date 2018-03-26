@@ -22,7 +22,7 @@ class AddEmployeesTest(TestCase):
 
         self.client.post('/login/', self.credentials, follow=True)
 
-    @override_settings(DEBUG=True)
+    @override_settings(USE_TOOLBAR=False)
     def test_check_new_employee_group(self, email_mock):
 
         email_mock.return_value = True

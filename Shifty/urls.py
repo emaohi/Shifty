@@ -25,4 +25,10 @@ urlpatterns = [
     url(r'', include('log.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+if settings.USE_TOOLBAR and settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ]
+
 admin.site.site_header = 'Shifty Administration'

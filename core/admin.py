@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday, ShiftRequest, Shift
+from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday, ShiftRequest, Shift, ShiftSwap
 
 
 class EmployeeRequestAdmin(admin.ModelAdmin):
@@ -34,3 +34,8 @@ admin.site.register(ShiftRequest, ShiftRequestAdmin)
 class ShiftAdmin(admin.ModelAdmin):
     list_display = ['slot', 'rank', 'get_employees_string', 'get_date']
 admin.site.register(Shift, ShiftAdmin)
+
+
+class ShiftSwapAdmin(admin.ModelAdmin):
+    list_display = ['requester', 'responder', 'requester_shift', 'requested_shift', 'accept_step']
+admin.site.register(ShiftSwap, ShiftSwapAdmin)

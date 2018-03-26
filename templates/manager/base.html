@@ -1,4 +1,5 @@
 {% load static %}
+{% load cloudinary %}
 
 <!DOCTYPE html>
 <html>
@@ -136,6 +137,7 @@
         .duration-text {
             color: lightgreen;
         }
+
         #etaText {
             color: white;
         }
@@ -155,7 +157,13 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            {% block comp_logo %} {% endblock %}
+            {% if user.profile.business.logo %}
+                {% if logo_conf == '' %}
+                    <img src="{{ user.profile.business.logo.url }}" height="50" width="80">
+                {% else %}
+                    {% cloudinary user.profile.business.logo.name logo_conf %}
+                {% endif %}
+            {% endif %}
             <a class="navbar-brand" href="/">{% block comp_name %}Shifty{% endblock %}</a>
         </div>
         {% if user.is_authenticated %}

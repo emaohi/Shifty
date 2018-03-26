@@ -11,20 +11,22 @@ from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest
+from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
     get_days_hours_from_delta
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
     parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_current_week_slots
+    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method
 from core import tasks
+from log.models import EmployeeProfile
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +51,7 @@ def report_incorrect_detail(request):
                                       subject='Employee Change Request',
                                       text='Field claimed to be incorrect: %s.'
                                            ' Current field value is %s; Suggestion is %s' %
-                                      (incorrect_field, curr_val, fix_suggestion))
+                                           (incorrect_field, curr_val, fix_suggestion))
         new_request.save()
         # add the employee's manager to the recipients list
         new_request.issuers.add(reporting_profile)
@@ -76,7 +78,7 @@ def handle_employee_request(request):
         try:
             create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
                                text='Your following request has been %s by your manager:\n %s' %
-                               (emp_request.get_status_display(), emp_request.text))
+                                    (emp_request.get_status_display(), emp_request.text))
         except EmailWaitError as e:
             return HttpResponseServerError(e.message)
 
@@ -107,18 +109,31 @@ def broadcast_message(request):
             form = BroadcastMessageForm()
             messages.error(request, message='couldn\'t send broadcast message: %s' % str(form.errors.as_text()))
             return HttpResponseRedirect('/')
-    else:    # method is GET
+    else:  # method is GET
         form = BroadcastMessageForm()
         return render(request, 'ajax_form.html', {'form': form})
 
 
 @login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+@require_GET
+def get_manager_messages(request):
+    curr_emp_profile = get_curr_profile(request)
+    is_new = request.GET.get('new')
+    manager_messages = get_manger_msgs_of_employee(curr_emp_profile, True if is_new == 'true' else False)
+
+    logger.info('resetting new messages for emp %s', str(curr_emp_profile))
+    curr_emp_profile.reset_new_messages()
+
+    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages})
+
+
+@login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_shift_slot(request):
-
     business = get_curr_business(request)
     slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
-                  .values('name').distinct() if t['name'] != 'Custom']
+        .values('name').distinct() if t['name'] != 'Custom']
 
     if request.method == 'POST':
 
@@ -173,7 +188,6 @@ def add_shift_slot(request):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def update_shift_slot(request, slot_id):
-
     updated_slot = get_object_or_404(ShiftSlot, id=slot_id)
 
     if not updated_slot.is_next_week():
@@ -213,7 +227,6 @@ def update_shift_slot(request, slot_id):
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def delete_slot(request):
-
     if request.method == 'POST':
         slot_id = request.POST.get('slot_id')
         updated_slot = get_object_or_404(ShiftSlot, id=slot_id)
@@ -378,9 +391,12 @@ def get_slot_employees(request, slot_id):
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
+            curr_emp_future_slots = get_next_shifts_of_emp(get_curr_profile(request))
+            offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
             return render(request, 'manager/slot_request_emp_list.html',
                           {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
-                           'curr_emp': get_curr_profile(request)})
+                           'curr_emp': get_curr_profile(request),
+                           'future_shifts': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
             logger.error('cant find shift for slot id %s', slot_id)
             return HttpResponse('Cant find shift for this slot')
@@ -438,6 +454,7 @@ def submit_shift_summary(request, slot_id):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
+@require_GET
 def get_time_to_next_shift(request):
     curr_emp = get_curr_profile(request)
     next_shift = get_next_shift(curr_emp)
@@ -452,6 +469,7 @@ def get_time_to_next_shift(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
+@require_GET
 def get_prev_shifts(request):
     curr_emp = get_curr_profile(request)
     prev_shifts = get_emp_previous_shifts(curr_emp)
@@ -480,6 +498,9 @@ def export_shifts_csv(request):
     return response
 
 
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+@require_GET
 def get_logo_suggestion(request):
     business_name = request.GET.get('name', '')
     try:
@@ -494,11 +515,15 @@ def get_logo_suggestion(request):
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_employee_callback)
+@require_POST
 def ask_shift_swap(request):
-    print request
-#     if request.method == 'POST':
-#         requested_username = request.POST.get('requested_employee')
-#         requested_shift_id = request.POST.get('requested_shift')
-#         requester_shift_id = request.POST.get('requester_shift')
-#
-#     return wrong_method(request)
+    if request.method == 'POST':
+        responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
+        requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
+        requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
+        logger.info('new swap request for shift %d to shift %d', requester_shift.id, requested_shift.id)
+
+        ShiftSwap.objects.create(requester=get_curr_profile(request), responder=responder,
+                                 requested_shift=requested_shift,
+                                 requester_shift=requester_shift)
+        return HttpResponse('ok')

@@ -4,7 +4,10 @@ import datetime
 import json
 
 import logging
+
 from django.db import models
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
 
 from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
@@ -175,7 +178,7 @@ class Shift(models.Model):
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return 'shift of slot: ' + str(self.slot)
+        return 'shift: ' + str(self.slot.start_time_str())
 
     def get_employees_string(self):
         return ", ".join([str(emp) for emp in self.employees.all()])
@@ -194,7 +197,7 @@ class Shift(models.Model):
             emp.save()
 
     def calculate_employee_tip(self):
-        return self.total_tips / self.employees.count()
+        return self.total_tips / self.employees.count() if self.total_tips else 0
 
     def get_employees_comma_string(self):
         return ', '.join([emp.user.username for emp in self.employees.all()])
@@ -204,6 +207,9 @@ class ShiftSwap(models.Model):
     requester = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequesting')
     responder = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE, related_name='SwapRequested')
 
+    requester_shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='SwapRequesting')
+    requested_shift = models.ForeignKey(Shift, on_delete=models.CASCADE, related_name='SwapRequested')
+
     ACCEPT_STEP_OPTIONS = (
         (0, 'employee requested'),
         (1, 'employee accepted'),
@@ -212,3 +218,12 @@ class ShiftSwap(models.Model):
         (-2, 'manager rejected'),
     )
     accept_step = models.ImageField(choices=ACCEPT_STEP_OPTIONS, default=0)
+
+
+# pylint: disable=unused-argument
+@receiver(m2m_changed, sender=ManagerMessage.recipients.through)
+def update_employee(sender, **kwargs):
+    for emp in kwargs.pop('instance').recipients.all():
+        logger.debug('incrementing new message for emp %s', str(emp))
+        emp.new_messages += 1
+        emp.save()

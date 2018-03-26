@@ -62,8 +62,12 @@
             </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li><a data-toggle="tab" href="#swaps">Shift swaps</a></li>
-            <li><a href="{% url 'menu_test_main' %}">Menu test</a></li>
-            <li class="pull-right"><a data-toggle="tab" href="#messages">Manager Messages</a></li>
+            <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu test</a></li>
+            <li><a data-toggle="tab" href="#messages">Manager Messages
+                {% if new_messages > 0 %}
+                    <span class="badge badge-light">{{ new_messages }}</span>
+                {% endif %}
+            </a></li>
         </ul>
         <div class="tab-content">
             <div id="current" class="tab-pane fade in active">
@@ -88,6 +92,7 @@
                                     <span aria-hidden="true">&times;</span>
                                 </button>
                             </div>
+                            <input type="hidden" name="shiftId" value="">
                             <div id="shiftModalBody" class="modal-body">
                             </div>
                         </div>
@@ -142,24 +147,19 @@
             <div id="messages" class="tab-pane fade">
                 <div class="container" style="margin-top: 20px">
                     <h3>Manager messages</h3>
-                    {% for msg in manager_msgs %}
-                        <div class="row" style="margin-top: 20px">
-                            <div class="col-xs-8">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title" style="display: inline">{{ msg.subject }}</h3>
-                                    </div>
-                                    <div class="panel-body">
-                                        {{ msg.get_split_msg.0 }}<br>{{ msg.get_split_msg.1 }}
-                                    </div>
-                                    <div class="panel-footer">
-                                        <span class="hidden-id" style="visibility: hidden">{{ msg.id }}</span>
-                                        <span class="timestamp"> {{ msg.sent_time }} </span>
-                                    </div>
-                                </div>
-                            </div>
+                    <div id="newMessages"></div>
+                    <div class="row">
+                        <div class="col-xs-5 col-xs-offset-3">
+                            <button class="btn btn-lg btn-primary" id="toggleOld">Show old</button>
                         </div>
-                    {% endfor %}
+                    </div>
+                    <div id="oldMessages"></div>
+                </div>
+            </div>
+
+            <div id="swapRequests" class="tab-pane fade">
+                <div class="container" style="margin-top: 20px">
+                    <h3>Swap requests</h3>
                 </div>
             </div>
         </div>
@@ -187,13 +187,17 @@
 
 {% block javascript %}
     <script>
+        var csrf_token = "{{ csrf_token }}";
         var next_slots_url = "{% url 'slots_request' %}";
         var current_shifts_url = "{% url 'get_current_shifts' %}";
         var shift_employees_url = "{% url 'slot_employees' 0%}";
         var prev_shifts_url = "{% url 'prev_shifts' %}";
+        var swapRequstUrl = "{% url 'ask_shift_swap' %}";
+        var getManagerMessagesUrl = "{% url 'manager_messages' %}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";
         var first_login = "{{ first_login }}";
+        var new_messages = "{{ new_messages }}";
     </script>
     <script src="{% static 'js/employee/home.js' %}" type="text/javascript"></script>
     {#  calendar resources  #}
