@@ -19,7 +19,8 @@ from core.utils import get_employee_requests_with_status, get_eta_cache_key
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
 
-from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback
+from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback, \
+    get_logo_conf
 from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger(__name__)
@@ -47,16 +48,11 @@ def manager_home(request):
     is_finish_slots = curr_manager.business.slot_request_enabled
     logger.info('are slot adding is finished? %s', is_finish_slots)
 
-    logo_conf = dict(format="png", transformation=[
-            dict(crop="fit", width=80, height=50, radius=10),
-            dict(angle=20)
-        ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
-
     context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
                'curr_week_str': curr_week_string, 'start_date': next_week_sunday,
                'current_start_date': get_curr_week_sunday(),
                'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated,
-               'logo_conf': logo_conf}
+               'logo_conf': get_logo_conf()}
     return render(request, "manager/home.html", context)
 
 
@@ -82,11 +78,6 @@ def emp_home(request):
         get_curr_profile(request).ever_logged_in = True
         get_curr_profile(request).save()
 
-    logo_conf = dict(format="png", transformation=[
-        dict(crop="fit", width=80, height=50, radius=10),
-        dict(angle=20)
-    ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
-
     new_messages = get_curr_profile(request).new_messages
 
     return render(request, "employee/home.html", {'got_request_slots': existing_request.requested_slots.all()
@@ -94,7 +85,7 @@ def emp_home(request):
                                                   'curr_week_str': curr_week_string,
                                                   'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
                                                   'first_login': is_first_login, 'generation': generation_status,
-                                                  'logo_conf': logo_conf, 'new_messages': new_messages})
+                                                  'logo_conf': get_logo_conf(), 'new_messages': new_messages})
 
 
 def register(request):
@@ -218,7 +209,8 @@ def add_employees(request):
             return HttpResponseRedirect('/')
     else:
         form = AddEmployeesForm()
-    return render(request, "manager/add_employees.html", {'form': form})
+    logo_conf = get_logo_conf()
+    return render(request, "manager/add_employees.html", {'form': form, 'logo_conf': logo_conf})
 
 
 @login_required(login_url='/login')
@@ -230,7 +222,7 @@ def manage_employees(request):
     all_employees = EmployeeProfile.objects.filter(business=curr_business)
 
     return render(request, 'manager/manage_employees.html',
-                  {'employees': all_employees, 'curr_business': curr_business})
+                  {'employees': all_employees, 'curr_business': curr_business, 'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')

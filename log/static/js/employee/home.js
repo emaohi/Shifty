@@ -14,6 +14,8 @@ $(document).ready(function () {
 
     getPreviousShifts();
 
+    getSwapRequests();
+
 });
 
 $(document).on("click", "#toggleOld", function () {
@@ -140,6 +142,19 @@ function showShiftDetails(shiftId) {
     $("#shiftModal").modal('show');
 }
 
+function getSwapRequests() {
+    $.ajax({
+        url: swapRequestsUrl,
+        type: "get",
+        success: function (swap_requests) {
+            displaySwapRequests(swap_requests);
+        },
+        error: function () {
+            console.error('couldnt get swap requests list');
+        }
+    });
+}
+
 function insertEmployeesToModal(emp_list, shift_id) {
     $("input[name='shiftId']").val(shift_id);
     $("#shiftModalBody").html(emp_list);
@@ -184,12 +199,21 @@ function sendSwapRequest(username, requestedShift, requesterShift) {
             'X-CSRFToken': csrf_token
         },
         success: notifySwapRequestDelivered,
-        error: function (xhr) {
-            alert("something fishy: " + xhr);
-        }
+        error: notifySwapRequestFailed
     });
 }
 
 function notifySwapRequestDelivered() {
-    alert("success!");
+    var resultSpan = $("#swapRequestResult");
+    resultSpan.addClass("success");
+    resultSpan.text("success");
+}
+function notifySwapRequestFailed(xhr) {
+    var resultSpan = $("#swapRequestResult");
+    resultSpan.addClass("fail");
+    if (xhr.status === 400) {
+        resultSpan.text("Illegal request - request exists");
+    } else {
+        resultSpan.text("server error: " + xhr.responseText);
+    }
 }

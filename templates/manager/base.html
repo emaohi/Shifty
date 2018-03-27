@@ -27,6 +27,10 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.8.4/moment.min.js"></script>
     <script>
         $(document).ready(function () {
+            get_duration();
+        });
+
+        function get_duration() {
             $.ajax({
                 url: "{% url 'duration_data' %}", //from template
                 type: "get", //send it through get method,
@@ -35,7 +39,7 @@
                     //Do Something to handle error
                 }
             });
-        });
+        }
         function display_duration(durationData) {
             var walkingText = durationData.walking;
             var drivingText = durationData.driving;

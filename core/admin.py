@@ -37,5 +37,5 @@ admin.site.register(Shift, ShiftAdmin)
 
 
 class ShiftSwapAdmin(admin.ModelAdmin):
-    list_display = ['requester', 'responder', 'requester_shift', 'requested_shift', 'accept_step']
+    list_display = ['requester', 'responder', 'requester_shift', 'requested_shift', 'accept_step', 'requested_at']
 admin.site.register(ShiftSwap, ShiftSwapAdmin)

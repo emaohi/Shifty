@@ -227,14 +227,16 @@ function display_cal(event_list) {
 
 function showSlotDetails(slotId, constraints_json) {
 
+    var slotModal = $('#slotModal');
+
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
-    $('#slotModal').find('.modal-title').html('Slot #' + slotId + ' constraints');
+    slotModal.find('.modal-title').html('Slot #' + slotId + ' constraints');
 
     setSlotEmpList(slotId);
     setShiftEmpList(slotId);
 
     $('#putShiftId').text(slotId);
-    $('#slotModal').modal('show');
+    slotModal.modal('show');
 }
 function setSlotEmpList(slotId) {
     $.ajax({

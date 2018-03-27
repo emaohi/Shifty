@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
+from django.db import IntegrityError
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
@@ -24,7 +25,7 @@ from core.utils import create_manager_msg, send_mail_to_manager, create_constrai
     get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
-    get_curr_business, wrong_method
+    get_curr_business, wrong_method, get_logo_conf
 from core import tasks
 from log.models import EmployeeProfile
 
@@ -182,7 +183,7 @@ def add_shift_slot(request):
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
                              names=((name, name) for name in slot_names))
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
-                                                          'holiday': slot_holiday})
+                                                          'holiday': slot_holiday, 'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')
@@ -221,7 +222,8 @@ def update_shift_slot(request, slot_id):
                                       'end_hour': end_hour.replace('-', ':'), 'mandatory': is_mandatory},
                              business=business)
         return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
-                                                             'id': slot_id, 'holiday': updated_slot.holiday})
+                                                             'id': slot_id, 'holiday': updated_slot.holiday,
+                                                             'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')
@@ -350,7 +352,7 @@ def get_slot_request_employees(request, slot_id):
 
         slot_requests = ShiftRequest.objects.filter(requested_slots=requested_slot)
 
-        return render(request, 'manager/slot_request_emp_list.html',
+        return render(request, 'slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests],
                        'empty_msg': 'No employees chose this slot'})
 
@@ -393,7 +395,7 @@ def get_slot_employees(request, slot_id):
             shift = requested_slot.shift
             curr_emp_future_slots = get_next_shifts_of_emp(get_curr_profile(request))
             offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
-            return render(request, 'manager/slot_request_emp_list.html',
+            return render(request, 'slot_request_emp_list.html',
                           {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
                            'curr_emp': get_curr_profile(request),
                            'future_shifts': curr_emp_future_slots, 'offer_swap': offer_swap})
@@ -518,12 +520,15 @@ def get_logo_suggestion(request):
 @require_POST
 def ask_shift_swap(request):
     if request.method == 'POST':
-        responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
-        requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
-        requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
-        logger.info('new swap request for shift %d to shift %d', requester_shift.id, requested_shift.id)
+        try:
+            responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
+            requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
+            requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
+            logger.info('new swap request for shift %d to shift %d', requester_shift.id, requested_shift.id)
 
-        ShiftSwap.objects.create(requester=get_curr_profile(request), responder=responder,
-                                 requested_shift=requested_shift,
-                                 requester_shift=requester_shift)
-        return HttpResponse('ok')
+            ShiftSwap.objects.create(requester=get_curr_profile(request), responder=responder,
+                                     requested_shift=requested_shift,
+                                     requester_shift=requester_shift)
+            return HttpResponse('ok')
+        except (ValueError, IntegrityError) as e:
+            return HttpResponseBadRequest('bad request: %s' % e.message)

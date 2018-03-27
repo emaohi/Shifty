@@ -218,6 +218,10 @@ class ShiftSwap(models.Model):
         (-2, 'manager rejected'),
     )
     accept_step = models.ImageField(choices=ACCEPT_STEP_OPTIONS, default=0)
+    requested_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = (('requester', 'requester_shift'), ('requester', 'requested_shift'))
 
 
 # pylint: disable=unused-argument
