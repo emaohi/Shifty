@@ -8,6 +8,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
 from django.db import IntegrityError
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
@@ -519,16 +520,24 @@ def get_logo_suggestion(request):
 @user_passes_test(must_be_employee_callback)
 @require_POST
 def ask_shift_swap(request):
-    if request.method == 'POST':
-        try:
-            responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
-            requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
-            requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
-            logger.info('new swap request for shift %d to shift %d', requester_shift.id, requested_shift.id)
+    try:
+        responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
+        requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
+        requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
+        logger.info('new swap request for shift %d to shift %d', requester_shift.id, requested_shift.id)
 
-            ShiftSwap.objects.create(requester=get_curr_profile(request), responder=responder,
-                                     requested_shift=requested_shift,
-                                     requester_shift=requester_shift)
-            return HttpResponse('ok')
-        except (ValueError, IntegrityError) as e:
-            return HttpResponseBadRequest('bad request: %s' % e.message)
+        ShiftSwap.objects.create(requester=get_curr_profile(request), responder=responder,
+                                 requested_shift=requested_shift,
+                                 requester_shift=requester_shift)
+        return HttpResponse('ok')
+    except (ValueError, IntegrityError) as e:
+        return HttpResponseBadRequest('bad request: %s' % e.message)
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+@require_GET
+def get_swap_requests(request):
+    open_swaps = ShiftSwap.objects.filter(Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
+                                          accept_step__in=[0, 1])
+    return render(request, 'employee/swap_requests.html', {'swap_requests': open_swaps})

@@ -12,7 +12,7 @@
 {% block style %}
     <style>
 
-        h3, h4, p, .slotRows {
+        h3, h4, p, h5, .slotRows {
             text-align: center;
         }
 
@@ -147,8 +147,9 @@
             </div>
 
             <div id="swaps" class="tab-pane fade">
-                <h3>Swap shifts</h3>
-                <p>Swap shifts with colleagues</p>
+                <div class="container" style="margin-top: 20px">
+                    <div class="newSwaps"></div>
+                </div>
             </div>
 
             <div id="messages" class="tab-pane fade">
@@ -161,12 +162,6 @@
                         </div>
                     </div>
                     <div id="newMessages"></div>
-                </div>
-            </div>
-
-            <div id="swapRequests" class="tab-pane fade">
-                <div class="container" style="margin-top: 20px">
-                    <h3>Swap requests</h3>
                 </div>
             </div>
         </div>
@@ -200,6 +195,7 @@
         var shift_employees_url = "{% url 'slot_employees' 0%}";
         var prev_shifts_url = "{% url 'prev_shifts' %}";
         var swapRequstUrl = "{% url 'ask_shift_swap' %}";
+        var swapRequestsUrl = "{% url 'get_swap_requests' %}";
         var getManagerMessagesUrl = "{% url 'manager_messages' %}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";

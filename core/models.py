@@ -6,10 +6,11 @@ import json
 import logging
 
 from django.db import models
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
 from core.date_utils import get_next_week_num, get_week_range, get_week_string
+from core.utils import manager_act_on_swap
 from log.models import Business, EmployeeProfile
 
 logger = logging.getLogger(__name__)
@@ -180,6 +181,12 @@ class Shift(models.Model):
     def __str__(self):
         return 'shift: ' + str(self.slot.start_time_str())
 
+    def add_employee(self, emp):
+        self.employees.add(emp)
+
+    def remove_employee(self, emp):
+        self.employees.remove(emp)
+
     def get_employees_string(self):
         return ", ".join([str(emp) for emp in self.employees.all()])
 
@@ -217,7 +224,7 @@ class ShiftSwap(models.Model):
         (-1, 'employee rejected'),
         (-2, 'manager rejected'),
     )
-    accept_step = models.ImageField(choices=ACCEPT_STEP_OPTIONS, default=0)
+    accept_step = models.IntegerField(choices=ACCEPT_STEP_OPTIONS, default=0)
     requested_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -231,3 +238,15 @@ def update_employee(sender, **kwargs):
         logger.debug('incrementing new message for emp %s', str(emp))
         emp.new_messages += 1
         emp.save()
+
+
+# pylint: disable=unused-argument
+@receiver(post_save, sender=ShiftSwap)
+def update_upon_swap_request(sender, **kwargs):
+    instance = kwargs.pop('instance')
+    new_state = instance.accept_step
+    
+    if new_state == -2:
+        manager_act_on_swap(instance, False)
+    elif new_state == 2:
+        manager_act_on_swap(instance, True)

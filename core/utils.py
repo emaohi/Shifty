@@ -8,6 +8,7 @@ import requests
 from bs4 import BeautifulSoup
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import transaction, IntegrityError
 from django.utils import timezone
 
 from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range
@@ -292,6 +293,31 @@ def get_next_shifts_of_emp(employee):
         shift__employees__id__iexact=employee.id, week=get_curr_week_num())
     curr_emp_future_slots = [slot for slot in curr_emp_week_slots if not slot.is_finished()]
     return curr_emp_future_slots
+
+
+def manager_act_on_swap(swap_request, approved):
+    recipients = [swap_request.requester, swap_request.responder]
+    logger.info('manager %s shift request of %s for %s, sending mails', 'accepted' if approved else 'rejected',
+                recipients[0], recipients[1])
+    create_manager_msg(recipients=recipients, subject='Manager action', text='Manager acted on swap request',
+                       wait_for_mail_results=False)
+    if approved:
+        swap_shifts(swap_request, *recipients)
+
+
+def swap_shifts(swap_request, requester, responder):
+    logger.info('Going to swap shifts of requester %s and responder %s', requester, responder)
+    try:
+        with transaction.atomic():
+            swap_request.requester_shift.remove_employee(requester)
+            swap_request.requester_shift.add_employee(responder)
+            swap_request.requested_shift.remove_employee(responder)
+            swap_request.requested_shift.add_employee(requester)
+        logger.info('Swap completed')
+    except IntegrityError as e:
+        logger.error('Couldn\'t swap shifts: %s, rolling back accept step', str(e))
+        swap_request.accept_step = 1
+        swap_request.save()
 
 
 class NoLogoFoundError(Exception):

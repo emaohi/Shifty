@@ -146,13 +146,15 @@ function getSwapRequests() {
     $.ajax({
         url: swapRequestsUrl,
         type: "get",
-        success: function (swap_requests) {
-            displaySwapRequests(swap_requests);
-        },
+        success: displaySwapRequests,
         error: function () {
             console.error('couldnt get swap requests list');
         }
     });
+}
+
+function displaySwapRequests(swap_requests) {
+    $(".newSwaps").html(swap_requests);
 }
 
 function insertEmployeesToModal(emp_list, shift_id) {
