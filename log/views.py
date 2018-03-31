@@ -2,7 +2,6 @@ import traceback
 
 import logging
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.cache import cache
