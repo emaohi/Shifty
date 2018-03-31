@@ -121,13 +121,14 @@ def broadcast_message(request):
 @require_GET
 def get_manager_messages(request):
     curr_emp_profile = get_curr_profile(request)
-    is_new = request.GET.get('new')
-    manager_messages = get_manger_msgs_of_employee(curr_emp_profile, True if is_new == 'true' else False)
+    is_new_str = request.GET.get('new')
+    is_new = True if is_new_str == 'true' else False
+    manager_messages = get_manger_msgs_of_employee(curr_emp_profile, is_new)
 
     logger.info('resetting new messages for emp %s', str(curr_emp_profile))
     curr_emp_profile.reset_new_messages()
 
-    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages})
+    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages, 'is_new': is_new})
 
 
 @login_required(login_url='/login')
@@ -538,6 +539,26 @@ def ask_shift_swap(request):
 @user_passes_test(must_be_employee_callback)
 @require_GET
 def get_swap_requests(request):
-    open_swaps = ShiftSwap.objects.filter(Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
-                                          accept_step__in=[0, 1])
-    return render(request, 'employee/swap_requests.html', {'swap_requests': open_swaps})
+    is_open = True if request.GET.get('state') == 'open' else False
+
+    open_swaps = ShiftSwap.objects.filter(
+        Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
+        accept_step__in=ShiftSwap.open_accept_steps() if is_open else ShiftSwap.closed_accept_steps())
+
+    return render(request, 'employee/swap_requests.html', {'swap_requests': open_swaps, 'is_open': is_open})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+@require_POST
+def respond_swap_request(request):
+    try:
+        swap_request = ShiftSwap.objects.get(pk=request.POST.get('emp_request_id'))
+        logger.debug('swap request id is %s', swap_request)
+        is_accept = request.POST.get('is_accept') == 'true'
+        swap_request.accept_step = 1 if is_accept else -1
+        logger.info('saving %s : %s...', swap_request, 'accept' if is_accept else 'reject')
+        swap_request.save()
+        return HttpResponse('ok')
+    except KeyError as e:
+        return HttpResponseBadRequest('Bad request: ' + str(e))

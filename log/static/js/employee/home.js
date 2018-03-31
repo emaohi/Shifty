@@ -14,8 +14,6 @@ $(document).ready(function () {
 
     getPreviousShifts();
 
-    getSwapRequests();
-
 });
 
 $(document).on("click", "#toggleOld", function () {
@@ -23,12 +21,33 @@ $(document).on("click", "#toggleOld", function () {
     ManagerMessagesAjax('false');
 });
 
+$(document).on("click", "#toggleClosed", function () {
+    $(this).hide();
+    swapRequestsAjax('closed');
+});
+
 $(document).on("click", ".swapBtn", function () {
     requestSwap($(this));
 });
 
+$(document).on("click", ".approve", function () {
+    var request_id = $(this).parents('div').siblings("span:first").text();
+    spin_instead_of_btn($(this));
+    handle_request(true, request_id);
+});
+
+$(document).on("click", ".reject", function () {
+    var request_id = $(this).parents('div').siblings("span:first").text();
+    spin_instead_of_btn($(this));
+    handle_request(false, request_id);
+});
+
 $(document).on('shown.bs.tab', 'a[href="#messages"]', function () {
     ManagerMessagesAjax('true');
+});
+
+$(document).on('shown.bs.tab', 'a[href="#swaps"]', function () {
+    swapRequestsAjax('open');
 });
 
 function ManagerMessagesAjax(queryParam) {
@@ -40,13 +59,33 @@ function ManagerMessagesAjax(queryParam) {
         },
         success: function(res) {
             if (queryParam === 'true') {
-                messagesSuccess(res);
+                $("#newMessages").html(res);
             } else {
-                oldMessagesSuccess(res);
+                $("#oldMessages").html(res);
             }
         },
         error: function (xhr) {
             console.error("couldn't get manager messages");
+        }
+    });
+}
+
+function swapRequestsAjax(queryParam) {
+    $.ajax({
+        url: swapRequestsUrl,
+        type: "get",
+        data: {
+            state: queryParam
+        },
+        success: function(res) {
+            if (queryParam === 'open') {
+                $("#openSwaps").html(res);
+            } else {
+                $("#closedSwaps").html(res);
+            }
+        },
+        error: function (xhr) {
+            console.error("couldn't get swap requests");
         }
     });
 }
@@ -72,13 +111,6 @@ function showNextWeekSlotsList() {
 function displaySlotList(slotsData) {
     $(".slotRows").html(slotsData);
     $('.selectpicker').selectpicker();
-}
-
-function messagesSuccess(res) {
-    $("#newMessages").html(res);
-}
-function oldMessagesSuccess(res) {
-    $("#oldMessages").html(res);
 }
 
 function populateTimerDiv() {
@@ -142,19 +174,8 @@ function showShiftDetails(shiftId) {
     $("#shiftModal").modal('show');
 }
 
-function getSwapRequests() {
-    $.ajax({
-        url: swapRequestsUrl,
-        type: "get",
-        success: displaySwapRequests,
-        error: function () {
-            console.error('couldnt get swap requests list');
-        }
-    });
-}
-
 function displaySwapRequests(swap_requests) {
-    $(".newSwaps").html(swap_requests);
+    $("#openSwaps").html(swap_requests);
 }
 
 function insertEmployeesToModal(emp_list, shift_id) {
@@ -218,4 +239,30 @@ function notifySwapRequestFailed(xhr) {
     } else {
         resultSpan.text("server error: " + xhr.responseText);
     }
+}
+
+function spin_instead_of_btn($btn) {
+    $btn.hide();
+    $btn.siblings("button").hide();
+    $btn.siblings('.fa-spin').show();
+}
+
+function handle_request(is_accept, request_id) {
+    $.ajax({
+        url: handle_swap_request_url,
+        type: "post", //send it through get method
+        data: {
+            emp_request_id: request_id,
+            is_accept: is_accept
+        },
+        headers: {
+            'X-CSRFToken': csrf_token
+        },
+        success: function (response) {
+            swapRequestsAjax('open');
+        },
+        error: function (xhr) {
+            console.error(xhr.responseText)
+        }
+    });
 }

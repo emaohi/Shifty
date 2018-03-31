@@ -53,7 +53,7 @@ def get_manger_msgs_of_employee(employee, is_new):
         messages = ManagerMessage.objects.filter(
             recipients__in=[employee]).order_by('-sent_time')[employee.new_messages:]
         cache.set(key, list(messages), settings.DURATION_CACHE_TTL)
-        logger.debug('Taking old manager messages from DB')
+        logger.debug('Taking old manager messages from DB: %s', messages)
         return messages
     logger.debug('Taking old manager messages from cache')
     return cache.get(key)
@@ -295,16 +295,6 @@ def get_next_shifts_of_emp(employee):
     return curr_emp_future_slots
 
 
-def manager_act_on_swap(swap_request, approved):
-    recipients = [swap_request.requester, swap_request.responder]
-    logger.info('manager %s shift request of %s for %s, sending mails', 'accepted' if approved else 'rejected',
-                recipients[0], recipients[1])
-    create_manager_msg(recipients=recipients, subject='Manager action', text='Manager acted on swap request',
-                       wait_for_mail_results=False)
-    if approved:
-        swap_shifts(swap_request, *recipients)
-
-
 def swap_shifts(swap_request, requester, responder):
     logger.info('Going to swap shifts of requester %s and responder %s', requester, responder)
     try:
@@ -322,6 +312,3 @@ def swap_shifts(swap_request, requester, responder):
 
 class NoLogoFoundError(Exception):
     pass
-
-
-

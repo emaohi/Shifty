@@ -2,12 +2,11 @@ from django.contrib.auth.models import User
 from django.test import TestCase
 
 from core.date_utils import get_curr_year, get_next_week_num
-from core.models import ShiftSlot
+from core.models import ShiftSlot, Shift
 from log.models import Business
 
 
 class ShiftSlotModelTest(TestCase):
-
     test_business = None
 
     slot = None
@@ -38,3 +37,19 @@ class ShiftSlotModelTest(TestCase):
                                  day='1', start_hour='12:30:00', end_hour='13:00:00')
         slot = ShiftSlot.objects.get(start_hour='12:30:00')
         self.assertTrue(slot.is_next_week())
+
+
+class ShiftSwapModelTest(TestCase):
+    slot = None
+    shift = None
+
+    @classmethod
+    def setUpTestData(cls):
+        test_manager = User.objects.create_user({'username': 'testUser', 'password': 'secret'})
+        cls.test_business = Business.objects.create(business_name='testBiz', manager=test_manager)
+        cls.slot = ShiftSlot.objects.create(business=cls.test_business, year='2016', day='1',
+                                            start_hour='12:00:00', end_hour='13:00:00')
+
+    def setUp(self):
+        self.shift = Shift.objects.create()
+        print 2

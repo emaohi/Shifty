@@ -1,7 +1,10 @@
+{% if not is_new %}
+    <h3>Old Messages</h3>
+{% endif %}
 {% if manager_msgs %}
     {% for msg in manager_msgs %}
         <div class="row" style="margin-top: 20px">
-            <div class="col-xs-8">
+            <div class="col-xs-8 col-xs-offset-2">
                 <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title" style="display: inline">{{ msg.subject }}</h3>
@@ -18,5 +21,11 @@
         </div>
     {% endfor %}
 {% else %}
-    No messages found
+    <div style="text-align: center; margin-top: 20px">
+            {% if is_new %}
+                No new messages found
+            {% else %}
+                No old messages found
+            {% endif %}
+    </div>
 {% endif %}

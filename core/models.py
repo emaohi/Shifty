@@ -5,12 +5,12 @@ import json
 
 import logging
 
-from django.db import models
-from django.db.models.signals import m2m_changed, post_save
+from django.db import models, IntegrityError, transaction
+from django.db.models import Q
+from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from core.date_utils import get_next_week_num, get_week_range, get_week_string
-from core.utils import manager_act_on_swap
 from log.models import Business, EmployeeProfile
 
 logger = logging.getLogger(__name__)
@@ -227,6 +227,49 @@ class ShiftSwap(models.Model):
     accept_step = models.IntegerField(choices=ACCEPT_STEP_OPTIONS, default=0)
     requested_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return 'swap request from %s to %s' % (self.requester, self.responder)
+
+    def save(self, *args, **kwargs):
+        if self.accept_step == 2 or self.accept_step == -2:
+            self.handle_manager_action(self.accept_step)
+        super(ShiftSwap, self).save(*args, **kwargs)
+
+    def handle_manager_action(self, manager_action):
+        approved = manager_action == 2
+        recipients = EmployeeProfile.objects.filter(Q(user__username=self.requester.user.username) |
+                                                    Q(user__username=self.responder.user.username))
+        manager_action = 'accepted' if approved else 'rejected'
+        logger.info('manager %s shift request of %s for %s, sending mails', manager_action,
+                    recipients[0], recipients[1])
+        from core.utils import create_manager_msg
+        create_manager_msg(recipients=recipients, subject='Manager %s' % manager_action,
+                           text='Manager %s on swap request' % manager_action, wait_for_mail_results=False)
+        if approved:
+            self.swap_shifts(self, *recipients)
+
+    def swap_shifts(self, requester, responder):
+        logger.info('Going to swap shifts of requester %s and responder %s', requester, responder)
+        try:
+            with transaction.atomic():
+                self.requester_shift.remove_employee(requester)
+                self.requester_shift.add_employee(responder)
+                self.requested_shift.remove_employee(responder)
+                self.requested_shift.add_employee(requester)
+            logger.info('Swap completed')
+        except IntegrityError as e:
+            logger.error('Couldn\'t swap shifts: %s, rolling back accept step', str(e))
+            self.accept_step = 1
+            self.save()
+
+    @staticmethod
+    def open_accept_steps():
+        return [0, 1]
+
+    @staticmethod
+    def closed_accept_steps():
+        return [-2, -1, 2]
+
     class Meta:
         unique_together = (('requester', 'requester_shift'), ('requester', 'requested_shift'))
 
@@ -238,15 +281,3 @@ def update_employee(sender, **kwargs):
         logger.debug('incrementing new message for emp %s', str(emp))
         emp.new_messages += 1
         emp.save()
-
-
-# pylint: disable=unused-argument
-@receiver(post_save, sender=ShiftSwap)
-def update_upon_swap_request(sender, **kwargs):
-    instance = kwargs.pop('instance')
-    new_state = instance.accept_step
-    
-    if new_state == -2:
-        manager_act_on_swap(instance, False)
-    elif new_state == 2:
-        manager_act_on_swap(instance, True)

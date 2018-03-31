@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^ask_swap/$', views.ask_shift_swap, name='ask_shift_swap'),
     url(r'^reset_new_msgs/$', views.get_manager_messages, name='manager_messages'),
     url(r'^swap_requests/$', views.get_swap_requests, name='get_swap_requests'),
+    url(r'^respond_swap_request/$', views.respond_swap_request, name='respond_swap_request'),
 ]
