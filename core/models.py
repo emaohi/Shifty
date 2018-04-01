@@ -36,11 +36,30 @@ class EmployeeRequest(models.Model):
         return ', '.join(str(emp) for emp in self.issuers.all())
     get_issuers_string.short_description = 'issuers'
 
+    def is_shift_swap(self):
+        return self.type == 'S'
+
+    def is_accepted(self):
+        return self.status == 'A'
+
+    def is_rejected(self):
+        return self.status == 'R'
+
     def save(self, *args, **kwargs):
         if not self.subject:
             self.subject = self.get_type_display() + ' subject'
         if not self.text:
             self.text = self.get_type_display() + ' text'
+
+        if self.is_shift_swap():
+            if self.is_accepted():
+                logger.info('Accepting shift swap request !')
+                self.swap_request.accept_step = 2
+            elif self.is_rejected():
+                logger.info('Rejecting shift swap request !')
+                self.swap_request.accept_step = -2
+            self.swap_request.save()
+
         super(EmployeeRequest, self).save(*args, **kwargs)
 
 
@@ -227,11 +246,20 @@ class ShiftSwap(models.Model):
     accept_step = models.IntegerField(choices=ACCEPT_STEP_OPTIONS, default=0)
     requested_at = models.DateTimeField(auto_now_add=True)
 
+    employee_request = models.OneToOneField(EmployeeRequest, on_delete=models.CASCADE,
+                                            null=True, blank=True, related_name='swap_request')
+
     def __str__(self):
         return 'swap request from %s to %s' % (self.requester, self.responder)
 
     def save(self, *args, **kwargs):
-        if self.accept_step == 2 or self.accept_step == -2:
+        if self.accept_step == 1:
+            logger.debug('saved shiftSwap of status 1, going to create employeeRequest')
+            self.employee_request = EmployeeRequest.objects.create(type='S')
+            self.employee_request.issuers.add(self.requester)
+            self.employee_request.issuers.add(self.responder)
+        elif self.accept_step == 2 or self.accept_step == -2:
+            logger.debug('saved shiftSwap of status %d', self.accept_step)
             self.handle_manager_action(self.accept_step)
         super(ShiftSwap, self).save(*args, **kwargs)
 
@@ -246,7 +274,7 @@ class ShiftSwap(models.Model):
         create_manager_msg(recipients=recipients, subject='Manager %s' % manager_action,
                            text='Manager %s on swap request' % manager_action, wait_for_mail_results=False)
         if approved:
-            self.swap_shifts(self, *recipients)
+            self.swap_shifts(*recipients)
 
     def swap_shifts(self, requester, responder):
         logger.info('Going to swap shifts of requester %s and responder %s', requester, responder)
