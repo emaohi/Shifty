@@ -51,7 +51,7 @@ class EmployeeRequest(models.Model):
         if not self.text:
             self.text = self.get_type_display() + ' text'
 
-        if self.is_shift_swap():
+        if self.is_shift_swap() and hasattr(self, 'swap_request'):
             if self.is_accepted():
                 logger.info('Accepting shift swap request !')
                 self.swap_request.accept_step = 2
@@ -244,7 +244,7 @@ class ShiftSwap(models.Model):
         (-2, 'manager rejected'),
     )
     accept_step = models.IntegerField(choices=ACCEPT_STEP_OPTIONS, default=0)
-    requested_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     employee_request = models.OneToOneField(EmployeeRequest, on_delete=models.CASCADE,
                                             null=True, blank=True, related_name='swap_request')

@@ -543,7 +543,8 @@ def get_swap_requests(request):
 
     open_swaps = ShiftSwap.objects.filter(
         Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
-        accept_step__in=ShiftSwap.open_accept_steps() if is_open else ShiftSwap.closed_accept_steps())
+        accept_step__in=ShiftSwap.open_accept_steps() if is_open else ShiftSwap.closed_accept_steps())\
+        .order_by('-updated_at')
 
     return render(request, 'employee/swap_requests.html', {'swap_requests': open_swaps, 'is_open': is_open})
 
