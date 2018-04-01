@@ -204,6 +204,8 @@ class Shift(models.Model):
         self.employees.add(emp)
 
     def remove_employee(self, emp):
+        if not self.emp_exists(emp):
+            logger.warning('Trying to remove not existing employee %s from shift %s', emp, self)
         self.employees.remove(emp)
 
     def get_employees_string(self):
@@ -227,6 +229,9 @@ class Shift(models.Model):
 
     def get_employees_comma_string(self):
         return ', '.join([emp.user.username for emp in self.employees.all()])
+
+    def emp_exists(self, emp):
+        return emp in self.employees.all()
 
 
 class ShiftSwap(models.Model):
@@ -270,9 +275,6 @@ class ShiftSwap(models.Model):
         manager_action = 'accepted' if approved else 'rejected'
         logger.info('manager %s shift request of %s for %s, sending mails', manager_action,
                     recipients[0], recipients[1])
-        from core.utils import create_manager_msg
-        create_manager_msg(recipients=recipients, subject='Manager %s' % manager_action,
-                           text='Manager %s on swap request' % manager_action, wait_for_mail_results=False)
         if approved:
             self.swap_shifts(*recipients)
 
