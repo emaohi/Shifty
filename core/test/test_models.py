@@ -1,9 +1,11 @@
 from django.contrib.auth.models import User
+from django.db import IntegrityError
 from django.test import TestCase
 
 from core.date_utils import get_curr_year, get_next_week_num
-from core.models import ShiftSlot, Shift
-from log.models import Business
+from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest
+from core.test.test_helpers import create_new_manager, create_new_employee
+from log.models import Business, EmployeeProfile
 
 
 class ShiftSlotModelTest(TestCase):
@@ -40,16 +42,60 @@ class ShiftSlotModelTest(TestCase):
 
 
 class ShiftSwapModelTest(TestCase):
-    slot = None
-    shift = None
+
+    first_emp_credentials = {'username': 'testUser1', 'password': 'secret1'}
+    second_emp_credentials = {'username': 'testUser2', 'password': 'secret2'}
 
     @classmethod
     def setUpTestData(cls):
-        test_manager = User.objects.create_user({'username': 'testUser', 'password': 'secret'})
+        test_manager = create_new_manager({'username': 'testUser', 'password': 'secret'})
         cls.test_business = Business.objects.create(business_name='testBiz', manager=test_manager)
-        cls.slot = ShiftSlot.objects.create(business=cls.test_business, year='2016', day='1',
-                                            start_hour='12:00:00', end_hour='13:00:00')
+        create_new_employee(cls.first_emp_credentials)
+        create_new_employee(cls.second_emp_credentials)
+        cls.first_slot = ShiftSlot.objects.create(business=cls.test_business, day='1',
+                                                  start_hour='12:00:00', end_hour='13:00:00', constraints='{}')
+        cls.second_slot = ShiftSlot.objects.create(business=cls.test_business, day='1',
+                                                   start_hour='16:00:00', end_hour='18:00:00', constraints='{}')
 
     def setUp(self):
-        self.shift = Shift.objects.create()
-        print 2
+        self.first_shift, self.second_shift = self._create_shifts()
+
+    def test_should_raise_integrity_error_when_unique_conditions_are_broken(self):
+        with self.assertRaises(IntegrityError):
+            first_emp, second_emp = self._get_emps()
+            for i in range(2):
+                ShiftSwap.objects.create(requester=first_emp, responder=second_emp,
+                                         requested_shift=self.first_shift, requester_shift=self.second_shift)
+
+    def test_should_swap_employees(self):
+        self._create_swap_request(2)
+        first_emp, second_emp = self._get_emps()
+
+        self.assertTrue(first_emp in self.second_shift.employees.all() and
+                        second_emp in self.first_shift.employees.all())
+
+    def test_should_create_employee_request(self):
+        self._create_swap_request(1)
+        first_emp, second_emp = self._get_emps()
+
+        self.assertTrue(EmployeeRequest.objects.filter(issuers__in=[first_emp]).exists())
+
+    def _create_swap_request(self, accept_step):
+        first_emp, second_emp = self._get_emps()
+        swap_request = ShiftSwap.objects.create(requester=first_emp, responder=second_emp,
+                                                requester_shift=self.first_shift, requested_shift=self.second_shift)
+        swap_request.accept_step = accept_step
+        swap_request.save()
+
+    def _create_shifts(self):
+        first_shift = Shift.objects.create(slot=self.first_slot)
+        first_shift.employees.add(self._get_emps()[0])
+        second_shift = Shift.objects.create(slot=self.second_slot)
+        second_shift.employees.add(self._get_emps()[1])
+
+        return first_shift, second_shift
+
+    def _get_emps(self):
+        first_emp = EmployeeProfile.objects.get(user__username=self.first_emp_credentials['username'])
+        second_emp = EmployeeProfile.objects.get(user__username=self.second_emp_credentials['username'])
+        return first_emp, second_emp

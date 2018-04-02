@@ -12,7 +12,8 @@ def create_manager_and_employee_groups():
 
 
 def set_manager(new_user):
-    Group.objects.get(name='Managers').user_set.add(new_user)
+    group, _ = Group.objects.get_or_create(name='Managers')
+    group.user_set.add(new_user)
     new_user.profile.role = 'MA'
     new_user.profile.save()
     new_user.profile.business.manager = new_user
@@ -20,7 +21,8 @@ def set_manager(new_user):
 
 
 def set_employee(new_user):
-    Group.objects.get(name='Employees').user_set.add(new_user)
+    group, _ = Group.objects.get_or_create(name='Employees')
+    group.user_set.add(new_user)
     new_user.profile.role = 'WA'
     new_user.profile.save()
 

@@ -23,7 +23,7 @@ CELERY_BROKER_URL = 'pyamqp://guest@localhost//'
 
 CACHES = {
     'default': {
-        'BACKEND': 'redis_cache.RedisCache',
+        'BACKEND': 'django_redis.cache.RedisCache',
         'LOCATION': "redis://127.0.0.1:6379/1",
     },
 }
