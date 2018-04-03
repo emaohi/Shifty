@@ -147,7 +147,7 @@ def get_employee_requests(request):
             emp_requests = get_employee_requests_with_status(curr_manager, 'A', 'R')
             cache.set(key, list(emp_requests), settings.DURATION_CACHE_TTL)
         else:
-            logger.debug('Taking old manager messages from cache')
+            logger.debug('Taking old employee requests from cache')
             emp_requests = cache.get(key)
 
     return render(request, 'manager/emp_requests.html', {'requests': emp_requests, 'is_pending': is_pending})

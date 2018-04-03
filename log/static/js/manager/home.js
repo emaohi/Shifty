@@ -40,12 +40,13 @@ $(document).ready(function () {
         location.hash = this.getAttribute("href");
     });
 
-    $('.approve').click(function () {
+    $(document.body).on("click", ".approve",function () {
         var request_id = $(this).parents('div').siblings("span:first").text();
         spin_instead_of_btn($(this));
         handle_request("A", request_id);
     });
-    $('.reject').click(function () {
+
+    $(document.body).on("click", ".reject",function () {
         var request_id = $(this).parents('div').siblings("span:first").text();
         spin_instead_of_btn($(this));
         handle_request("R", request_id);
@@ -64,7 +65,7 @@ $(window).on("popstate", function () {
     $("a[href='" + anchor + "']").tab("show");
 });
 
-$(document).on('shown.bs.tab', 'a[href="#swaps"]', function () {
+$(document).on('shown.bs.tab', 'a[href="#emps_reqs"]', function () {
     empRequestsAjax('true');
 });
 
