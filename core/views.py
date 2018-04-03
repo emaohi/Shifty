@@ -126,7 +126,7 @@ def get_manager_messages(request):
     manager_messages = get_manger_msgs_of_employee(curr_emp_profile, is_new)
 
     logger.info('resetting new messages for emp %s', str(curr_emp_profile))
-    curr_emp_profile.reset_new_messages()
+    curr_emp_profile.flush_new_messages()
 
     return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages, 'is_new': is_new})
 
@@ -539,14 +539,25 @@ def ask_shift_swap(request):
 @user_passes_test(must_be_employee_callback)
 @require_GET
 def get_swap_requests(request):
+    curr_employee = get_curr_profile(request)
     is_open = True if request.GET.get('state') == 'open' else False
+    if is_open:
+        swap_requests = ShiftSwap.objects.filter(
+            Q(requester=curr_employee) | Q(responder=curr_employee),
+            accept_step__in=ShiftSwap.open_accept_steps()).order_by('-updated_at')
+    else:
+        key = curr_employee.get_old_swap_requests_cache_key()
+        if key not in cache:
+            swap_requests = ShiftSwap.objects.filter(
+                Q(requester=curr_employee) | Q(responder=curr_employee),
+                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at')
+            cache.set(key, list(swap_requests), settings.DURATION_CACHE_TTL)
+            logger.debug('Taking old swap requests from DB: %s', swap_requests)
 
-    open_swaps = ShiftSwap.objects.filter(
-        Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
-        accept_step__in=ShiftSwap.open_accept_steps() if is_open else ShiftSwap.closed_accept_steps())\
-        .order_by('-updated_at')
+        logger.debug('Taking old swap requests from cache')
+        swap_requests = cache.get(key)
 
-    return render(request, 'employee/swap_requests.html', {'swap_requests': open_swaps, 'is_open': is_open})
+    return render(request, 'employee/swap_requests.html', {'swap_requests': swap_requests, 'is_open': is_open})
 
 
 @login_required(login_url='/login')

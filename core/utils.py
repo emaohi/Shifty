@@ -48,7 +48,7 @@ def get_manger_msgs_of_employee(employee, is_new):
             recipients__in=[employee]).order_by('-sent_time')[:employee.new_messages]
         return messages
 
-    key = employee.get_manager_msg_cache_key()
+    key = employee.get_old_manager_msgs_cache_key()
     if key not in cache:
         messages = ManagerMessage.objects.filter(
             recipients__in=[employee]).order_by('-sent_time')[employee.new_messages:]

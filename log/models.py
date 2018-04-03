@@ -4,6 +4,7 @@ import urllib2
 from datetime import datetime
 from urlparse import urlparse
 
+import logging
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
@@ -11,6 +12,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+logger = logging.getLogger(__name__)
 
 
 class Business(models.Model):
@@ -159,14 +162,22 @@ class EmployeeProfile(models.Model):
         if self.get_manager():
             return self.get_manager().user
 
-    def reset_new_messages(self):
+    def flush_new_messages(self):
         if self.new_messages > 0:
-            cache.delete(self.get_manager_msg_cache_key())
+            logger.debug('flushing cache of old manager msgs of emp %s', self)
+            cache.delete(self.get_old_manager_msgs_cache_key())
         self.new_messages = 0
         self.save()
 
-    def get_manager_msg_cache_key(self):
+    def flush_swap_requests_cache(self):
+        logger.debug('flushing cache of old swap requests of emp %s', self)
+        cache.delete(self.get_old_swap_requests_cache_key())
+
+    def get_old_manager_msgs_cache_key(self):
         return "{0}-old-manager-messages".format(self)
+
+    def get_old_swap_requests_cache_key(self):
+        return "{0}-old-swap-requests".format(self)
 
     @classmethod
     def get_roles_reversed(cls):

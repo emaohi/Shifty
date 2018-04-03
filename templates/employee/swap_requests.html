@@ -4,7 +4,11 @@
             <div class="col-xs-6 col-xs-offset-3">
                 <div class="panel panel-default" style="text-align: center">
                     <div class="panel-heading">
-                        <h3 class="panel-title" style="display: inline">Open Swap Request</h3>
+                        {% if swap_request.is_open %}
+                            <h3 class="panel-title" style="display: inline">Open Swap Request</h3>
+                        {% else %}
+                            <h3 class="panel-title" style="display: inline">Closed Swap Request</h3>
+                        {% endif %}
                         {% if swap_request.accept_step == 0 and user.profile == swap_request.responder %}
                             <div style="float: right">
                                 <button type="button" class="btn btn-xs btn-success approve"><span
@@ -25,7 +29,7 @@
                         <strong>{{ swap_request.responder }}</strong>, {{ swap_request.requested_shift }}
                     </div>
                     <div class="panel-footer accept-step-{{ swap_request.accept_step }}">a
-                        <span style="float: left">status: <strong>{{ swap_request.get_accept_step_display }}</strong></span>
+                        <span style="float: left"><strong>{{ swap_request.get_accept_step_display }}</strong></span>
                         <span style="float: right"> {{ swap_request.updated_at }} </span>
                     </div>
                 </div>

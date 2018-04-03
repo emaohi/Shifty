@@ -60,6 +60,7 @@ function ManagerMessagesAjax(queryParam) {
         success: function(res) {
             if (queryParam === 'true') {
                 $("#newMessages").html(res);
+                $("#msgsBadge").hide();
             } else {
                 $("#oldMessages").html(res);
             }

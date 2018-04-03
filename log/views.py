@@ -5,6 +5,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.cache import cache
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -13,7 +14,7 @@ from kombu.exceptions import OperationalError
 
 from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
     get_current_week_range, get_curr_week_sunday, get_next_week_sunday
-from core.models import ShiftRequest
+from core.models import ShiftRequest, ShiftSwap
 from core.utils import get_employee_requests_with_status, get_eta_cache_key
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
@@ -78,13 +79,17 @@ def emp_home(request):
         get_curr_profile(request).save()
 
     new_messages = get_curr_profile(request).new_messages
+    open_swap_requests = ShiftSwap.objects.filter(
+        Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
+        accept_step__in=ShiftSwap.open_accept_steps()).count()
 
     return render(request, "employee/home.html", {'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
                                                   'curr_week_str': curr_week_string,
                                                   'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
                                                   'first_login': is_first_login, 'generation': generation_status,
-                                                  'logo_conf': get_logo_conf(), 'new_messages': new_messages})
+                                                  'logo_conf': get_logo_conf(), 'new_messages': new_messages,
+                                                  'swap_cnt': open_swap_requests})
 
 
 def register(request):

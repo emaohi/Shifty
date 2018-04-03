@@ -6,7 +6,6 @@ import json
 import logging
 
 from django.db import models, IntegrityError, transaction
-from django.db.models import Q
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
@@ -270,27 +269,34 @@ class ShiftSwap(models.Model):
 
     def handle_manager_action(self, manager_action):
         approved = manager_action == 2
-        recipients = EmployeeProfile.objects.filter(Q(user__username=self.requester.user.username) |
-                                                    Q(user__username=self.responder.user.username))
         manager_action = 'accepted' if approved else 'rejected'
         logger.info('manager %s shift request of %s for %s, sending mails', manager_action,
-                    recipients[0], recipients[1])
+                    self.requester, self.responder)
+        logger.info('Going to flush old swap requests form swap employees')
+        self.flush_swap_request_cache_of_employees()
         if approved:
-            self.swap_shifts(*recipients)
+            try:
+                self.swap_shifts()
+                logger.info('Swap completed')
+            except IntegrityError as e:
+                logger.error('Couldn\'t swap shifts: %s, rolling back accept step', str(e))
+                self.accept_step = 1
+                self.save()
 
-    def swap_shifts(self, requester, responder):
-        logger.info('Going to swap shifts of requester %s and responder %s', requester, responder)
-        try:
-            with transaction.atomic():
-                self.requester_shift.remove_employee(requester)
-                self.requester_shift.add_employee(responder)
-                self.requested_shift.remove_employee(responder)
-                self.requested_shift.add_employee(requester)
-            logger.info('Swap completed')
-        except IntegrityError as e:
-            logger.error('Couldn\'t swap shifts: %s, rolling back accept step', str(e))
-            self.accept_step = 1
-            self.save()
+    def swap_shifts(self):
+        logger.info('Going to swap shifts of requester %s and responder %s', self.requester, self.responder)
+        with transaction.atomic():
+            self.requester_shift.remove_employee(self.requester)
+            self.requester_shift.add_employee(self.responder)
+            self.requested_shift.remove_employee(self.responder)
+            self.requested_shift.add_employee(self.requester)
+
+    def flush_swap_request_cache_of_employees(self):
+        self.responder.flush_swap_requests_cache()
+        self.requester.flush_swap_requests_cache()
+
+    def is_open(self):
+        return self.accept_step in self.open_accept_steps()
 
     @staticmethod
     def open_accept_steps():
