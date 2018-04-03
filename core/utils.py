@@ -59,9 +59,9 @@ def get_manger_msgs_of_employee(employee, is_new):
     return cache.get(key)
 
 
-def get_employee_requests_with_status(manager, status):
+def get_employee_requests_with_status(manager, *statuses):
     business_employees = manager.business.get_employees()
-    return EmployeeRequest.objects.filter(issuers__in=business_employees, status=status). \
+    return EmployeeRequest.objects.filter(issuers__in=business_employees, status__in=[status for status in statuses]). \
         distinct().order_by('-sent_time')
 
 

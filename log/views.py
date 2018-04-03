@@ -32,12 +32,7 @@ def manager_home(request):
 
     curr_manager = request.user.profile
 
-    pending_emp_requests = get_employee_requests_with_status(curr_manager, 'P')
-
-    approved_emp_requests = get_employee_requests_with_status(curr_manager, 'A')
-    rejected_emp_requests = get_employee_requests_with_status(curr_manager, 'R')
-
-    done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
+    pending_requests_cnt = get_employee_requests_with_status(curr_manager, 'P').count()
 
     curr_week_string = get_current_week_string()
     next_week_sunday = get_next_week_sunday()
@@ -48,7 +43,7 @@ def manager_home(request):
     is_finish_slots = curr_manager.business.slot_request_enabled
     logger.info('are slot adding is finished? %s', is_finish_slots)
 
-    context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
+    context = {'requests_cnt': pending_requests_cnt,
                'curr_week_str': curr_week_string, 'start_date': next_week_sunday,
                'current_start_date': get_curr_week_sunday(),
                'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated,

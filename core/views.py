@@ -23,7 +23,7 @@ from core.utils import create_manager_msg, send_mail_to_manager, create_constrai
     get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
     save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
     parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee
+    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee, get_employee_requests_with_status
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -125,10 +125,32 @@ def get_manager_messages(request):
     is_new = True if is_new_str == 'true' else False
     manager_messages = get_manger_msgs_of_employee(curr_emp_profile, is_new)
 
-    logger.info('resetting new messages for emp %s', str(curr_emp_profile))
+    logger.debug('flushing new messages cache for emp %s', str(curr_emp_profile))
     curr_emp_profile.flush_new_messages()
 
     return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages, 'is_new': is_new})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+@require_GET
+def get_employee_requests(request):
+    curr_manager = get_curr_profile(request)
+    is_pending_str = request.GET.get('pending')
+    is_pending = True if is_pending_str == 'true' else False
+    if is_pending:
+        emp_requests = get_employee_requests_with_status(curr_manager, 'P')
+    else:
+        key = curr_manager.get_old_employee_requests_cache_key()
+        if key not in cache:
+            logger.debug('Taking old employee requests from DB: %s', messages)
+            emp_requests = get_employee_requests_with_status(curr_manager, 'A', 'R')
+            cache.set(key, list(emp_requests), settings.DURATION_CACHE_TTL)
+        else:
+            logger.debug('Taking old manager messages from cache')
+            emp_requests = cache.get(key)
+
+    return render(request, 'manager/emp_requests.html', {'requests': emp_requests, 'is_pending': is_pending})
 
 
 @login_required(login_url='/login')

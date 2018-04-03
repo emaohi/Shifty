@@ -104,7 +104,11 @@
             </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu Test</a></li>
-            <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests</a></li>
+            <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests
+                {% if requests_cnt > 0 %}
+                    <span id="requestsBadge" class="badge badge-light">{{ requests_cnt }}</span>
+                {% endif %}
+            </a></li>
             <li class="pull-right"><a data-toggle="tab" href="#emps">Employees</a></li>
         </ul>
 
@@ -113,179 +117,127 @@
             <div id="emps_reqs" class="tab-pane fade">
                 <div class="container" style="margin-top: 20px">
                     <h3>Pending requests</h3>
-                    {% for request in pending_requests %}
-                        <div class="row" style="margin-top: 20px">
-                            <div class="col-xs-8">
-                                <div class="panel panel-default">
-                                    <div class="panel-heading">
-                                        <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
-                                        <span style="float: right">From: {{ request.get_issuers_string }}</span>
-                                    </div>
-                                    <div class="panel-body">
-                                        {{ request.text }}
-                                    </div>
-                                    <div class="panel-footer">
-                                        <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
-                                        <span class="timestamp"> {{ request.sent_time }} </span>
-                                        <div style="float: right">
-                                            <button type="button" class="btn btn-xs btn-success approve"><span
-                                                    class="glyphicon glyphicon-ok-sign"></span> Approve
-                                            </button>
-                                            <button type="button" class="btn btn-xs btn-danger reject"><span
-                                                    class="glyphicon glyphicon-remove"></span> Reject
-                                            </button>
-                                            <i class="fa fa-spinner fa-spin"
-                                               style="font-size:18px; margin-left: 10px; display: none"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="container" style="margin-top: 50px">
+                    <div id="pendingRequests"></div>
+                    <div style="text-align: center; margin-top: 20px">
+                        <button class="btn btn-lg btn-primary" id="toggleClosed">Show Closed</button>
+                    </div>
+                    <hr>
                     <h3>Closed requests</h3>
-                    {% for request in done_requests %}
-                        <div class="row" style="margin-top: 20px">
-                        <div class="col-xs-8">
-                            <div class="panel panel-default">
-                                <div class="panel-heading">
-                                    <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
-                                    <span style="float: right">From: {{ request.get_issuers_string }}</span>
-                                </div>
-                                <div class="panel-body">
-                                    {{ request.text }}
-                                </div>
-                                {% if request.status == 'A' %}
-                                    <div class="panel-footer approved">
-                                {% else %}
-                                    <div class="panel-footer rejected">
-                                {% endif %}
-                                <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
-                                <span class="timestamp"> {{ request.sent_time }} </span>
-                                <div style="float: right">
-                                    <span>{{ request.get_status_display }}</span>
-                                </div>
-                                </div>
-                                </div>
-                            </div>
-                        </div>
-                    {% endfor %}
-                    </div>
-                </div>
-
-
-                <div id="emps" class="tab-pane fade">
-                    <div class="row" style="margin-top: 130px">
-                        <div class="col-md-5 col-md-offset-1">
-                            <div class="panel panel-default">
-                                <div class="panel-body"><img src="{% static 'imgs/download.jpeg' %}"></div>
-                                <div class="panel-footer"><a href="{% url 'add_employees' %}"
-                                                             class="btn btn-success btn-xl"
-                                                             role="button">Add Employees</a></div>
-                            </div>
-                        </div>
-                        <div class="col-md-5">
-                            <div class="panel panel-default">
-                                <div class="panel-body"><img src="{% static 'imgs/bt.jpeg' %}"></div>
-                                <div class="panel-footer"><a href="{% url 'manage_employees' %}"
-                                                             class="btn btn-info btn-xl"
-                                                             role="button">Manage Employees</a></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="current" class="tab-pane fade in active">
-                    <div class="row">
-                        <h3>Shifts for current week - <i>{{ curr_week_str }}</i></h3>
-                    </div>
-                    <div class="row" style="margin-top: 20px">
-                        <div id="currentCalDiv"></div>
-                    </div>
-                    <div class="modal fade" id="shiftModal" tabindex="-1" role="dialog">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="exampleModalLabel">Shift employees</h5>
-                                    <button type="button" class="close" data-dismiss="modal">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <div id="shiftModalBody" class="modal-body">
-                                    <div role="tabpanel">
-                                        <!-- Nav tabs -->
-                                        <ul class="nav nav-tabs" role="tablist">
-                                            <li role="presentation" class="active">
-                                                <a href="#shiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
-                                            </li>
-                                            <li role="presentation">
-                                                <a href="#shiftSummaryTab" role="tab" class="disabledbutton">Shift
-                                                    Summary</a>
-                                            </li>
-                                        </ul>
-                                        <div class="tab-content">
-                                            <div role="tabpanel" class="tab-pane active" id="shiftEmpsTab"></div>
-                                            <div role="tabpanel" class="tab-pane"
-                                                 id="shiftSummaryTab">
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="next" class="tab-pane fade" style="margin-top: 20px">
-                    <div class="container">
-                        <div class="row">
-                            <div class="col-sm-5 col-sm-offset-4">
-                                <div id="notFinished">
-                                    <button id="finishSlots" type="submit" class="btn btn-lg btn-success">
-                                        Finish and notify employees
-                                    </button>
-                                    <button class="btn btn-lg btn-primary generateBtn">Generate Shifts</button>
-                                </div>
-                                <div id="slotMsg">
-                                    <h4>shift requests submission is <strong
-                                            style="color: green">enabled</strong>
-                                        <button class="btn btn-default" id="resetSlots">Reset</button>
-                                    </h4>
-                                </div>
-                                <div id="afterGeneration">
-                                    <h3 id="generatedMsg">
-                                        Shifts were generated
-                                        <button class="btn btn-primary generateBtn">Generate Again</button>
-                                    </h3>
-                                </div>
-                            </div>
-                            <div class="col-sm-2">
-                                <small id="timerH"></small>
-                            </div>
-                        </div>
-                        <div class="row" style="margin-top: 20px">
-                            <div class="col-sm-2">
-                                <span class="legend legend1">Mandatory / Holiday</span>
-                            </div>
-                            <div class="col-sm-2">
-                                <span class="legend legend2">Regular</span>
-                            </div>
-                            <div class="col-sm-2">
-                                <span class="legend legend3">Generated shift</span>
-                            </div>
-                        </div>
-                        <div class="row" style="margin-top: 20px">
-                            <div id="calDiv"></div>
-                        </div>
-                    </div>
-                </div>
-                <div id="previous" class="tab-pane fade">
-                    <p>Previous shifts here</p>
+                    <div id="closedRequests"></div>
                 </div>
             </div>
+
+            <div id="emps" class="tab-pane fade">
+                <div class="row" style="margin-top: 130px">
+                    <div class="col-md-5 col-md-offset-1">
+                        <div class="panel panel-default">
+                            <div class="panel-body"><img src="{% static 'imgs/download.jpeg' %}"></div>
+                            <div class="panel-footer"><a href="{% url 'add_employees' %}"
+                                                         class="btn btn-success btn-xl"
+                                                         role="button">Add Employees</a></div>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="panel panel-default">
+                            <div class="panel-body"><img src="{% static 'imgs/bt.jpeg' %}"></div>
+                            <div class="panel-footer"><a href="{% url 'manage_employees' %}"
+                                                         class="btn btn-info btn-xl"
+                                                         role="button">Manage Employees</a></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="current" class="tab-pane fade in active">
+                <div class="row">
+                    <h3>Shifts for current week - <i>{{ curr_week_str }}</i></h3>
+                </div>
+                <div class="row" style="margin-top: 20px">
+                    <div id="currentCalDiv"></div>
+                </div>
+                <div class="modal fade" id="shiftModal" tabindex="-1" role="dialog">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="exampleModalLabel">Shift employees</h5>
+                                <button type="button" class="close" data-dismiss="modal">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div id="shiftModalBody" class="modal-body">
+                                <div role="tabpanel">
+                                    <!-- Nav tabs -->
+                                    <ul class="nav nav-tabs" role="tablist">
+                                        <li role="presentation" class="active">
+                                            <a href="#shiftEmpsTab" role="tab" data-toggle="tab">Employees</a>
+                                        </li>
+                                        <li role="presentation">
+                                            <a href="#shiftSummaryTab" role="tab" class="disabledbutton">Shift
+                                                Summary</a>
+                                        </li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <div role="tabpanel" class="tab-pane active" id="shiftEmpsTab"></div>
+                                        <div role="tabpanel" class="tab-pane"
+                                             id="shiftSummaryTab">
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="next" class="tab-pane fade" style="margin-top: 20px">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-sm-5 col-sm-offset-4">
+                            <div id="notFinished">
+                                <button id="finishSlots" type="submit" class="btn btn-lg btn-success">
+                                    Finish and notify employees
+                                </button>
+                                <button class="btn btn-lg btn-primary generateBtn">Generate Shifts</button>
+                            </div>
+                            <div id="slotMsg">
+                                <h4>shift requests submission is <strong
+                                        style="color: green">enabled</strong>
+                                    <button class="btn btn-default" id="resetSlots">Reset</button>
+                                </h4>
+                            </div>
+                            <div id="afterGeneration">
+                                <h3 id="generatedMsg">
+                                    Shifts were generated
+                                    <button class="btn btn-primary generateBtn">Generate Again</button>
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <small id="timerH"></small>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 20px">
+                        <div class="col-sm-2">
+                            <span class="legend legend1">Mandatory / Holiday</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span class="legend legend2">Regular</span>
+                        </div>
+                        <div class="col-sm-2">
+                            <span class="legend legend3">Generated shift</span>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top: 20px">
+                        <div id="calDiv"></div>
+                    </div>
+                </div>
+            </div>
+            <div id="previous" class="tab-pane fade">
+                <p>Previous shifts here</p>
+            </div>
         </div>
+    </div>
     </div>
 
     <!-- Constraints Modal -->
@@ -348,6 +300,7 @@
         var slot_employees = "{% url 'slot_employees' 0%}";
         var generate_shifts_url = "{% url 'generate_shifts' %}";
         var summary_url = "{% url 'submit_shift_summary' 0%}";
+        var getEmployeeRequestsUrl = "{% url 'emp_requests' %}";
         var start_date = "{{ start_date }}";
         var current_start_date = "{{ current_start_date }}";
         var deadline_date = "{{ deadline_date }}";

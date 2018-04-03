@@ -174,10 +174,19 @@ class EmployeeProfile(models.Model):
         cache.delete(self.get_old_swap_requests_cache_key())
 
     def get_old_manager_msgs_cache_key(self):
+        if self.role == 'MA':
+            raise ValueError('Can\'t manager messages key of emp %s - is manager' % self)
         return "{0}-old-manager-messages".format(self)
 
     def get_old_swap_requests_cache_key(self):
+        if self.role == 'MA':
+            raise ValueError('Can\'t swap requests key of emp %s - is manager' % self)
         return "{0}-old-swap-requests".format(self)
+
+    def get_old_employee_requests_cache_key(self):
+        if self.role != 'MA':
+            raise ValueError('Can\'t employee requests key of emp %s - is not manager' % self)
+        return "{0}-old-emp-requests".format(self)
 
     @classmethod
     def get_roles_reversed(cls):

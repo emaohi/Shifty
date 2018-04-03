@@ -83,8 +83,9 @@
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li><a data-toggle="tab" href="#swaps">Shift swaps
                 {% if swap_cnt > 0 %}
-                    <span id="swapBadge" class="badge badge-light">{{ swap_cnt }}</span></a></li>
+                    <span id="swapBadge" class="badge badge-light">{{ swap_cnt }}</span>
                 {% endif %}
+            </a></li>
             <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu test</a></li>
             <li><a data-toggle="tab" href="#messages">Manager Messages
                 {% if new_messages > 0 %}

@@ -64,6 +64,15 @@ $(window).on("popstate", function () {
     $("a[href='" + anchor + "']").tab("show");
 });
 
+$(document).on('shown.bs.tab', 'a[href="#swaps"]', function () {
+    empRequestsAjax('true');
+});
+
+$(document).on("click", "#toggleClosed", function () {
+    $(this).hide();
+    empRequestsAjax('false');
+});
+
 function populate_current_calendar() {
     $.ajax({
         url: current_shifts_url,
@@ -367,4 +376,25 @@ function showShiftDetails(shiftId) {
 
 function insertEmployeesToModal(emp_list) {
     $("#shiftEmpsTab").html(emp_list);
+}
+
+function empRequestsAjax(queryParam) {
+    $.ajax({
+        url: getEmployeeRequestsUrl,
+        type: "get",
+        data: {
+            pending: queryParam
+        },
+        success: function(res) {
+            if (queryParam === 'true') {
+                $("#pendingRequests").html(res);
+                $("#requestsBadge").hide();
+            } else {
+                $("#closedRequests").html(res);
+            }
+        },
+        error: function (xhr) {
+            console.error("couldn't get employee requests");
+        }
+    });
 }
