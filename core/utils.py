@@ -11,8 +11,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import transaction, IntegrityError
 from django.utils import timezone
 
-from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range
-from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest, Shift
+from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range, get_curr_year
+from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest, Shift, SavedSlot
 from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
 from django.conf import settings
 
@@ -128,6 +128,57 @@ def validate_language(text):
     return True
 
 
+def create_new_slot(business, slot_data):
+    slot_constraint_json = create_constraint_json_from_form(slot_data)
+    slot_holiday = get_holiday_or_none(get_curr_year(), slot_data['day'], get_next_week_num())
+    new_slot = ShiftSlot(business=business, day=slot_data['day'],
+                         start_hour=slot_data['start_hour'], end_hour=slot_data['end_hour'],
+                         week=get_next_week_num(), holiday=slot_holiday)
+    if slot_data.get('save_as'):
+        new_saved_slot = SavedSlot.objects.create(name=slot_data.get('save_as'),
+                                                  constraints=json.dumps(slot_constraint_json),
+                                                  is_mandatory=slot_data['mandatory'])
+        new_slot.saved_slot = new_saved_slot
+    else:
+        new_slot.name = 'Custom'
+        new_slot.constraints = json.dumps(slot_constraint_json)
+        new_slot.is_mandatory = slot_data['mandatory']
+    new_slot.save()
+
+
+class SlotCreator:
+    def __init__(self, business, slot_data):
+        self.business = business
+        self.slot_data = slot_data
+
+    def create_new_slot(self):
+        slot_constraint_json = create_constraint_json_from_form(self.slot_data)
+        slot_holiday = get_holiday_or_none(get_curr_year(), self.slot_data['day'], get_next_week_num())
+        new_slot = ShiftSlot(business=self.business, day=self.slot_data['day'],
+                             start_hour=self.slot_data['start_hour'], end_hour=self.slot_data['end_hour'],
+                             week=get_next_week_num(), holiday=slot_holiday)
+        with_name = self.slot_data.get('save_as') is not None
+        if with_name:
+            logger.info('Going to create named slot with name %s', self.slot_data['save_as'])
+            new_saved_slot = SavedSlot.objects.create(name=self.slot_data.get('save_as'),
+                                                      constraints=json.dumps(slot_constraint_json),
+                                                      is_mandatory=self.slot_data['mandatory'])
+            new_slot.saved_slot = new_saved_slot
+        else:
+            logger.info('Going to create custom slot', self.slot_data['save_as'])
+            new_slot.name = 'Custom'
+            new_slot.constraints = json.dumps(slot_constraint_json)
+            new_slot.is_mandatory = self.slot_data['mandatory']
+        new_slot.save()
+
+    def create_saved_slot(self):
+        saved_slot = SavedSlot.objects.get(name=self.slot_data['name'])
+        logger.info('Going to create slot from existing saved slot: %s', saved_slot)
+        ShiftSlot.objects.create(business=self.business, day=self.slot_data['day'], week=get_next_week_num(),
+                                 start_hour=self.slot_data['start_hour'],
+                                 end_hour=self.slot_data['end_hour'], saved_slot=saved_slot)
+
+
 def get_holiday_or_none(year, day, week):
     if day == '':
         return None
@@ -136,15 +187,6 @@ def get_holiday_or_none(year, day, week):
     except ObjectDoesNotExist:
         slot_holiday = None
     return slot_holiday
-
-
-def get_color_and_title_from_slot(slot):
-    name = slot.name
-    is_holiday = 'holiday' if slot.holiday else ''
-    title = '%s%s (%s)' % (name, is_holiday, slot.id)
-    text_color = '#f5dd5d' if not (slot.is_mandatory or slot.holiday) else '#ff0000'
-
-    return text_color, title
 
 
 def duplicate_favorite_slot(business, name):

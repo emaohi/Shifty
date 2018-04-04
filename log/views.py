@@ -122,9 +122,8 @@ def register(request):
             login(request, user)
             return HttpResponseRedirect('/success')
         else:
-            logger.error('manager form or business form are not valid')
-            print manager_form.error_messages
-            print business_form.errors
+            logger.error('manager form or business form are not valid: %s +++ %s',
+                         manager_form.errors, business_form.errors)
     else:
         manager_form = ManagerSignUpForm()
         business_form = BusinessRegistrationForm()

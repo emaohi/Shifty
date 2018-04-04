@@ -18,12 +18,13 @@ from django.views.decorators.http import require_POST, require_GET
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
     get_days_hours_from_delta
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap
-from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
-    save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
-    parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee, get_employee_requests_with_status
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
+from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, \
+    get_holiday_or_none, duplicate_favorite_slot, handle_named_slot, get_dist_data, save_shifts_request, \
+    delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, parse_duration_data, \
+    get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
+    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee, get_employee_requests_with_status, \
+    create_new_slot, SlotCreator
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -161,36 +162,16 @@ def add_shift_slot(request):
         .values('name').distinct() if t['name'] != 'Custom']
 
     if request.method == 'POST':
-
         slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
         if slot_form.is_valid():
             data = slot_form.cleaned_data
-            day = data['day']
-            start_hour = data['start_hour']
-            end_hour = data['end_hour']
+            is_new = data['name'] == ''
 
-            if data['name'] == '':
-                name = data.get('save_as', None)
-
-                slot_constraint_json = create_constraint_json_from_form(data)
-
-                slot_holiday = get_holiday_or_none(get_curr_year(), data['day'], get_next_week_num())
-
-                new_slot = ShiftSlot(business=request.user.profile.business, day=day,
-                                     start_hour=start_hour, end_hour=end_hour,
-                                     constraints=json.dumps(slot_constraint_json),
-                                     week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'])
-                if name:
-                    new_slot.name = name
-                new_slot.save()
-
-                if name and name != 'Custom':
-                    handle_named_slot(business, name)
+            if is_new:
+                SlotCreator(business, data).create_new_slot()
             else:
-                new_name = data['name']
-                cloned_slot = duplicate_favorite_slot(business, new_name)
-                ShiftSlot.objects.filter(id=cloned_slot.id).update(day=day, week=get_next_week_num(),
-                                                                   start_hour=start_hour, end_hour=end_hour)
+                SlotCreator(business, data).create_saved_slot()
+
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')
         else:
@@ -205,7 +186,9 @@ def add_shift_slot(request):
         slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
 
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
-                             names=((name, name) for name in slot_names))
+                             names=((name[0], name[0]) for name in
+                                    SavedSlot.objects.exclude(name__startswith='Custom').values_list('name')))
+
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                           'holiday': slot_holiday, 'logo_conf': get_logo_conf()})
 
@@ -275,7 +258,7 @@ def get_next_week_slots_calendar(request):
 
     next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
     for slot in next_week_slots:
-        text_color, title = get_color_and_title_from_slot(slot)
+        text_color, title = slot.get_color_and_title()
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
                                    'start': slot.start_time_str(),
                                    'end': slot.end_time_str(),
@@ -369,7 +352,6 @@ def get_work_duration_data(request):
 @user_passes_test(must_be_manager_callback)
 def get_slot_request_employees(request, slot_id):
     if request.method == 'GET':
-        print ShiftSlot.objects.first().id
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if not requested_slot.is_next_week():
             return HttpResponseBadRequest('slot is not next week')
@@ -424,7 +406,7 @@ def get_slot_employees(request, slot_id):
                            'curr_emp': get_curr_profile(request),
                            'future_shifts': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
-            logger.error('cant find shift for slot id %s', slot_id)
+            logger.warning('Can\'t get employees for slot id %s, shift was not generated', slot_id)
             return HttpResponse('Cant find shift for this slot')
 
     return wrong_method(request)

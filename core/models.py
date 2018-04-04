@@ -9,7 +9,7 @@ from django.db import models, IntegrityError, transaction
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
-from core.date_utils import get_next_week_num, get_week_range, get_week_string
+from core.date_utils import get_next_week_num, get_week_range, get_week_string, timestamp_now
 from log.models import Business, EmployeeProfile
 
 logger = logging.getLogger(__name__)
@@ -95,6 +95,15 @@ class Holiday(models.Model):
         return self.name
 
 
+class SavedSlot(models.Model):
+    name = models.CharField(max_length=30, unique=True)
+    constraints = models.TextField(max_length=300)
+    is_mandatory = models.BooleanField(default=False)
+
+    def __str__(self):
+        return 'saved shift slot %s, constraints: %s' % (self.name, self.constraints)
+
+
 class ShiftSlot(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
 
@@ -124,12 +133,24 @@ class ShiftSlot(models.Model):
 
     is_mandatory = models.BooleanField(default=False)
 
-    name = models.CharField(blank=True, null=True, default='Custom', max_length=30)
+    name = models.CharField(blank=True, null=True, max_length=30)
+
+    saved_slot = models.ForeignKey(SavedSlot, null=True, blank=True)
 
     def __str__(self):
         return '%s slot(#%s) - %s, %s to %s%s' %\
                (self.name, self.id, self.get_day_str(), str(self.start_hour),
                 str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
+
+    def save(self, *args, **kwargs):
+        if self.saved_slot:
+            if self.name is not None:
+                raise IntegrityError('slot cannot have save_slot and name together...')
+            fields = ['name', 'constraints', 'is_mandatory']
+            logger.debug('updating %s fields of slot %s', fields, self)
+            for field in fields:
+                setattr(self, field, getattr(self.saved_slot, field))
+        super(ShiftSlot, self).save(*args, **kwargs)
 
     def start_time_str(self):
         return '%s %s' % (self.get_date(), self.start_hour)
@@ -171,6 +192,12 @@ class ShiftSlot(models.Model):
 
     def is_finished(self):
         return self.get_datetime() < datetime.datetime.now()
+
+    def get_color_and_title(self):
+        holiday_str = 'holiday' if self.holiday else ''
+        title = '%s%s (%s)' % (self.name, holiday_str, self.id)
+        text_color = '#f5dd5d' if not (self.is_mandatory or self.holiday) else '#ff0000'
+        return text_color, title
 
 
 class ShiftRequest(models.Model):
