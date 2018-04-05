@@ -9,7 +9,7 @@ from django.db import models, IntegrityError, transaction
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
-from core.date_utils import get_next_week_num, get_week_range, get_week_string, timestamp_now
+from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
 
 logger = logging.getLogger(__name__)

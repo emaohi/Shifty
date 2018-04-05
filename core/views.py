@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
-    HttpResponseBadRequest, Http404, HttpResponseNotFound
+    HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
@@ -197,7 +197,8 @@ def add_shift_slot(request):
 @user_passes_test(must_be_manager_callback)
 @require_GET
 def saved_slot_exist(request, slot_name):
-    if SavedSlot.objects.filter(name=slot_name).exists():
+    curr_business = get_curr_business(request)
+    if SavedSlot.objects.filter(name=slot_name, shiftslot__business=curr_business).exists():
         return HttpResponse('')
     return HttpResponseNotFound('')
 

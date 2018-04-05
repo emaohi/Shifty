@@ -48,8 +48,8 @@ class ShiftSwapModelTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        test_manager = create_new_manager({'username': 'testUser', 'password': 'secret'})
-        cls.test_business = Business.objects.create(business_name='testBiz', manager=test_manager)
+        create_new_manager({'username': 'testUser', 'password': 'secret'})
+        cls.test_business = Business.objects.create(business_name='testBiz')
         create_new_employee(cls.first_emp_credentials)
         create_new_employee(cls.second_emp_credentials)
         cls.first_slot = ShiftSlot.objects.create(business=cls.test_business, day='1',
@@ -63,7 +63,7 @@ class ShiftSwapModelTest(TestCase):
     def test_should_raise_integrity_error_when_unique_conditions_are_broken(self):
         with self.assertRaises(IntegrityError):
             first_emp, second_emp = self._get_emps()
-            for i in range(2):
+            for _ in range(2):
                 ShiftSwap.objects.create(requester=first_emp, responder=second_emp,
                                          requested_shift=self.first_shift, requester_shift=self.second_shift)
 
@@ -76,7 +76,7 @@ class ShiftSwapModelTest(TestCase):
 
     def test_should_create_employee_request(self):
         self._create_swap_request(1)
-        first_emp, second_emp = self._get_emps()
+        first_emp, _ = self._get_emps()
 
         self.assertTrue(EmployeeRequest.objects.filter(issuers__in=[first_emp]).exists())
 

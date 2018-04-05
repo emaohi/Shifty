@@ -182,7 +182,7 @@ class SlotCreator:
         new_slot.save()
 
     def _create_new_slot_without_name(self, new_slot, slot_constraint_json):
-        logger.info('Going to create custom slot', self.slot_data['save_as'])
+        logger.info('Going to create custom slot: %s', self.slot_data['save_as'])
         new_slot.name = 'Custom'
         new_slot.constraints = json.dumps(slot_constraint_json)
         new_slot.is_mandatory = self.slot_data['mandatory']
