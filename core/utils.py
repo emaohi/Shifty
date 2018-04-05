@@ -130,7 +130,7 @@ def validate_language(text):
 
 def create_new_slot(business, slot_data):
     slot_constraint_json = create_constraint_json_from_form(slot_data)
-    slot_holiday = get_holiday_or_none(get_curr_year(), slot_data['day'], get_next_week_num())
+    slot_holiday = get_holiday(get_curr_year(), slot_data['day'], get_next_week_num())
     new_slot = ShiftSlot(business=business, day=slot_data['day'],
                          start_hour=slot_data['start_hour'], end_hour=slot_data['end_hour'],
                          week=get_next_week_num(), holiday=slot_holiday)
@@ -153,23 +153,15 @@ class SlotCreator:
 
     def create_new_slot(self):
         slot_constraint_json = create_constraint_json_from_form(self.slot_data)
-        slot_holiday = get_holiday_or_none(get_curr_year(), self.slot_data['day'], get_next_week_num())
+        slot_holiday = get_holiday(get_curr_year(), self.slot_data['day'], get_next_week_num())
         new_slot = ShiftSlot(business=self.business, day=self.slot_data['day'],
                              start_hour=self.slot_data['start_hour'], end_hour=self.slot_data['end_hour'],
                              week=get_next_week_num(), holiday=slot_holiday)
         with_name = self.slot_data.get('save_as') is not None
         if with_name:
-            logger.info('Going to create named slot with name %s', self.slot_data['save_as'])
-            new_saved_slot = SavedSlot.objects.create(name=self.slot_data.get('save_as'),
-                                                      constraints=json.dumps(slot_constraint_json),
-                                                      is_mandatory=self.slot_data['mandatory'])
-            new_slot.saved_slot = new_saved_slot
+            self._create_slot_with_name(new_slot, slot_constraint_json)
         else:
-            logger.info('Going to create custom slot', self.slot_data['save_as'])
-            new_slot.name = 'Custom'
-            new_slot.constraints = json.dumps(slot_constraint_json)
-            new_slot.is_mandatory = self.slot_data['mandatory']
-        new_slot.save()
+            self._create_new_slot_without_name(new_slot, slot_constraint_json)
 
     def create_saved_slot(self):
         saved_slot = SavedSlot.objects.get(name=self.slot_data['name'])
@@ -178,8 +170,26 @@ class SlotCreator:
                                  start_hour=self.slot_data['start_hour'],
                                  end_hour=self.slot_data['end_hour'], saved_slot=saved_slot)
 
+    def _create_slot_with_name(self, new_slot, slot_constraint_json):
+        logger.info('Going to create/update named slot with name %s', self.slot_data['save_as'])
+        new_saved_slot, created = SavedSlot.objects.update_or_create(name=self.slot_data.get('save_as'),
+                                                                     defaults={
+                                                                    'constraints': json.dumps(slot_constraint_json),
+                                                                    'is_mandatory': self.slot_data['mandatory']
+                                                                     })
+        logger.debug('created: %s', created)
+        new_slot.saved_slot = new_saved_slot
+        new_slot.save()
 
-def get_holiday_or_none(year, day, week):
+    def _create_new_slot_without_name(self, new_slot, slot_constraint_json):
+        logger.info('Going to create custom slot', self.slot_data['save_as'])
+        new_slot.name = 'Custom'
+        new_slot.constraints = json.dumps(slot_constraint_json)
+        new_slot.is_mandatory = self.slot_data['mandatory']
+        new_slot.save()
+
+
+def get_holiday(year, day, week):
     if day == '':
         return None
     try:

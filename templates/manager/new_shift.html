@@ -88,6 +88,11 @@
                                         <p>
                                             <label><b>{{ field.label }}</b></label> {{ field }}
                                             <small>{{ field.help_text }}</small>
+                                            {% if 'save' in field.name %}
+                                                <small>
+                                                    <strong style="color: #7f5006" id="saveSlotExistWarning"></strong>
+                                                </small>
+                                            {% endif %}
                                         </p>
                                     {% endif %}
                                 {% endfor %}
@@ -167,7 +172,9 @@
 {% endblock %}
 
 {% block javascript %}
-
+    <script>
+        var existingSavedSlotsUrl = "{% url 'saved_exists' 'a'%}";
+    </script>
     <script src="{% static 'js/new_shift_slot.js' %}" type="text/javascript"></script>
 
 {% endblock %}

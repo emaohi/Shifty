@@ -12,7 +12,7 @@ from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
-    HttpResponseBadRequest
+    HttpResponseBadRequest, Http404, HttpResponseNotFound
 from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
@@ -20,11 +20,11 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, \
-    get_holiday_or_none, duplicate_favorite_slot, handle_named_slot, get_dist_data, save_shifts_request, \
+    get_holiday, get_dist_data, save_shifts_request, \
     delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, parse_duration_data, \
     get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
     get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee, get_employee_requests_with_status, \
-    create_new_slot, SlotCreator
+    SlotCreator
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -176,14 +176,14 @@ def add_shift_slot(request):
             return HttpResponseRedirect('/')
         else:
             day = request.POST.get('day')
-            slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
+            slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
             return render(request, 'manager/new_shift.html', {'form': slot_form, 'week_range': get_next_week_string(),
                                                               'holiday': slot_holiday}, status=400)
     else:
         day = request.GET.get('day', '')
         start_hour = request.GET.get('startTime', '')
 
-        slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
+        slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
 
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
                              names=((name[0], name[0]) for name in
@@ -191,6 +191,15 @@ def add_shift_slot(request):
 
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                           'holiday': slot_holiday, 'logo_conf': get_logo_conf()})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+@require_GET
+def saved_slot_exist(request, slot_name):
+    if SavedSlot.objects.filter(name=slot_name).exists():
+        return HttpResponse('')
+    return HttpResponseNotFound('')
 
 
 @login_required(login_url='/login')

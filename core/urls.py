@@ -7,6 +7,7 @@ urlpatterns = [
     url(r'^handle_emp_request/$', views.handle_employee_request, name='handle_emp_request'),
     url(r'^broadcast_message/$', views.broadcast_message, name='broadcast_msg'),
     url(r'^add_shift_slot/$', views.add_shift_slot, name='add_shift_slot'),
+    url(r'^saved_slot_exists/(?P<slot_name>[-\w]+)/$', views.saved_slot_exist, name='saved_exists'),
     url(r'^update_shift_slot/(?P<slot_id>[0-9]+)$', views.update_shift_slot, name='update_shift_slot'),
     url(r'^delete_shift_slot/$', views.delete_slot, name='delete_shift_slot'),
     url(r'^get_next_week_slots/$', views.get_next_week_slots_calendar, name='get_next_slots'),

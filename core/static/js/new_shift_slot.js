@@ -38,6 +38,12 @@ $(document).ready(function () {
 
         $("#submitSlot").show();
     });
+
+    $('#id_save_as').keyup(function(e) {
+        clearTimeout($.data(this, 'timer'));
+        $('#saveSlotExistWarning').hide();
+        $(this).data('timer', setTimeout(search, 500));
+    });
 });
 
 function getRoleBtn($btnClicked) {
@@ -70,4 +76,26 @@ function limit_apply_on(curr_modal_role, maxNumEmp) {
             });
         }
     })
+}
+
+
+function search() {
+    var existingString = $("#id_save_as").val();
+    if (existingString.length < 3) {
+        console.log("less than 3 chars...");
+        return;
+    }
+    console.log('trying to find savedSlot with name ' + existingString);
+    $.ajax({
+        url: existingSavedSlotsUrl.slice(0, -2) + existingString,
+        type: "get",
+        success: function(res) {
+            var $savedSlotExist = $('#saveSlotExistWarning');
+            $savedSlotExist.html("Slot with name " + existingString + " already exists, saving will override...");
+            $savedSlotExist.show();
+        },
+        error: function (xhr) {
+            console.log('no existing saved slot with this name, can continue...');
+        }
+    });
 }
