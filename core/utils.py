@@ -8,7 +8,6 @@ import requests
 from bs4 import BeautifulSoup
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import transaction, IntegrityError
 from django.utils import timezone
 
 from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range, get_curr_year
@@ -42,36 +41,10 @@ def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
                                   wait_for_results=wait_for_mail_results)
 
 
-def get_manger_msgs_of_employee(employee, is_new):
-    if is_new:
-        messages = ManagerMessage.objects.filter(
-            recipients__in=[employee]).order_by('-sent_time')[:employee.new_messages]
-        return messages
-
-    key = employee.get_old_manager_msgs_cache_key()
-    if key not in cache:
-        messages = ManagerMessage.objects.filter(
-            recipients__in=[employee]).order_by('-sent_time')[employee.new_messages:]
-        cache.set(key, list(messages), settings.DURATION_CACHE_TTL)
-        logger.debug('Taking old manager messages from DB: %s', messages)
-        return messages
-    logger.debug('Taking old manager messages from cache')
-    return cache.get(key)
-
-
 def get_employee_requests_with_status(manager, *statuses):
     business_employees = manager.business.get_employees()
     return EmployeeRequest.objects.filter(issuers__in=business_employees, status__in=[status for status in statuses]). \
         distinct().order_by('-sent_time')
-
-
-def send_mail_to_manager(emp_user):
-    send_multiple_mails_with_html(subject='New message in Shifty app',
-                                  text='you\'ve got new message from %s' % emp_user.username,
-                                  template='html_msgs/new_employee_change_request.html',
-                                  r_2_c_dict={emp_user.profile.get_manager_user():
-                                              {'employee_first_name': emp_user.first_name,
-                                               'employee_last_name': emp_user.last_name}})
 
 
 class SlotConstraintCreator:
@@ -229,40 +202,22 @@ class DurationApiClient:
         return walking_duration
 
 
-def get_week_slots(business, week_num):
-    next_week_slots = ShiftSlot.objects.filter(week=week_num, business=business)
-    return next_week_slots
-
-
-def get_current_week_slots(business):
-    curr_week_no = get_curr_week_num()
-    curr_week_slots = ShiftSlot.objects.filter(week=curr_week_no, business=business)
-    return curr_week_slots
-
-
-def save_shifts_request(form, request):
+def save_shifts_request(form, profile):
     slots_request = form.save(commit=False)
-    slots_request.employee = request.user.profile
-    slots_request.submission_time = timezone.localtime(timezone.now())
+    slots_request.employee = profile
     slots_request.save()
     form.save_m2m()
-    add_mandatory_slots(slots_request)
     return slots_request
 
 
-def add_mandatory_slots(slot_request):
-    business = slot_request.employee.business
-    mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, business=business, week=get_next_week_num())
-    slot_request.requested_slots.add(*list(mandatory_slots))
-
-
-def delete_other_requests(request, slots_request):
+def delete_other_requests(slots_request):
     start_week, end_week = get_current_week_range()
     existing_requests = ShiftRequest.objects \
-        .filter(employee=get_curr_profile(request),
+        .filter(employee=slots_request.employee,
                 submission_time__range=[start_week, end_week]). \
         exclude(submission_time=slots_request.submission_time)
-    logger.info("deleting %d old slots for this week...", existing_requests.count())
+    logger.info("in post_save signal, deleting %d old slots of employee %s for this week...",
+                existing_requests.count(), slots_request.employee)
     existing_requests.delete()
 
 
@@ -324,21 +279,6 @@ def get_next_shifts_of_emp(employee):
         shift__employees__id__iexact=employee.id, week=get_curr_week_num())
     curr_emp_future_slots = [slot for slot in curr_emp_week_slots if not slot.is_finished()]
     return curr_emp_future_slots
-
-
-def swap_shifts(swap_request, requester, responder):
-    logger.info('Going to swap shifts of requester %s and responder %s', requester, responder)
-    try:
-        with transaction.atomic():
-            swap_request.requester_shift.remove_employee(requester)
-            swap_request.requester_shift.add_employee(responder)
-            swap_request.requested_shift.remove_employee(responder)
-            swap_request.requested_shift.add_employee(requester)
-        logger.info('Swap completed')
-    except IntegrityError as e:
-        logger.error('Couldn\'t swap shifts: %s, rolling back accept step', str(e))
-        swap_request.accept_step = 1
-        swap_request.save()
 
 
 class NoLogoFoundError(Exception):

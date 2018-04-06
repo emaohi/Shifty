@@ -16,14 +16,13 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
-    get_days_hours_from_delta
+    get_days_hours_from_delta, get_curr_week_num
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
-from core.utils import create_manager_msg, send_mail_to_manager, \
-    get_holiday, save_shifts_request, \
-    delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
+from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
+    delete_other_requests, validate_language, get_slot_calendar_colors, \
     get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee, get_employee_requests_with_status, \
+    get_next_shifts_of_emp, get_employee_requests_with_status, \
     SlotCreator, SlotConstraintCreator, DurationApiClient
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
@@ -59,7 +58,7 @@ def report_incorrect_detail(request):
         # add the employee's manager to the recipients list
         new_request.issuers.add(reporting_profile)
         try:
-            send_mail_to_manager(request.user)
+            get_curr_profile(request).send_mail_to_manager()
         except EmailWaitError as e:
             return HttpResponseServerError(e.message)
 
@@ -124,7 +123,7 @@ def get_manager_messages(request):
     curr_emp_profile = get_curr_profile(request)
     is_new_str = request.GET.get('new')
     is_new = True if is_new_str == 'true' else False
-    manager_messages = get_manger_msgs_of_employee(curr_emp_profile, is_new)
+    manager_messages = curr_emp_profile.get_manger_msgs_of_employee(is_new)
 
     logger.debug('flushing new messages cache for emp %s', str(curr_emp_profile))
     curr_emp_profile.flush_new_messages()
@@ -266,7 +265,7 @@ def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
 
-    next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
+    next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))
     for slot in next_week_slots:
         text_color, title = slot.get_color_and_title()
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
@@ -286,14 +285,14 @@ def get_next_week_slots_calendar(request):
 def submit_slots_request(request):
     next_week_no = get_next_week_num()
     curr_business = get_curr_business(request)
+    curr_profile = get_curr_profile(request)
     if request.method == 'GET':
         form = SelectSlotsForm(business=curr_business, week=next_week_no)
         return render(request, 'employee/slot_list.html', {'form': form})
     else:
         form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no)
         if form.is_valid():
-            shifts_request = save_shifts_request(form, request)
-            delete_other_requests(request, shifts_request)
+            shifts_request = save_shifts_request(form, curr_profile)
 
             logger.info('slots chosen are: %s', str(shifts_request.requested_slots.all()))
             messages.success(request, 'request saved')
@@ -385,7 +384,7 @@ def generate_shifts(request):
             tasks.generate_next_week_shifts(business.business_name)
 
     if request.method == 'POST':
-        next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
+        next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))
         if not len(next_week_slots):
             messages.error(request, 'No slots next week !')
             return HttpResponseBadRequest('No slots next week !')
@@ -425,7 +424,8 @@ def get_calendar_current_week_shifts(request):
     if request.method == 'GET':
         shifts_json = []
 
-        current_week_slots = get_current_week_slots(get_curr_business(request))
+        current_week_slots = ShiftSlot.objects.filter(week=get_curr_week_num(),
+                                                      business=get_curr_business(request))
 
         for slot in current_week_slots:
             if not slot.was_shift_generated():

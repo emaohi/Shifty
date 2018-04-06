@@ -5,6 +5,8 @@ from datetime import datetime
 from urlparse import urlparse
 
 import logging
+
+from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
@@ -161,6 +163,32 @@ class EmployeeProfile(models.Model):
     def get_manager_user(self):
         if self.get_manager():
             return self.get_manager().user
+
+    def get_manger_msgs_of_employee(self, is_new):
+        from core.models import ManagerMessage
+        if is_new:
+            messages = ManagerMessage.objects.filter(
+                recipients__in=[self]).order_by('-sent_time')[:self.new_messages]
+            return messages
+
+        key = self.get_old_manager_msgs_cache_key()
+        if key not in cache:
+            messages = ManagerMessage.objects.filter(
+                recipients__in=[self]).order_by('-sent_time')[self.new_messages:]
+            cache.set(key, list(messages), settings.DURATION_CACHE_TTL)
+            logger.debug('Taking old manager messages from DB: %s', messages)
+            return messages
+        logger.debug('Taking old manager messages from cache')
+        return cache.get(key)
+
+    def send_mail_to_manager(self):
+        from Shifty.utils import send_multiple_mails_with_html
+        send_multiple_mails_with_html(subject='New message in Shifty app',
+                                      text='you\'ve got new message from %s' % self.user.username,
+                                      template='html_msgs/new_employee_change_request.html',
+                                      r_2_c_dict={self.get_manager_user():
+                                                      {'employee_first_name': self.user.first_name,
+                                                       'employee_last_name': self.user.last_name}})
 
     def flush_new_messages(self):
         if self.new_messages > 0:

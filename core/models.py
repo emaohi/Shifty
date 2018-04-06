@@ -6,7 +6,7 @@ import json
 import logging
 
 from django.db import models, IntegrityError, transaction
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
 from core.date_utils import get_next_week_num, get_week_range, get_week_string
@@ -43,6 +43,9 @@ class EmployeeRequest(models.Model):
 
     def is_rejected(self):
         return self.status == 'R'
+
+    def business(self):
+        return self.issuers.first().business
 
     def save(self, *args, **kwargs):
         if not self.subject:
@@ -364,3 +367,16 @@ def update_employee(sender, **kwargs):
         logger.debug('incrementing new message for emp %s', str(emp))
         emp.new_messages += 1
         emp.save()
+
+
+# pylint: disable=unused-argument
+@receiver(post_save, sender=ShiftRequest)
+def add_mandatory_to_shift_request(sender, **kwargs):
+    logger.info('in post_save signal, adding mandatory slots...')
+    shift_request = kwargs.pop('instance')
+    business = shift_request.employee.business
+    mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, business=business, week=get_next_week_num())
+    shift_request.requested_slots.add(*list(mandatory_slots))
+
+    from core.utils import delete_other_requests
+    delete_other_requests(shift_request)
