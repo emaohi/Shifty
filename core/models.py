@@ -143,14 +143,34 @@ class ShiftSlot(models.Model):
                 str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
 
     def save(self, *args, **kwargs):
-        if self.saved_slot:
-            if self.name is not None:
-                raise IntegrityError('slot cannot have save_slot and name together...')
-            fields = ['name', 'constraints', 'is_mandatory']
-            logger.debug('updating %s fields of slot %s', fields, self)
-            for field in fields:
-                setattr(self, field, getattr(self.saved_slot, field))
+        if not self.pk:
+            if self.saved_slot:
+                self._update_saved_slot_upon_creation()
+            else:
+                self.name = self.name if self.name else 'Custom'
+        else:
+            if self.saved_slot:
+                self._validate_saved_slot_fields_maintained()
+            else:
+                self.name = self.name if self.name else 'Custom'
+
         super(ShiftSlot, self).save(*args, **kwargs)
+
+    def _update_saved_slot_upon_creation(self):
+        if self.name:
+            raise IntegrityError('slot cannot be created with save_slot and name together...')
+        fields = ['name', 'constraints', 'is_mandatory']
+        logger.debug('updating %s fields of slot %s', fields, self)
+        for field in fields:
+            setattr(self, field, getattr(self.saved_slot, field))
+
+    def _validate_saved_slot_fields_maintained(self):
+        fields = ['name', 'constraints', 'is_mandatory']
+        logger.debug('validating %s fields of slot %s not changed', fields, self)
+        for field in fields:
+            if getattr(self, field) != getattr(self.saved_slot, field):
+                raise IntegrityError('field %s of slot %s is different from same field in saved-slot %s' %
+                                     (field, self, self.saved_slot))
 
     def start_time_str(self):
         return '%s %s' % (self.get_date(), self.start_hour)
