@@ -3,7 +3,7 @@ import json
 from django.test import TestCase
 
 from core.date_utils import get_days_range_by_week_num
-from core.utils import create_constraint_json_from_form
+from core.utils import SlotConstraintCreator
 
 
 class UtilsTest(TestCase):
@@ -26,7 +26,8 @@ class UtilsTest(TestCase):
         self.dummy_slot['cook_average_rate__value_constraint'] = '2.5'
         self.dummy_slot['cook_average_rate__operation_constraint'] = 'gte'
 
-        actual_constraint_json = json.dumps(create_constraint_json_from_form(self.dummy_slot), sort_keys=True)
+        actual_constraint_json = json.dumps(SlotConstraintCreator(self.dummy_slot).create(),
+                                            sort_keys=True)
 
         self.assertEqual(expected_json, actual_constraint_json)
 

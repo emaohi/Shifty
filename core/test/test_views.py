@@ -11,7 +11,9 @@ from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
     create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee, \
     make_slot_this_in_n_hour_from_now, create_shifts_for_slots
+from core.utils import DurationApiClient
 from log.models import EmployeeProfile
+patch.object = patch.object
 
 
 class EmployeeRequestViewTest(TestCase):
@@ -221,7 +223,7 @@ class GetDurationDataViewTest(TestCase):
         create_new_manager(self.manager_credentials)
         set_address_to_business(username=self.manager_credentials['username'], address='Tel-Aviv')
 
-    @patch('core.views.parse_duration_data')
+    @patch.object(DurationApiClient, 'get_dist_data')
     def test_view_should_succeed(self, mock_func):
 
         mock_func.return_value = ('1', '2')

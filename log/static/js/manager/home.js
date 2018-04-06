@@ -240,7 +240,7 @@ function showSlotDetails(slotId, constraints_json) {
     var slotModal = $('#slotModal');
 
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
-    slotModal.find('.modal-title').html('Slot #' + slotId + ' constraints');
+    slotModal.find('.modal-title').html('Slot #' + slotId + ' Details');
 
     setSlotEmpList(slotId);
     setShiftEmpList(slotId);

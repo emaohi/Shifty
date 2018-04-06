@@ -19,12 +19,12 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
     get_days_hours_from_delta
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
-from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, \
-    get_holiday, get_dist_data, save_shifts_request, \
-    delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, parse_duration_data, \
+from core.utils import create_manager_msg, send_mail_to_manager, \
+    get_holiday, save_shifts_request, \
+    delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
     get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
     get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee, get_employee_requests_with_status, \
-    SlotCreator
+    SlotCreator, SlotConstraintCreator, DurationApiClient
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -159,7 +159,7 @@ def get_employee_requests(request):
 def add_shift_slot(request):
     business = get_curr_business(request)
     slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
-        .values('name').distinct() if t['name'] != 'Custom']
+                  .values('name').distinct() if t['name'] != 'Custom']
 
     if request.method == 'POST':
         slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
@@ -218,7 +218,7 @@ def update_shift_slot(request, slot_id):
         slot_form = ShiftSlotForm(request.POST, business=business)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
-            slot_constraint_json = create_constraint_json_from_form(data)
+            slot_constraint_json = SlotConstraintCreator(data).create()
 
             logger.info('new end hour is %s', str(data['end_hour']))
             ShiftSlot.objects.filter(id=slot_id).update(business=request.user.profile.business, day=data['day'],
@@ -334,15 +334,13 @@ def get_work_duration_data(request):
         if key not in cache:
             home_address = get_curr_profile(request).home_address
             work_address = get_curr_business(request).address
+            arrival_method = get_curr_profile(request).arriving_method
+            duration_client = DurationApiClient(home_address, work_address)
 
             if not home_address or not work_address:
                 return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
 
-            arrival_method = get_curr_profile(request).arriving_method
-
-            raw_distance_data = get_dist_data(home_address, work_address, arrival_method)
-
-            driving_duration, walking_duration = parse_duration_data(raw_distance_data)
+            driving_duration, walking_duration = duration_client.get_dist_data(arrival_method)
 
             if not walking_duration and not driving_duration:
                 return HttpResponseBadRequest('cant find home to work durations - make sure both business'

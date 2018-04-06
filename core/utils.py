@@ -74,39 +74,43 @@ def send_mail_to_manager(emp_user):
                                                'employee_last_name': emp_user.last_name}})
 
 
-def get_op_and_apply(data, constraint_name):
-    role = constraint_name.split('__')[0].split('_')[0]
-    field_name = constraint_name.split('__')[0].split('_')[1]
-    op = apply_on = ''
+class SlotConstraintCreator:
 
-    for field in data:
-        split_field = field.split('__')
-        if split_field[0].split('_')[0] == role and split_field[0].split('_')[1] == field_name:
-            action = split_field[1].split('_')[0]
-            if action == 'operation':
-                op = field
-            elif action == 'applyOn':
-                apply_on = field
-    if op and apply_on:
-        return op, apply_on
-    else:
-        raise Exception('not enough fields for %s' % constraint_name)
+    def __init__(self, data):
+        self.slot_form_data = data
 
+    def create(self):
+        roles = ['waiter', 'bartender', 'cook']
+        constraint_json = {role: {'num': self.slot_form_data['num_of_%ss' % role]} for role in roles}
 
-def create_constraint_json_from_form(data):
-    roles = ['waiter', 'bartender', 'cook']
-    constraint_json = {role: {'num': data['num_of_%ss' % role]} for role in roles}
+        filtered_constraint_names = [f for f in self.slot_form_data if '__' in f]
+        for role in roles:
+            for constraint_name in filtered_constraint_names:
+                if all(x in constraint_name for x in ['val', role]) and self.slot_form_data[constraint_name]:
+                    op, apply_on = self._get_op_and_apply(constraint_name)
+                    val_content = self.slot_form_data[constraint_name]
+                    constraint_field = constraint_name.split('__')[0].split('_')[1]
+                    role_json = constraint_json[role]
+                    role_json[constraint_field] = {'val': val_content, 'op': self.slot_form_data[op], 'apply_on': self.slot_form_data[apply_on]}
+        return constraint_json
 
-    filtered_constraint_names = [f for f in data if '__' in f]
-    for role in roles:
-        for constraint_name in filtered_constraint_names:
-            if all(x in constraint_name for x in ['val', role]) and data[constraint_name]:
-                op, apply_on = get_op_and_apply(data, constraint_name)
-                val_content = data[constraint_name]
-                constraint_field = constraint_name.split('__')[0].split('_')[1]
-                role_json = constraint_json[role]
-                role_json[constraint_field] = {'val': val_content, 'op': data[op], 'apply_on': data[apply_on]}
-    return constraint_json
+    def _get_op_and_apply(self, constraint_name):
+        role = constraint_name.split('__')[0].split('_')[0]
+        field_name = constraint_name.split('__')[0].split('_')[1]
+        op = apply_on = ''
+
+        for field in self.slot_form_data:
+            split_field = field.split('__')
+            if split_field[0].split('_')[0] == role and split_field[0].split('_')[1] == field_name:
+                action = split_field[1].split('_')[0]
+                if action == 'operation':
+                    op = field
+                elif action == 'applyOn':
+                    apply_on = field
+        if op and apply_on:
+            return op, apply_on
+        else:
+            raise Exception('not enough fields for %s' % constraint_name)
 
 
 def save_holidays(holiday_json):
@@ -128,31 +132,14 @@ def validate_language(text):
     return True
 
 
-def create_new_slot(business, slot_data):
-    slot_constraint_json = create_constraint_json_from_form(slot_data)
-    slot_holiday = get_holiday(get_curr_year(), slot_data['day'], get_next_week_num())
-    new_slot = ShiftSlot(business=business, day=slot_data['day'],
-                         start_hour=slot_data['start_hour'], end_hour=slot_data['end_hour'],
-                         week=get_next_week_num(), holiday=slot_holiday)
-    if slot_data.get('save_as'):
-        new_saved_slot = SavedSlot.objects.create(name=slot_data.get('save_as'),
-                                                  constraints=json.dumps(slot_constraint_json),
-                                                  is_mandatory=slot_data['mandatory'])
-        new_slot.saved_slot = new_saved_slot
-    else:
-        new_slot.name = 'Custom'
-        new_slot.constraints = json.dumps(slot_constraint_json)
-        new_slot.is_mandatory = slot_data['mandatory']
-    new_slot.save()
-
-
 class SlotCreator:
     def __init__(self, business, slot_data):
         self.business = business
         self.slot_data = slot_data
+        self.constraint_creator = SlotConstraintCreator(slot_data)
 
     def create_new_slot(self):
-        slot_constraint_json = create_constraint_json_from_form(self.slot_data)
+        slot_constraint_json = self.constraint_creator.create()
         slot_holiday = get_holiday(get_curr_year(), self.slot_data['day'], get_next_week_num())
         new_slot = ShiftSlot(business=self.business, day=self.slot_data['day'],
                              start_hour=self.slot_data['start_hour'], end_hour=self.slot_data['end_hour'],
@@ -198,33 +185,48 @@ def get_holiday(year, day, week):
     return slot_holiday
 
 
-def duplicate_favorite_slot(business, name):
-    template_slot = ShiftSlot.objects.filter(business=business, name=name).first()
-    template_slot.id = None
-    template_slot.save()
-    return template_slot
+class DurationApiClient:
 
+    def __init__(self, home_address, business_address):
+        self.home_address = home_address
+        self.business_address = business_address
 
-def handle_named_slot(business, name):
-    pinned_slot = duplicate_favorite_slot(business, name)
-    pinned_slot.week = get_curr_week_num() - 5
-    pinned_slot.save()
+    def get_dist_data(self, arriving_method):
+        json_res = {}
+        if arriving_method == 'D' or arriving_method == 'B':
+            driving_api_url = settings.DISTANCE_URL % (self.home_address, self.business_address, 'driving',
+                                                       settings.DISTANCE_API_KEY)
+            json_res['driving'] = requests.get(driving_api_url)
+            json_res['driving_url'] = settings.DIRECTIONS_URL %\
+                (self.home_address, self.business_address, 'driving')
+        if arriving_method == 'W' or arriving_method == 'B':
+            walking_api_url = settings.DISTANCE_URL % (self.home_address, self.business_address, 'walking',
+                                                       settings.DISTANCE_API_KEY)
+            json_res['walking'] = requests.get(walking_api_url)
+            json_res['walking_url'] = settings.DIRECTIONS_URL %\
+                (self.home_address, self.business_address, 'walking')
 
+        return self._parse_duration_data(json_res)
 
-def get_dist_data(home_address, work_address, arriving_method):
-    json_res = {}
-    if arriving_method == 'D' or arriving_method == 'B':
-        driving_api_url = settings.DISTANCE_URL % (home_address, work_address, 'driving', settings.DISTANCE_API_KEY)
-        json_res['driving'] = requests.get(driving_api_url)
-        json_res['driving_url'] = settings.DIRECTIONS_URL %\
-            (home_address, work_address, 'driving')
-    if arriving_method == 'W' or arriving_method == 'B':
-        walking_api_url = settings.DISTANCE_URL % (home_address, work_address, 'walking', settings.DISTANCE_API_KEY)
-        json_res['walking'] = requests.get(walking_api_url)
-        json_res['walking_url'] = settings.DIRECTIONS_URL %\
-            (home_address, work_address, 'walking')
+    def _parse_duration_data(self, raw_distance_response):
+        driving_duration = None
+        walking_duration = None
 
-    return json_res
+        if 'driving' in raw_distance_response:
+            driving_duration = self._parse_specific_method_duration(raw_distance_response, 'driving')
+        if 'walking' in raw_distance_response:
+            walking_duration = self._parse_specific_method_duration(raw_distance_response, 'walking')
+        return driving_duration, walking_duration
+
+    @staticmethod
+    def _parse_specific_method_duration(raw_distance_response, method):
+        try:
+            walking_duration = json.loads(raw_distance_response.get(method).text).get('rows')[0].get(
+                'elements')[0].get('duration').get('text')
+        except (KeyError, AttributeError) as e:
+            logger.warning('couldn\'t get %s duration: %s', method,  e)
+            walking_duration = ''
+        return walking_duration
 
 
 def get_week_slots(business, week_num):
@@ -236,28 +238,6 @@ def get_current_week_slots(business):
     curr_week_no = get_curr_week_num()
     curr_week_slots = ShiftSlot.objects.filter(week=curr_week_no, business=business)
     return curr_week_slots
-
-
-def parse_duration_data(raw_distance_response):
-    driving_duration = None
-    walking_duration = None
-
-    if 'driving' in raw_distance_response:
-        try:
-            driving_duration = json.loads(raw_distance_response.get('driving').text).get('rows')[0].get(
-                'elements')[0].get('duration').get('text')
-        except (KeyError, AttributeError) as e:
-            logger.warning('couldn\'t get driving duration: ' + str(e))
-            driving_duration = ''
-    if 'walking' in raw_distance_response:
-        try:
-            walking_duration = json.loads(raw_distance_response.get('walking').text).get('rows')[0].get(
-                'elements')[0].get('duration').get('text')
-        except (KeyError, AttributeError) as e:
-            logger.warning('couldn\'t get walking duration: ' + str(e))
-            walking_duration = ''
-
-    return driving_duration, walking_duration
 
 
 def save_shifts_request(form, request):
