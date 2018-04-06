@@ -20,7 +20,7 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
-    delete_other_requests, validate_language, get_slot_calendar_colors, \
+    validate_language, get_slot_calendar_colors, \
     get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
     get_next_shifts_of_emp, get_employee_requests_with_status, \
     SlotCreator, SlotConstraintCreator, DurationApiClient
