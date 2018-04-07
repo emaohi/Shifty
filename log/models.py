@@ -15,6 +15,8 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+from core.date_utils import get_curr_week_num
+
 logger = logging.getLogger(__name__)
 
 
@@ -97,6 +99,20 @@ class Business(models.Model):
         name = urlparse(url).path.split('/')[-1]
         content = ContentFile(urllib2.urlopen(url).read())
         self.logo.save(name, content, save=False)
+
+    def get_non_mandatory_slots_cache_key(self, week):
+        return "next-week-slots-{0}-{1}".format(self, week)
+
+    def get_cached_non_mandatory_slots(self, week):
+        from core.models import ShiftSlot
+        half_an_hour = 30 * 60
+        key = self.get_non_mandatory_slots_cache_key(week)
+        if key not in cache:
+            slots = ShiftSlot.objects.filter(week=week, business=self). \
+                exclude(is_mandatory=True)
+            cache.set(key, slots, half_an_hour)
+            return slots
+        return cache.get(key)
 
 
 class EmployeeProfile(models.Model):
@@ -215,6 +231,34 @@ class EmployeeProfile(models.Model):
         if self.role != 'MA':
             raise ValueError('Can\'t employee requests key of emp %s - is not manager' % self)
         return "{0}-old-emp-requests".format(self)
+
+    def get_eta_cache_key(self):
+        return "{0}DURATION-ETA-{1}".format('TEST-' if settings.TESTING else '', self)
+
+    def get_current_week_slots(self):
+        from core.models import ShiftSlot
+        curr_emp_week_slots = ShiftSlot.objects.filter(
+            shift__employees__id__iexact=self.id, week=get_curr_week_num())
+        curr_emp_future_slots = [slot for slot in curr_emp_week_slots if not slot.is_finished()]
+        return curr_emp_future_slots
+
+    def get_next_shifts(self):
+        from core.models import Shift
+        Shift.objects.all().order_by('slot__day', 'slot__ho')
+        ordered_current_week_emp_shifts = self.shifts.filter(slot__week__exact=get_curr_week_num()) \
+            .order_by('slot__day', 'slot__start_hour')
+        return [shift for shift in ordered_current_week_emp_shifts if not shift.slot.is_finished()]
+
+    def get_next_shift(self):
+        next_shifts = self.get_next_shifts()
+        if len(next_shifts) == 0:
+            logger.warning('%s has no upcoming shifts...', self)
+            return None
+        return next_shifts[0]
+
+    def get_previous_shifts(self):
+        return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
+            .order_by('-slot__day', '-slot__start_hour')
 
     @classmethod
     def get_roles_reversed(cls):

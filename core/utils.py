@@ -6,13 +6,12 @@ import urllib
 
 import requests
 from bs4 import BeautifulSoup
-from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import timezone
 
-from core.date_utils import get_date, get_curr_week_num, get_next_week_num, get_current_week_range, get_curr_year
-from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, ShiftRequest, Shift, SavedSlot
-from Shifty.utils import send_multiple_mails_with_html, get_curr_profile
+from core.date_utils import get_date, get_next_week_num, get_curr_year
+from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, SavedSlot
+from Shifty.utils import send_multiple_mails_with_html
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -97,12 +96,16 @@ def save_holidays(holiday_json):
         logger.info('got %s holiday,%r created', h_name, created)
 
 
-def validate_language(text):
-    url = settings.PROFANITY_SERVICE_URL % urllib.quote(text)
-    res = requests.get(url)
-    if res.text == 'true':
-        return False
-    return True
+class LanguageValidator:
+    def __init__(self, url):
+        self.checker_url = url
+
+    def validate(self, text):
+        url = self.checker_url % urllib.quote(text)
+        res = requests.get(url)
+        if res.text == 'true':
+            return False
+        return True
 
 
 class SlotCreator:
@@ -210,75 +213,18 @@ def save_shifts_request(form, profile):
     return slots_request
 
 
-def delete_other_requests(slots_request):
-    start_week, end_week = get_current_week_range()
-    existing_requests = ShiftRequest.objects \
-        .filter(employee=slots_request.employee,
-                submission_time__range=[start_week, end_week]). \
-        exclude(submission_time=slots_request.submission_time)
-    logger.info("in post_save signal, deleting %d old slots of employee %s for this week...",
-                existing_requests.count(), slots_request.employee)
-    existing_requests.delete()
+class LogoUrlFinder:
+    def __init__(self, url):
+        self.logos_site_url = url
 
-
-def get_cached_non_mandatory_slots(business, week):
-
-    half_an_hour = 30 * 60
-    key = "next-week-slots-{0}-{1}".format(business, week)
-    if key not in cache:
-        slots = ShiftSlot.objects.filter(week=week, business=business). \
-            exclude(is_mandatory=True)
-        cache.set(key, slots, half_an_hour)
-        return slots
-    return cache.get(key)
-
-
-def get_slot_calendar_colors(curr_profile, slot):
-    if curr_profile.role != 'MA':
-        bg_color, text_color = ('mediumseagreen', 'white') if curr_profile in \
-                                                              slot.shift.employees.all() else ('#7b8a8b', 'black')
-    else:
-        if slot.is_finished():
-            bg_color, text_color = 'cornflowerblue', 'white'
-        else:
-            bg_color, text_color = 'blue', 'white'
-    return bg_color, text_color
-
-
-def get_eta_cache_key(profile_id):
-    return "{0}ETA-{1}".format('TEST-' if settings.TESTING else '', get_curr_profile(profile_id))
-
-
-def get_next_shift(profile):
-    Shift.objects.all().order_by('slot__day', 'slot__ho')
-    ordered_current_week_emp_shifts = profile.shifts.filter(slot__week__exact=get_curr_week_num())\
-        .order_by('slot__day', 'slot__start_hour')
-    for shift in ordered_current_week_emp_shifts:
-        if shift.slot.get_datetime() > datetime.datetime.now():
-            return shift
-    return None
-
-
-def get_emp_previous_shifts(profile):
-    return profile.shifts.filter(slot__week__lt=get_curr_week_num())\
-        .order_by('-slot__day', '-slot__start_hour')
-
-
-def get_logo_url(business_name):
-    lookup_url = settings.LOGO_LOOKUP_URL % business_name
-    try:
-        response = requests.get(lookup_url)
-        soup = BeautifulSoup(response.content, 'html.parser')
-        return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
-    except (KeyError, IndexError):
-        raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
-
-
-def get_next_shifts_of_emp(employee):
-    curr_emp_week_slots = ShiftSlot.objects.filter(
-        shift__employees__id__iexact=employee.id, week=get_curr_week_num())
-    curr_emp_future_slots = [slot for slot in curr_emp_week_slots if not slot.is_finished()]
-    return curr_emp_future_slots
+    def find_logo(self, business_name):
+        lookup_url = self.logos_site_url % business_name
+        try:
+            response = requests.get(lookup_url)
+            soup = BeautifulSoup(response.content, 'html.parser')
+            return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
+        except (KeyError, IndexError):
+            raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
 
 
 class NoLogoFoundError(Exception):

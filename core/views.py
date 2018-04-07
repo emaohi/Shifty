@@ -20,10 +20,8 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
-    validate_language, get_slot_calendar_colors, \
-    get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_next_shifts_of_emp, get_employee_requests_with_status, \
-    SlotCreator, SlotConstraintCreator, DurationApiClient
+    NoLogoFoundError, get_employee_requests_with_status, \
+    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -41,9 +39,10 @@ def report_incorrect_detail(request):
         incorrect_field = request.POST.get('incorrect_field')
         fix_suggestion = request.POST.get('fix_suggestion')
         curr_val = request.POST.get('curr_val')
+        language_validator = LanguageValidator(settings.PROFANITY_SERVICE_URL)
 
         logger.info('checking language')
-        if not validate_language(fix_suggestion):
+        if not language_validator.validate(fix_suggestion):
             logger.info('bad language detected')
             return HttpResponseBadRequest('NOT SENT - BAD LANGUAGE')
 
@@ -327,13 +326,14 @@ def is_finish_slots(request):
 @login_required(login_url='/login')
 def get_work_duration_data(request):
     if request.method == 'GET':
-
-        key = get_eta_cache_key(get_curr_profile(request))
+        curr_profile = get_curr_profile(request)
+        curr_business = get_curr_business(request)
+        key = curr_profile.get_eta_cache_key()
 
         if key not in cache:
-            home_address = get_curr_profile(request).home_address
-            work_address = get_curr_business(request).address
-            arrival_method = get_curr_profile(request).arriving_method
+            home_address = curr_profile.home_address
+            work_address = curr_business.address
+            arrival_method = curr_profile.arriving_method
             duration_client = DurationApiClient(home_address, work_address)
 
             if not home_address or not work_address:
@@ -403,15 +403,16 @@ def generate_shifts(request):
 @login_required(login_url='/login')
 def get_slot_employees(request, slot_id):
     if request.method == 'GET':
+        curr_employee = get_curr_profile(request)
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
-            curr_emp_future_slots = get_next_shifts_of_emp(get_curr_profile(request))
+            curr_emp_future_slots = curr_employee.get_current_week_slots()
             offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
             return render(request, 'slot_request_emp_list.html',
                           {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
                            'curr_emp': get_curr_profile(request),
-                           'future_shifts': curr_emp_future_slots, 'offer_swap': offer_swap})
+                           'future_slots': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
             logger.warning('Can\'t get employees for slot id %s, shift was not generated', slot_id)
             return HttpResponse('Cant find shift for this slot')
@@ -431,7 +432,7 @@ def get_calendar_current_week_shifts(request):
             if not slot.was_shift_generated():
                 continue
 
-            bg_color, text_color = get_slot_calendar_colors(get_curr_profile(request), slot)
+            bg_color, text_color = slot.get_calendar_colors(get_curr_profile(request))
 
             jsoned_shift = json.dumps({'id': str(slot.id), 'title': slot.name,
                                        'start': slot.start_time_str(),
@@ -473,7 +474,7 @@ def submit_shift_summary(request, slot_id):
 @require_GET
 def get_time_to_next_shift(request):
     curr_emp = get_curr_profile(request)
-    next_shift = get_next_shift(curr_emp)
+    next_shift = curr_emp.get_next_shift()
     if not next_shift:
         logger.warning('no upcoming shift for emp %s', request.user.username)
         return HttpResponseBadRequest('No upcoming shift was found...')
@@ -488,7 +489,7 @@ def get_time_to_next_shift(request):
 @require_GET
 def get_prev_shifts(request):
     curr_emp = get_curr_profile(request)
-    prev_shifts = get_emp_previous_shifts(curr_emp)
+    prev_shifts = curr_emp.get_previous_shifts()
     if len(prev_shifts) == 0:
         logger.warning('no previous shifts for emp %s', request.user.username)
         return HttpResponseBadRequest('No previous shifts was found...')
@@ -501,7 +502,7 @@ def get_prev_shifts(request):
 @user_passes_test(must_be_employee_callback)
 def export_shifts_csv(request):
     curr_emp = get_curr_profile(request)
-    prev_shifts = get_emp_previous_shifts(curr_emp)
+    prev_shifts = curr_emp.get_previous_shifts()
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="prev_shifts.csv"'
@@ -519,8 +520,9 @@ def export_shifts_csv(request):
 @require_GET
 def get_logo_suggestion(request):
     business_name = request.GET.get('name', '')
+    logo_finder = LogoUrlFinder(settings.LOGO_LOOKUP_URL)
     try:
-        logo_url = get_logo_url(business_name)
+        logo_url = logo_finder.find_logo(business_name)
     except NoLogoFoundError as e:
         logger.warning('couldn\'t found url for name: %s', business_name)
         return HttpResponseBadRequest('Couldn\'t find logo... %s' % e.message)

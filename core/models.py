@@ -9,7 +9,7 @@ from django.db import models, IntegrityError, transaction
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
-from core.date_utils import get_next_week_num, get_week_range, get_week_string
+from core.date_utils import get_next_week_num, get_week_range, get_week_string, get_current_week_range
 from log.models import Business, EmployeeProfile
 
 logger = logging.getLogger(__name__)
@@ -222,6 +222,17 @@ class ShiftSlot(models.Model):
         text_color = '#f5dd5d' if not (self.is_mandatory or self.holiday) else '#ff0000'
         return text_color, title
 
+    def get_calendar_colors(self, curr_profile):
+        if curr_profile.role != 'MA':
+            bg_color, text_color = ('mediumseagreen', 'white') if curr_profile in \
+                                                                  self.shift.employees.all() else ('#7b8a8b', 'black')
+        else:
+            if self.is_finished():
+                bg_color, text_color = 'cornflowerblue', 'white'
+            else:
+                bg_color, text_color = 'blue', 'white'
+        return bg_color, text_color
+
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
@@ -378,5 +389,15 @@ def add_mandatory_to_shift_request(sender, **kwargs):
     mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, business=business, week=get_next_week_num())
     shift_request.requested_slots.add(*list(mandatory_slots))
 
-    from core.utils import delete_other_requests
-    delete_other_requests(shift_request)
+    _delete_other_requests(shift_request)
+
+
+def _delete_other_requests(slots_request):
+    start_week, end_week = get_current_week_range()
+    existing_requests = ShiftRequest.objects \
+        .filter(employee=slots_request.employee,
+                submission_time__range=[start_week, end_week]). \
+        exclude(submission_time=slots_request.submission_time)
+    logger.info("in post_save signal, deleting %d old slots of employee %s for this week...",
+                existing_requests.count(), slots_request.employee)
+    existing_requests.delete()

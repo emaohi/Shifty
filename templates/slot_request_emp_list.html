@@ -11,8 +11,8 @@
                         <div>
                             <select>
                                 <option value="" selected disabled>Select Shift</option>
-                                {% for shift in future_shifts %}
-                                    <option value="{{ shift.id }}">{{ shift.shift }}</option>
+                                {% for slot in future_slots %}
+                                    <option value="{{ slot.id }}">{{ slot.shift }}</option>
                                 {% endfor %}
                             </select>
                             <button class="btn-info btn-xs swapBtn">Request for swap</button>
