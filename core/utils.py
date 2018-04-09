@@ -109,24 +109,30 @@ class LanguageValidator:
 
 
 class SlotCreator:
-    def __init__(self, business, slot_data):
+    def __init__(self, business, slot_data, constraint_creator):
         self.business = business
         self.slot_data = slot_data
-        self.constraint_creator = SlotConstraintCreator(slot_data)
+        self.constraint_creator = constraint_creator
 
-    def create_new_slot(self):
+    def create(self):
+        if self.slot_data['name'] == '':
+            self._create_new_slot()
+        else:
+            self._create_saved_slot()
+
+    def _create_new_slot(self):
         slot_constraint_json = self.constraint_creator.create()
         slot_holiday = get_holiday(get_curr_year(), self.slot_data['day'], get_next_week_num())
         new_slot = ShiftSlot(business=self.business, day=self.slot_data['day'],
                              start_hour=self.slot_data['start_hour'], end_hour=self.slot_data['end_hour'],
                              week=get_next_week_num(), holiday=slot_holiday)
-        with_name = self.slot_data.get('save_as') is not None
-        if with_name:
+
+        if self.slot_data.get('save_as') is not None:
             self._create_slot_with_name(new_slot, slot_constraint_json)
         else:
             self._create_new_slot_without_name(new_slot, slot_constraint_json)
 
-    def create_saved_slot(self):
+    def _create_saved_slot(self):
         saved_slot = SavedSlot.objects.get(name=self.slot_data['name'])
         logger.info('Going to create slot from existing saved slot: %s', saved_slot)
         ShiftSlot.objects.create(business=self.business, day=self.slot_data['day'], week=get_next_week_num(),

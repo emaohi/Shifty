@@ -156,6 +156,7 @@ def get_employee_requests(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_shift_slot(request):
     business = get_curr_business(request)
+
     slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
                   .values('name').distinct() if t['name'] != 'Custom']
 
@@ -163,13 +164,10 @@ def add_shift_slot(request):
         slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
         if slot_form.is_valid():
             data = slot_form.cleaned_data
-            is_new = data['name'] == ''
+            constraint_creator = SlotConstraintCreator(data)
+            slot_creator = SlotCreator(business, data, constraint_creator)
 
-            if is_new:
-                SlotCreator(business, data).create_new_slot()
-            else:
-                SlotCreator(business, data).create_saved_slot()
-
+            slot_creator.create()
             messages.success(request, 'slot form was ok')
             return HttpResponseRedirect('/')
         else:
@@ -379,9 +377,9 @@ def generate_shifts(request):
         business.save()
 
         if settings.CELERY:
-            tasks.generate_next_week_shifts.delay(business.business_name)
+            tasks.generate_next_week_shifts.delay(business.business_name, settings.SHIFT_GENERATION_ALGORITHM_LEVEL)
         else:
-            tasks.generate_next_week_shifts(business.business_name)
+            tasks.generate_next_week_shifts(business.business_name, settings.SHIFT_GENERATION_ALGORITHM_LEVEL)
 
     if request.method == 'POST':
         next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))

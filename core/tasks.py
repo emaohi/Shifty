@@ -12,7 +12,7 @@ from django.conf import settings
 
 from core.date_utils import get_next_week_num
 from core.models import ShiftSlot
-from core.shift_generator import NaiveShiftGenerator
+from core.shift_generator import NaiveShiftGenerator, ShiftGeneratorFactory
 from core.utils import save_holidays
 from log.models import Business
 
@@ -47,18 +47,16 @@ def reset_shift_generation_status():
 
 
 @shared_task
-def generate_next_week_shifts(business_name):
-
-    sleep(7)
+def generate_next_week_shifts(business_name, level):
 
     business = Business.objects.get(pk=business_name)
     next_week = get_next_week_num()
     slots = ShiftSlot.objects.filter(business=business, week=next_week)
 
-    shift_generator = NaiveShiftGenerator(slots)
+    shift_generator = ShiftGeneratorFactory.create(level)
 
     try:
-        shift_generator.generate()
+        shift_generator.generate(slots)
 
         business.set_shift_generation_success()
         business.save()
