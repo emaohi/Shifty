@@ -59,6 +59,11 @@ def set_address_to_business(username, address):
     business.save()
 
 
+def get_business_of_username(username):
+    user = User.objects.get(username=username)
+    return user.profile.business
+
+
 def set_address_to_employee(username, address):
     user = User.objects.get(username=username)
     profile = user.profile

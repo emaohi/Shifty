@@ -127,7 +127,7 @@ class SlotCreator:
                              start_hour=self.slot_data['start_hour'], end_hour=self.slot_data['end_hour'],
                              week=get_next_week_num(), holiday=slot_holiday)
 
-        if self.slot_data.get('save_as') is not None:
+        if self.slot_data.get('save_as') != '':
             self._create_slot_with_name(new_slot, slot_constraint_json)
         else:
             self._create_new_slot_without_name(new_slot, slot_constraint_json)

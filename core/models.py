@@ -217,7 +217,7 @@ class ShiftSlot(models.Model):
         return self.get_datetime() < datetime.datetime.now()
 
     def get_color_and_title(self):
-        holiday_str = 'holiday' if self.holiday else ''
+        holiday_str = ' holiday' if self.holiday else ''
         title = '%s%s (%s)' % (self.name, holiday_str, self.id)
         text_color = '#f5dd5d' if not (self.is_mandatory or self.holiday) else '#ff0000'
         return text_color, title
