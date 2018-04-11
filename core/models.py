@@ -160,12 +160,11 @@ class ShiftSlot(models.Model):
         super(ShiftSlot, self).save(*args, **kwargs)
 
     def _update_saved_slot_upon_creation(self):
-        if self.name:
-            raise IntegrityError('slot cannot be created with save_slot and name together...')
+
         fields = ['name', 'constraints', 'is_mandatory']
-        logger.debug('updating %s fields of slot %s', fields, self)
         for field in fields:
             setattr(self, field, getattr(self.saved_slot, field))
+        logger.debug('updated %s fields of slot %s', fields, self)
 
     def _validate_saved_slot_fields_maintained(self):
         fields = ['name', 'constraints', 'is_mandatory']

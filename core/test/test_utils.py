@@ -1,9 +1,11 @@
 import json
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
 from django.test import TestCase
 
-from core.models import ShiftSlot
+from core.models import ShiftSlot, SavedSlot
 from core.test.test_helpers import add_fields_to_slot, get_business_of_username, create_new_manager
 from core.utils import SlotConstraintCreator, LanguageValidator, SlotCreator
 
@@ -52,19 +54,21 @@ class LanguageValidatorTest(TestCase):
 class SlotCreatorTest(TestCase):
     dummy_slot_data = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
-        'num_of_bartenders': '0', 'num_of_cooks': '0', 'name': '', 'save_as': '', 'mandatory': False
+        'num_of_bartenders': '0', 'num_of_cooks': '0', 'mandatory': False
     }
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+    manager_business = None
 
     @classmethod
     def setUpTestData(cls):
         create_new_manager(cls.manager_credentials)
         add_fields_to_slot(cls.dummy_slot_data)
+        cls.manager_business = get_business_of_username(username=cls.manager_credentials['username'])
 
     def test_should_create_new_custom_slot(self):
-        manager_business = get_business_of_username(username=self.manager_credentials['username'])
+        self._set_name_and_save_as(name_val='', save_as_val='')
         constraint_creator = SlotConstraintCreator(self.dummy_slot_data)
-        creator = SlotCreator(business=manager_business, slot_data=self.dummy_slot_data,
+        creator = SlotCreator(business=self.manager_business, slot_data=self.dummy_slot_data,
                               constraint_creator=constraint_creator)
 
         creator.create()
@@ -72,7 +76,34 @@ class SlotCreatorTest(TestCase):
         self.assertTrue(ShiftSlot.objects.filter(name='Custom').exists())
 
     def test_should_create_new_named_slot_with_saved_slot(self):
-        pass
+        self._set_name_and_save_as(name_val='', save_as_val='new-slot')
+        constraint_creator = SlotConstraintCreator(self.dummy_slot_data)
+        creator = SlotCreator(business=self.manager_business, slot_data=self.dummy_slot_data,
+                              constraint_creator=constraint_creator)
 
-    def test_should_create_slot_from_existing_saved_slot(self):
-        pass
+        creator.create()
+
+        self.assertTrue(SavedSlot.objects.filter(name='new-slot').exists())
+        self.assertTrue(ShiftSlot.objects.filter(name='new-slot').exists())
+
+    def test_should_raise_DoesNotExist_when_non_existing_saved_slot(self):
+        self._set_name_and_save_as(name_val='existing-slot', save_as_val='')
+        constraint_creator = SlotConstraintCreator(self.dummy_slot_data)
+        creator = SlotCreator(business=self.manager_business, slot_data=self.dummy_slot_data,
+                              constraint_creator=constraint_creator)
+        self.assertRaises(ObjectDoesNotExist, creator.create)
+
+    def test_should_create_from_existing_save_slot(self):
+        existing_name = 'existing-slot'
+        SavedSlot.objects.create(name=existing_name, constraints='')
+        self._set_name_and_save_as(name_val=existing_name, save_as_val='')
+        constraint_creator = SlotConstraintCreator(self.dummy_slot_data)
+        creator = SlotCreator(business=self.manager_business, slot_data=self.dummy_slot_data,
+                              constraint_creator=constraint_creator)
+        creator.create()
+
+        self.assertTrue(ShiftSlot.objects.filter(name=existing_name).exists())
+
+    def _set_name_and_save_as(self, name_val, save_as_val):
+        self.dummy_slot_data['name'] = name_val
+        self.dummy_slot_data['save_as'] = save_as_val

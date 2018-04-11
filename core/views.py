@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
@@ -167,9 +168,13 @@ def add_shift_slot(request):
             constraint_creator = SlotConstraintCreator(data)
             slot_creator = SlotCreator(business, data, constraint_creator)
 
-            slot_creator.create()
-            messages.success(request, 'slot form was ok')
-            return HttpResponseRedirect('/')
+            try:
+                slot_creator.create()
+                messages.success(request, 'slot form was ok')
+                return HttpResponseRedirect('/')
+            except ObjectDoesNotExist as e:
+                logger.error('object does not exist: %s', e)
+                return HttpResponseBadRequest('object does not exist: %s' % str(e))
         else:
             day = request.POST.get('day')
             slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
