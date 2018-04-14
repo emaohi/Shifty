@@ -191,9 +191,9 @@ class DurationApiClient:
         return self._parse_duration_data(json_res)
 
     def _parse_duration_data(self, raw_distance_response):
+        logger.debug('parsing raw response: %s', raw_distance_response)
         driving_duration = None
         walking_duration = None
-
         if 'driving' in raw_distance_response:
             driving_duration = self._parse_specific_method_duration(raw_distance_response, 'driving')
         if 'walking' in raw_distance_response:
@@ -225,12 +225,13 @@ class LogoUrlFinder:
 
     def find_logo(self, business_name):
         lookup_url = self.logos_site_url % business_name
+        logger.debug('Going to fetch page at url %s', lookup_url)
         try:
             response = requests.get(lookup_url)
             soup = BeautifulSoup(response.content, 'html.parser')
             return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
-        except (KeyError, IndexError):
-            raise NoLogoFoundError('Couldn\'t extract image src url from soup...')
+        except (KeyError, IndexError) as e:
+            raise NoLogoFoundError('Couldn\'t extract image src url from soup... %s' % str(e))
 
 
 class NoLogoFoundError(Exception):

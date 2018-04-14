@@ -2,12 +2,12 @@ import json
 
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.db import IntegrityError
 from django.test import TestCase
 
 from core.models import ShiftSlot, SavedSlot
 from core.test.test_helpers import add_fields_to_slot, get_business_of_username, create_new_manager
-from core.utils import SlotConstraintCreator, LanguageValidator, SlotCreator
+from core.utils import SlotConstraintCreator, LanguageValidator, SlotCreator, DurationApiClient, LogoUrlFinder, \
+    NoLogoFoundError
 
 
 class ConstraintCreatorTest(TestCase):
@@ -107,3 +107,42 @@ class SlotCreatorTest(TestCase):
     def _set_name_and_save_as(self, name_val, save_as_val):
         self.dummy_slot_data['name'] = name_val
         self.dummy_slot_data['save_as'] = save_as_val
+
+
+class DurationApiClientTest(TestCase):
+
+    def setUp(self):
+        self.duration_client = DurationApiClient('Tel-Aviv', 'Haifa')
+
+    def test_should_get_only_driving_distance_data(self):
+        driving, walking = self.duration_client.get_dist_data('D')
+        self.assertFalse(walking)
+        self.assertTrue(driving)
+
+    def test_should_get_only_walking_distance_data(self):
+        driving, walking = self.duration_client.get_dist_data('W')
+        self.assertTrue(walking)
+        self.assertFalse(driving)
+
+    def test_should_get_multiple_distance_data(self):
+        driving, walking = self.duration_client.get_dist_data('B')
+        self.assertTrue(walking)
+        self.assertTrue(driving)
+
+    def test_should_fail_if_no_address_found(self):
+        self.duration_client = DurationApiClient('Tel-Aviv', 'Non-existing')
+        driving, walking = self.duration_client.get_dist_data('B')
+        self.assertFalse(walking)
+        self.assertFalse(driving)
+
+
+class LogoFinderTest(TestCase):
+    def setUp(self):
+        self.logo_client = LogoUrlFinder(settings.LOGO_LOOKUP_URL)
+
+    def test_should_find_logo_url(self):
+        res = self.logo_client.find_logo('giraffe')
+        self.assertTrue(res)
+
+    def test_should_not_find_logo_url(self):
+        self.assertRaises(NoLogoFoundError, lambda: self.logo_client.find_logo('blabla'))
