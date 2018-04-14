@@ -1,6 +1,5 @@
 import json
 import logging
-from time import sleep
 
 import requests
 from celery import shared_task
@@ -12,7 +11,7 @@ from django.conf import settings
 
 from core.date_utils import get_next_week_num
 from core.models import ShiftSlot
-from core.shift_generator import NaiveShiftGenerator, ShiftGeneratorFactory
+from core.shift_generator import ShiftGeneratorFactory
 from core.utils import save_holidays
 from log.models import Business
 

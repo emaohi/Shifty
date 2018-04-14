@@ -28,11 +28,11 @@ class AbstractShiftGenerator:
 
 class NaiveShiftGenerator(AbstractShiftGenerator):
 
-    def wait(self):
-        sleep(7)
-
     def __init__(self):
         super(NaiveShiftGenerator, self).__init__()
+
+    def wait(self):
+        sleep(7)
 
     def generate(self, slots):
         logger.info('Going to NAIVELY make shifts for slots: %s', str(slots))
