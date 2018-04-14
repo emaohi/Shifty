@@ -3,9 +3,52 @@ from django.db import IntegrityError
 from django.test import TestCase
 
 from core.date_utils import get_curr_year, get_next_week_num
-from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest
-from core.test.test_helpers import create_new_manager, create_new_employee
+from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage
+from core.test.test_helpers import create_new_manager, create_new_employee, create_manager_and_employee_groups, \
+    create_multiple_employees
 from log.models import Business, EmployeeProfile
+
+
+class EmployeeRequestModelTest(TestCase):
+    emp1_credentials = {'username': 'testuser1', 'password': 'secret'}
+    emp2_credentials = {'username': 'testuser2', 'password': 'secret'}
+    emp_request = None
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_employee(cls.emp1_credentials)
+        create_new_employee(cls.emp2_credentials)
+
+    def test_title_and_text_should_be_configured_if_not_set(self):
+        self.emp_request = EmployeeRequest.objects.create()
+        self.assertTrue(self.emp_request.subject == 'Other subject')
+        self.assertTrue(self.emp_request.text == 'Other text')
+
+    def test_title_and_text_should_be_overridden_if_set(self):
+        self.emp_request = EmployeeRequest.objects.create(subject='Some subject', text='Some text')
+        self.assertTrue(self.emp_request.subject == 'Some subject')
+        self.assertTrue(self.emp_request.text == 'Some text')
+
+
+class ManagerMessageModelTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.employees = create_multiple_employees(6)
+        cls.manager_message = ManagerMessage.objects.create(business=Business.objects.first(), subject='bla', text='bla')
+
+    def test_should_create_correct_recipients_string_when_less_than_5(self):
+        self.manager_message.recipients.set(self.employees[:3])
+        self.assertEqual(self.manager_message.get_recipients_string(), 'test_user_0, test_user_1, test_user_2')
+
+    def test_should_create_correct_recipients_string_when_more_than_5(self):
+        self.manager_message.recipients.set(self.employees)
+        self.assertEqual(self.manager_message.get_recipients_string(), 'test_user_0, test_user_1, test_user_2,'
+                                                                       ' test_user_3, test_user_4 and 1 more')
+
+    def test_manager_message_should_increment_new_msgs_of_emps(self):
+        pass
 
 
 class ShiftSlotModelTest(TestCase):

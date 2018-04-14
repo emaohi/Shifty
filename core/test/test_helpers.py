@@ -37,6 +37,16 @@ def create_new_employee(cred_dict):
     new_user = User.objects.create_user(**cred_dict)
     set_employee(new_user)
     disable_mailing(new_user)
+    return new_user.profile
+
+
+def create_multiple_employees(num):
+    print 'creating %d employees...' % num
+    new_emps = []
+    for i in range(num):
+        cred_dict = {'username': 'test_user_%d' % i, 'password': 'secret'}
+        new_emps.append(create_new_employee(cred_dict))
+    return new_emps
 
 
 def disable_mailing(user):

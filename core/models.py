@@ -68,7 +68,7 @@ class EmployeeRequest(models.Model):
 class ManagerMessage(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
     recipients = models.ManyToManyField(EmployeeProfile, related_name='manager_msg')
-    sent_time = models.DateTimeField()
+    sent_time = models.DateTimeField(auto_now_add=True)
     subject = models.TextField(max_length=50)
     text = models.TextField(max_length=200)
 
