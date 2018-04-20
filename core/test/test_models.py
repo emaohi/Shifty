@@ -1,5 +1,3 @@
-from time import sleep
-
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase
@@ -38,7 +36,8 @@ class ManagerMessageModelTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.employees = create_multiple_employees(6)
-        cls.manager_message = ManagerMessage.objects.create(business=Business.objects.first(), subject='bla', text='bla')
+        cls.manager_message = ManagerMessage.objects.create(business=Business.objects.first(),
+                                                            subject='bla', text='bla')
 
     def test_should_create_correct_recipients_string_when_less_than_5(self):
         self.manager_message.recipients.set(self.employees[:3])

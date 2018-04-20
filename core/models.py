@@ -387,7 +387,7 @@ def add_mandatory_to_shift_request(sender, **kwargs):
 
 # pylint: disable=unused-argument
 @receiver(post_save, sender=Shift)
-def add_mandatory_to_shift_request(sender, **kwargs):
+def update_employee_rates(sender, **kwargs):
     shift = kwargs.pop('instance')
     if shift.employees.exists():
         adding_val = shift.rank/shift.employees.count()
