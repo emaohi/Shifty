@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+from __future__ import division
 
 import datetime
 import json
@@ -160,7 +161,6 @@ class ShiftSlot(models.Model):
         super(ShiftSlot, self).save(*args, **kwargs)
 
     def _update_saved_slot_upon_creation(self):
-
         fields = ['name', 'constraints', 'is_mandatory']
         for field in fields:
             setattr(self, field, getattr(self.saved_slot, field))
@@ -253,7 +253,7 @@ class Shift(models.Model):
     slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
     rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=50)
-    total_tips = models.IntegerField(null=True, blank=True)
+    total_tips = models.IntegerField(default=0)
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
     def __str__(self):
@@ -273,18 +273,12 @@ class Shift(models.Model):
     def get_date(self):
         return self.slot.get_date()
 
-    def update_emp_rates(self, old_rank):
-        new_rank = self.rank / self.employees.count()
-        old_rate = old_rank / self.employees.count()
-        emps = self.employees.all()
-        logger.info('Going to set rate of %f to employees %s', new_rank, emps)
-        for emp in emps:
-            emp.rate += new_rank - old_rate
-            logger.debug('%s employee new rate: %f', emp, emp.rate)
-            emp.save()
-
     def calculate_employee_tip(self):
-        return self.total_tips / self.employees.count() if self.total_tips else 0
+        try:
+            return self.total_tips / self.employees.count()
+        except ZeroDivisionError:
+            logger.warning('Trying to calculate tips for shift without employees')
+            return 'No employees for this shift'
 
     def get_employees_comma_string(self):
         return ', '.join([emp.user.username for emp in self.employees.all()])
@@ -389,6 +383,20 @@ def add_mandatory_to_shift_request(sender, **kwargs):
     shift_request.requested_slots.add(*list(mandatory_slots))
 
     _delete_other_requests(shift_request)
+
+
+# pylint: disable=unused-argument
+@receiver(post_save, sender=Shift)
+def add_mandatory_to_shift_request(sender, **kwargs):
+    shift = kwargs.pop('instance')
+    if shift.employees.exists():
+        adding_val = shift.rank/shift.employees.count()
+        logger.info('in Shift model post_save signal, incrementing rates of employees by %s...', adding_val)
+        for emp in shift.employees.all():
+            emp.rate += adding_val
+            emp.save()
+    else:
+        logger.debug('saving shift without employees(yet)...')
 
 
 def _delete_other_requests(slots_request):

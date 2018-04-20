@@ -452,12 +452,10 @@ def get_calendar_current_week_shifts(request):
 @user_passes_test(must_be_manager_callback)
 def submit_shift_summary(request, slot_id):
     shift = Shift.objects.get(slot=ShiftSlot.objects.get(pk=slot_id))
-    old_rank = shift.rank
     if request.method == 'POST':
         summary_form = ShiftSummaryForm(request.POST, id=slot_id, instance=shift)
         if summary_form.is_valid():
             summary_form.save()
-            shift.update_emp_rates(old_rank)
             messages.success(request, message='Shift summary submitted')
             return HttpResponseRedirect('/')
         else:

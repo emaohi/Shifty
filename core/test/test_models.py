@@ -1,9 +1,11 @@
+from time import sleep
+
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase
 
 from core.date_utils import get_curr_year, get_next_week_num
-from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage
+from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage, SavedSlot
 from core.test.test_helpers import create_new_manager, create_new_employee, create_manager_and_employee_groups, \
     create_multiple_employees
 from log.models import Business, EmployeeProfile
@@ -48,7 +50,11 @@ class ManagerMessageModelTest(TestCase):
                                                                        ' test_user_3, test_user_4 and 1 more')
 
     def test_manager_message_should_increment_new_msgs_of_emps(self):
-        pass
+        first_emp = self.employees[0]
+        self.assertEqual(first_emp.new_messages, 0)
+        self.manager_message.recipients.set(self.employees[:1])
+        first_emp.refresh_from_db()
+        self.assertEqual(first_emp.new_messages, 1)
 
 
 class ShiftSlotModelTest(TestCase):
@@ -73,15 +79,69 @@ class ShiftSlotModelTest(TestCase):
         expected_date_str = '03-01-2016'
         self.assertEqual(expected_date_str, slot.get_date())
 
-    def test_should_fail_if_slot_is_not_next_week(self):
+    def test_should_be_next_week(self):
         slot = ShiftSlot.objects.get(year='2016')
         self.assertFalse(slot.is_next_week())
 
-    def test_should_succeed_if_slot_is_next_week(self):
-        ShiftSlot.objects.create(business=self.test_business, year=get_curr_year(), week=get_next_week_num(),
-                                 day='1', start_hour='12:30:00', end_hour='13:00:00')
-        slot = ShiftSlot.objects.get(start_hour='12:30:00')
+    def test_should_not_be_next_week(self):
+        slot = ShiftSlot.objects.create(business=self.test_business, year=get_curr_year(), week=get_next_week_num(),
+                                        day='1', start_hour='12:30:00', end_hour='13:00:00')
         self.assertTrue(slot.is_next_week())
+
+    def test_name_should_be_custom_if_not_set(self):
+        self.assertEqual(self.slot.name, 'Custom')
+
+    def test_update_slot_with_different_saved_slot_should_raise_integrity_error(self):
+        saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
+        self.slot.saved_slot = saved_slot
+        self.assertRaises(IntegrityError, self.slot.save)
+
+    def test_attributes_should_be_copied_from_saved_slot(self):
+        saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
+        slot = ShiftSlot.objects.create(business=self.test_business, year=get_curr_year(), week=get_next_week_num(),
+                                        day='1', start_hour='12:30:00', end_hour='13:00:00', saved_slot=saved_slot)
+        self.assertEqual(slot.name, saved_slot.name)
+        self.assertEqual(slot.constraints, saved_slot.constraints)
+        self.assertEqual(slot.is_mandatory, saved_slot.is_mandatory)
+
+
+class ShiftModelTest(TestCase):
+
+    first_emp_credentials = {'username': 'testUser1', 'password': 'secret1'}
+    second_emp_credentials = {'username': 'testUser2', 'password': 'secret2'}
+
+    @classmethod
+    def setUpTestData(cls):
+        create_new_manager({'username': 'testUser', 'password': 'secret'})
+        cls.test_business = Business.objects.create(business_name='testBiz')
+        cls.emp = create_new_employee(cls.first_emp_credentials)
+        cls.other_emp = create_new_employee(cls.second_emp_credentials)
+        cls.first_slot = ShiftSlot.objects.create(business=cls.test_business, day='1',
+                                                  start_hour='12:00:00', end_hour='13:00:00', constraints='{}')
+        cls.second_slot = ShiftSlot.objects.create(business=cls.test_business, day='1',
+                                                   start_hour='16:00:00', end_hour='18:00:00', constraints='{}')
+
+    def setUp(self):
+        self.first_shift, self.second_shift = self._create_shifts()
+
+    def test_emp_rate_should_be_updated_correctly(self):
+        self.first_shift.rank = 3
+        self.first_shift.save()
+        self.emp.refresh_from_db()
+        self.assertEqual(self.emp.rate, 3)
+
+        self.second_shift.rank = 3
+        self.second_shift.save()
+        self.emp.refresh_from_db()
+        self.assertEqual(self.emp.rate, 4.5)
+
+    def _create_shifts(self):
+        first_shift = Shift.objects.create(slot=self.first_slot)
+        first_shift.employees.add(self.emp)
+        second_shift = Shift.objects.create(slot=self.second_slot)
+        second_shift.employees.add(self.emp)
+        second_shift.employees.add(self.other_emp)
+        return first_shift, second_shift
 
 
 class ShiftSwapModelTest(TestCase):
