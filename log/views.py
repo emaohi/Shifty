@@ -253,7 +253,7 @@ def edit_profile_form(request):
         else:
             logger.error(str(form.errors))
             messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors.as_text()))
-            return redirect('manage_employees')
+            return redirect('/')
 
 
 @login_required(login_url='/login')

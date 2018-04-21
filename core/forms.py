@@ -1,5 +1,6 @@
 import logging
 from django import forms
+from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import TextInput
 
 from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount, get_next_week_num
@@ -257,9 +258,7 @@ class SelectSlotsForm(forms.ModelForm):
         self.business = kwargs.pop('business')
         week = kwargs.pop('week')
         super(SelectSlotsForm, self).__init__(*args, **kwargs)
-        self.fields['requested_slots'].queryset = self.business.get_cached_non_mandatory_slots(week)
-        logger.info("query set is %s", self.fields['requested_slots'].queryset)
-        logger.debug('this is debug log')
+        self.fields['requested_slots'].queryset = self.business.get_cached_next_week_slots(week)
         self.fields['requested_slots'].widget.attrs['class'] = 'selectpicker'
 
     def clean(self):

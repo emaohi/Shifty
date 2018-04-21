@@ -127,7 +127,8 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-5 col-md-offset-3">
-                            <h3>Request for next week</h3>
+                            <h3>Request for next week
+                            </h3>
                         </div>
                         <div class="col-md-4">
                             <strong>
@@ -135,27 +136,8 @@
                             </strong>
                         </div>
                     </div>
-                    <div class="row" style="margin-top: 30px">
-                        <div class="col-md-5">
-                            <h4>
-                                New Request
-                                <small>This will override existing request</small>
-                            </h4>
+                    <div class="row" style="margin-top: 20px">
                             <div class="slotRows"></div>
-                        </div>
-                        <div class="col-md-5 col-md-offset-2">
-                            <h4>
-                                Current request
-                                <small>Mandatory slots will be added automatically</small>
-                            </h4>
-                            {% if got_request_slots %}
-                                <ul class="list-group">
-                                    {% for slot in got_request_slots %}
-                                        <li class="list-group-item">{{ slot }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
             </div>

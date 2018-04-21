@@ -100,17 +100,15 @@ class Business(models.Model):
         content = ContentFile(urllib2.urlopen(url).read())
         self.logo.save(name, content, save=False)
 
-    def get_non_mandatory_slots_cache_key(self, week):
+    def get_next_week_slots_cache_key(self, week):
         return "next-week-slots-{0}-{1}".format(self, week)
 
-    def get_cached_non_mandatory_slots(self, week):
+    def get_cached_next_week_slots(self, week):
         from core.models import ShiftSlot
-        half_an_hour = 30 * 60
-        key = self.get_non_mandatory_slots_cache_key(week)
+        key = self.get_next_week_slots_cache_key(week)
         if key not in cache:
-            slots = ShiftSlot.objects.filter(week=week, business=self). \
-                exclude(is_mandatory=True)
-            cache.set(key, slots, half_an_hour)
+            slots = ShiftSlot.objects.filter(week=week, business=self, is_mandatory=False)
+            cache.set(key, slots, settings.DURATION_CACHE_TTL)
             return slots
         return cache.get(key)
 
@@ -150,6 +148,7 @@ class EmployeeProfile(models.Model):
     )
     arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
     new_messages = models.IntegerField(default=0)
+    preferred_shift_time_frames = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -252,7 +251,6 @@ class EmployeeProfile(models.Model):
     def get_next_shift(self):
         next_shifts = self.get_next_shifts()
         if len(next_shifts) == 0:
-            logger.warning('%s has no upcoming shifts...', self)
             return None
         return next_shifts[0]
 

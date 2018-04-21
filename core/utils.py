@@ -216,6 +216,7 @@ def save_shifts_request(form, profile):
     slots_request.employee = profile
     slots_request.save()
     form.save_m2m()
+    slots_request.add_mandatory_slots()
     return slots_request
 
 

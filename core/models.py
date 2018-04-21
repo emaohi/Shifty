@@ -143,7 +143,7 @@ class ShiftSlot(models.Model):
 
     def __str__(self):
         return '%s slot(#%s) - %s, %s to %s%s' %\
-               (self.name, self.id, self.get_day_str(), str(self.start_hour),
+               (self.name, self.id, self.get_day_str(), self.get_datetime_str(),
                 str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
 
     def save(self, *args, **kwargs):
@@ -235,8 +235,8 @@ class ShiftSlot(models.Model):
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
-    requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests')
-    submission_time = models.DateTimeField(auto_now_add=True, )
+    requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests', blank=True)
+    submission_time = models.DateTimeField(auto_now=True, )
 
     def __str__(self):
         return 'request in: ' + str(self.submission_time)
@@ -248,6 +248,13 @@ class ShiftRequest(models.Model):
         start_week, end_week = get_week_range(self.submission_time.date())
         return ' -> '.join([str(start_week), str(end_week)])
 
+    def add_mandatory_slots(self):
+        mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, business=self.employee.business,
+                                                   week=get_next_week_num())
+        logger.debug('mandatory slots are %s', mandatory_slots)
+        mandatory_slots = list(mandatory_slots)
+        self.requested_slots.add(*mandatory_slots)
+
 
 class Shift(models.Model):
     slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
@@ -257,7 +264,7 @@ class Shift(models.Model):
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return 'shift: ' + str(self.slot.start_time_str())
+        return 'shift of slot: ' + str(self.slot)
 
     def add_employee(self, emp):
         self.employees.add(emp)
@@ -374,18 +381,6 @@ def update_employee(sender, **kwargs):
 
 
 # pylint: disable=unused-argument
-@receiver(post_save, sender=ShiftRequest)
-def add_mandatory_to_shift_request(sender, **kwargs):
-    logger.info('in post_save signal, adding mandatory slots...')
-    shift_request = kwargs.pop('instance')
-    business = shift_request.employee.business
-    mandatory_slots = ShiftSlot.objects.filter(is_mandatory=True, business=business, week=get_next_week_num())
-    shift_request.requested_slots.add(*list(mandatory_slots))
-
-    _delete_other_requests(shift_request)
-
-
-# pylint: disable=unused-argument
 @receiver(post_save, sender=Shift)
 def update_employee_rates(sender, **kwargs):
     shift = kwargs.pop('instance')
@@ -397,14 +392,3 @@ def update_employee_rates(sender, **kwargs):
             emp.save()
     else:
         logger.debug('saving shift without employees(yet)...')
-
-
-def _delete_other_requests(slots_request):
-    start_week, end_week = get_current_week_range()
-    existing_requests = ShiftRequest.objects \
-        .filter(employee=slots_request.employee,
-                submission_time__range=[start_week, end_week]). \
-        exclude(submission_time=slots_request.submission_time)
-    logger.info("in post_save signal, deleting %d old slots of employee %s for this week...",
-                existing_requests.count(), slots_request.employee)
-    existing_requests.delete()

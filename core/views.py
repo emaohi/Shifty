@@ -17,7 +17,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerEr
 from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
-    get_days_hours_from_delta, get_curr_week_num
+    get_days_hours_from_delta, get_curr_week_num, get_current_week_range
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
@@ -288,11 +288,16 @@ def submit_slots_request(request):
     next_week_no = get_next_week_num()
     curr_business = get_curr_business(request)
     curr_profile = get_curr_profile(request)
+    start_week, end_week = get_current_week_range()
+    existing_request = ShiftRequest.objects.filter(employee=curr_profile,
+                                                   submission_time__range=[start_week, end_week]).last()
     if request.method == 'GET':
-        form = SelectSlotsForm(business=curr_business, week=next_week_no)
-        return render(request, 'employee/slot_list.html', {'form': form})
+        form = SelectSlotsForm(instance=existing_request, business=curr_business,
+                               week=next_week_no)
+        mandatory_slots = ShiftSlot.objects.filter(business=curr_business, week=next_week_no, is_mandatory=True)
+        return render(request, 'employee/slot_list.html', {'form': form, 'mandatory_slots': mandatory_slots})
     else:
-        form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no)
+        form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no, instance=existing_request)
         if form.is_valid():
             shifts_request = save_shifts_request(form, curr_profile)
 

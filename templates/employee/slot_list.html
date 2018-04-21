@@ -1,10 +1,23 @@
-<form action="{% url 'slots_request' %}" method="post">
-    <div class="form-group" style="margin-left: 30px">
-        {% csrf_token %}
-        {% for field in form %}
-        {{ field }}
-        {% endfor %}
-        <input type="submit" class="btn btn-success btn-lg" value="Submit"
-               style="margin-top: 30px"/>
+<div class="col-md-7">
+    <h5>Choose non-mandatory slots</h5>
+    <form action="{% url 'slots_request' %}" method="post">
+        <div class="form-group" style="margin-left: 30px">
+            {% csrf_token %}
+            {% for field in form %}
+                {{ field }}
+            {% endfor %}
+            <input type="submit" class="btn btn-success btn-lg" value="Submit"
+                   style="margin-top: 30px"/>
+        </div>
+    </form>
+</div>
+<div class="col-md-4">
+    <h5>These mandatory slots will be added automatically to your request</h5>
+    <div class="mandatorySlots">
+        <ul class="list-group">
+            {% for mandatory in mandatory_slots %}
+                <li class="list-group-item">{{ mandatory }}</li>
+            {% endfor %}
+        </ul>
     </div>
-</form>
+</div>

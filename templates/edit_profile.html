@@ -7,9 +7,9 @@
 
 {% block style %}
 
-    {#    .panel-body{#}
-    {#        text-align: center;#}
-    {#    }#}
+    h4 {
+        text-align: center;
+    }
 
 {% endblock %}
 
@@ -24,8 +24,14 @@
                         <a href="{% url 'home' %}" style="float: right">Back to dashboard</a>
                     </div>
                     <div class="panel-body">
-                        <form action="{% url 'edit_profile_form' %}" method="post">
+                        <form action="{% url 'edit_profile_form' %}" method="post" id="theForm">
                             <div id="form_here"></div>
+                            <hr>
+                            <h4>
+                                Preferred Shift times
+                                <small>Will let you auto-shift-request</small>
+                            </h4>
+                            <div id="preferredTimesList"></div>
                             <hr>
                             <div class="text-center">
                                 <input type="submit" class="btn btn-success btn-lg" value="Submit">
@@ -45,6 +51,7 @@
         var report_incorrect_url = "{% url 'report_incorrect' %}";
         var csrf_token = "{{ csrf_token }}";
     </script>
+    <script src="{% static 'js/employee/picklist.js' %}" type="text/javascript"></script>
     <script src="{% static 'js/edit_profile.js' %}" type="text/javascript"></script>
 {% endblock %}
 
