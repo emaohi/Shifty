@@ -1,6 +1,5 @@
 import logging
 from django import forms
-from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.forms import TextInput
 
 from core.date_utils import get_birth_day_from_age, get_started_month_from_month_amount, get_next_week_num

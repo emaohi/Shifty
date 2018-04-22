@@ -11,3 +11,6 @@ Shifty/checking_calendar.py
 dump.rdb
 init-redis-rabbit-celery.sh
 media/
+Dockerfile
+docker-compose.yml
+run_celery.sh

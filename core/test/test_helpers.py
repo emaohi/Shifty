@@ -83,7 +83,7 @@ def set_address_to_employee(username, address):
 
 def make_slot_this_in_n_hour_from_now(slot, num_hours):
     slot.day = get_today_day_num_str(datetime.datetime.today().weekday())
-    slot.start_hour = (datetime.datetime.now() + datetime.timedelta(hours=num_hours))
+    slot.start_hour = (datetime.datetime.now() + datetime.timedelta(hours=num_hours)).time()
     slot.week = get_curr_week_num()
     slot.save()
 
