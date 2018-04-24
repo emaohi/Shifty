@@ -70,7 +70,7 @@ class ShiftSlotModelTest(TestCase):
 
     def test_slot_to_string_looks_correctly(self):
         slot = ShiftSlot.objects.get(year='2016')
-        expected_to_str = 'Custom slot(#%s) - Sunday, 12:00:00 to 13:00:00' % self.slot.id
+        expected_to_str = 'Custom slot(#%s) - Sunday, 03-01-2016, 12:00 to 13:00:00' % self.slot.id
         self.assertEqual(expected_to_str, str(slot))
 
     def test_should_return_correct_date_string(self):
@@ -91,9 +91,9 @@ class ShiftSlotModelTest(TestCase):
         self.assertEqual(self.slot.name, 'Custom')
 
     def test_update_slot_with_different_saved_slot_should_raise_integrity_error(self):
-        saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
-        self.slot.saved_slot = saved_slot
-        self.assertRaises(IntegrityError, self.slot.save)
+        slot = ShiftSlot.objects.get(year='2016')
+        slot.saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
+        self.assertRaises(IntegrityError, slot.save)
 
     def test_attributes_should_be_copied_from_saved_slot(self):
         saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
