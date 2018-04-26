@@ -294,8 +294,8 @@ def submit_slots_request(request):
     if request.method == 'GET':
         form = SelectSlotsForm(instance=existing_request, business=curr_business,
                                week=next_week_no)
-        mandatory_slots = ShiftSlot.objects.filter(business=curr_business, week=next_week_no, is_mandatory=True)
-        return render(request, 'employee/slot_list.html', {'form': form, 'mandatory_slots': mandatory_slots})
+        existing_slots = existing_request.requested_slots.all()
+        return render(request, 'employee/slot_list.html', {'form': form, 'existing_slots': existing_slots})
     else:
         form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no, instance=existing_request)
         if form.is_valid():
@@ -303,11 +303,10 @@ def submit_slots_request(request):
 
             logger.info('slots chosen are: %s', str(shifts_request.requested_slots.all()))
             messages.success(request, 'request saved')
-            return HttpResponseRedirect('/')
         else:
             logger.error('couldn\'t save slots request: %s', str(form.errors.as_text()))
             messages.error(request, message='couldn\'t save slots request: %s' % str(form.errors.as_text()))
-            return render(request, 'employee/home.html', {'form': form})
+        return HttpResponseRedirect('/')
 
 
 @login_required(login_url='/login')

@@ -253,6 +253,10 @@ class SelectSlotsForm(forms.ModelForm):
         model = ShiftRequest
         exclude = ('employee', 'submission_time')
 
+        help_texts = {
+            'is_automatic': 'Use pre-defined preferences'
+        }
+
     def __init__(self, *args, **kwargs):
         self.business = kwargs.pop('business')
         week = kwargs.pop('week')
@@ -265,6 +269,9 @@ class SelectSlotsForm(forms.ModelForm):
 
         if not self.business.slot_request_enabled:
             raise forms.ValidationError('Slots request is currently unavailable')
+
+        if self.cleaned_data.get('is_automatic', False) and self.cleaned_data.get('requested_slots', False):
+            raise forms.ValidationError('You cannot choose both pre-defined and manual slots')
 
 
 class ShiftSummaryForm(forms.ModelForm):

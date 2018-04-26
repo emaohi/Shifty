@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, division
 
+import json
 import urllib2
 from datetime import datetime
 from urlparse import urlparse
@@ -257,6 +258,10 @@ class EmployeeProfile(models.Model):
     def get_previous_shifts(self):
         return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
             .order_by('-slot__day', '-slot__start_hour')
+
+    def get_preferred_time_frame_codes(self):
+        return [p['id'] for p in json.loads(self.preferred_shift_time_frames)]
+
 
     @classmethod
     def get_roles_reversed(cls):

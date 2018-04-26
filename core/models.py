@@ -232,11 +232,17 @@ class ShiftSlot(models.Model):
                 bg_color, text_color = 'blue', 'white'
         return bg_color, text_color
 
+    def get_time_frame_code(self):
+        current_day_multiply = int(self.day) * 2
+        return current_day_multiply if self.start_hour > datetime.datetime.strptime('15:00', '%H:%M').time() else\
+            current_day_multiply - 1
+
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)
     requested_slots = models.ManyToManyField(ShiftSlot, related_name='slot_requests', blank=True)
     submission_time = models.DateTimeField(auto_now=True, )
+    is_automatic = models.BooleanField(default=False)
 
     def __str__(self):
         return 'request in: ' + str(self.submission_time)
@@ -254,6 +260,16 @@ class ShiftRequest(models.Model):
         logger.debug('mandatory slots are %s', mandatory_slots)
         mandatory_slots = list(mandatory_slots)
         self.requested_slots.add(*mandatory_slots)
+
+    def add_preferred_slots(self):
+        next_week_non_mandatory_slots = ShiftSlot.objects.filter(week=get_next_week_num(),
+                                                                 business=self.employee.business)\
+            .exclude(is_mandatory=True)
+        relevant_slots = [slot for slot in next_week_non_mandatory_slots if
+                          slot.get_time_frame_code() in self.employee.get_preferred_time_frame_codes()]
+        logger.info('Going to add slots to automatic slots request of emp %s: %s', self.employee, relevant_slots)
+        for slot in relevant_slots:
+            self.requested_slots.add(slot)
 
 
 class Shift(models.Model):
