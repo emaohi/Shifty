@@ -1,5 +1,7 @@
+{% load func_with_method %}
 <div class="col-md-7">
     <h5>Choose non-mandatory slots</h5>
+    {% if request_enabled %}
     <form action="{% url 'slots_request' %}" method="post">
         <div class="form-group" style="margin-left: 30px">
             {% csrf_token %}
@@ -17,13 +19,23 @@
             </div>
         </div>
     </form>
+    {% else %}
+        <p>Slot request disabled</p>
+    {% endif %}
 </div>
 <div class="col-md-4">
-    <h5>current request</h5>
+    <h5>
+        Current request
+        <small>accepted in green</small>
+    </h5>
     <div>
         <ul class="list-group">
             {% for slot in existing_slots %}
-                <li class="list-group-item">{{ slot }}</li>
+                {% if slot.shift and slot|emp_exists:user.profile %}
+                    <li class="list-group-item list-group-item-success">{{ slot }}</li>
+                {% else %}
+                    <li class="list-group-item">{{ slot }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
     </div>

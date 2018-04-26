@@ -24,12 +24,6 @@
             color: red;
         }
 
-        .not-active {
-            pointer-events: none;
-            cursor: default;
-
-        }
-
         .legend {
             padding: 3px;
             border-radius: 5px;
@@ -75,8 +69,7 @@
     <div class="container">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#current">Current shifts</a></li>
-            <li><a data-toggle="tab" href="#requests" id="reqId" title="asd,"
-                   {% if not request_enabled %}class="not-active"{% endif %}>Shift Requests
+            <li><a data-toggle="tab" href="#requests" id="reqId" title="asd,">Shift Requests
                 {% if request_enabled %}<span class="label label-success">Enabled</span>
                 {% else %}<span class="label label-danger">Disabled
                     {% if not deadline_date %}(deadline){% endif %}
