@@ -77,7 +77,7 @@ class ShiftSlotModelTest(TestCase):
         expected_date_str = '03-01-2016'
         self.assertEqual(expected_date_str, self.slot.get_date())
 
-    def test_should_be_next_week(self):
+    def test_should_not_be_next_week(self):
         self.assertFalse(self.slot.is_next_week())
 
     def test_should_be_next_week(self):

@@ -260,8 +260,8 @@ class EmployeeProfile(models.Model):
             .order_by('-slot__day', '-slot__start_hour')
 
     def get_preferred_time_frame_codes(self):
-        return [p['id'] for p in json.loads(self.preferred_shift_time_frames)]
-
+        return [p['id'] for p in json.loads(self.preferred_shift_time_frames)] \
+            if self.preferred_shift_time_frames else []
 
     @classmethod
     def get_roles_reversed(cls):
