@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase
@@ -57,9 +58,6 @@ class ManagerMessageModelTest(TestCase):
 
 
 class ShiftSlotModelTest(TestCase):
-    test_business = None
-
-    slot = None
 
     @classmethod
     def setUpTestData(cls):
@@ -68,21 +66,21 @@ class ShiftSlotModelTest(TestCase):
         cls.slot = ShiftSlot.objects.create(business=cls.test_business, year='2016', day='1',
                                             start_hour='12:00:00', end_hour='13:00:00')
 
+    def setUp(self):
+        self.slot = ShiftSlot.objects.get(year='2016')
+
     def test_slot_to_string_looks_correctly(self):
-        slot = ShiftSlot.objects.get(year='2016')
         expected_to_str = 'Custom slot(#%s) - Sunday, 03-01-2016, 12:00 to 13:00:00' % self.slot.id
-        self.assertEqual(expected_to_str, str(slot))
+        self.assertEqual(expected_to_str, str(self.slot))
 
     def test_should_return_correct_date_string(self):
-        slot = ShiftSlot.objects.get(year='2016')
         expected_date_str = '03-01-2016'
-        self.assertEqual(expected_date_str, slot.get_date())
+        self.assertEqual(expected_date_str, self.slot.get_date())
 
     def test_should_be_next_week(self):
-        slot = ShiftSlot.objects.get(year='2016')
-        self.assertFalse(slot.is_next_week())
+        self.assertFalse(self.slot.is_next_week())
 
-    def test_should_not_be_next_week(self):
+    def test_should_be_next_week(self):
         slot = ShiftSlot.objects.create(business=self.test_business, year=get_curr_year(), week=get_next_week_num(),
                                         day='1', start_hour='12:30:00', end_hour='13:00:00')
         self.assertTrue(slot.is_next_week())
@@ -91,9 +89,8 @@ class ShiftSlotModelTest(TestCase):
         self.assertEqual(self.slot.name, 'Custom')
 
     def test_update_slot_with_different_saved_slot_should_raise_integrity_error(self):
-        slot = ShiftSlot.objects.get(year='2016')
-        slot.saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
-        self.assertRaises(IntegrityError, slot.save)
+        self.slot.saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
+        self.assertRaises(IntegrityError, self.slot.save)
 
     def test_attributes_should_be_copied_from_saved_slot(self):
         saved_slot = SavedSlot.objects.create(name='test_saved_slot', constraints='{}')
@@ -102,6 +99,13 @@ class ShiftSlotModelTest(TestCase):
         self.assertEqual(slot.name, saved_slot.name)
         self.assertEqual(slot.constraints, saved_slot.constraints)
         self.assertEqual(slot.is_mandatory, saved_slot.is_mandatory)
+
+    def test_slot_should_output_correct_time_frame(self):
+        self.assertEqual(self.slot.get_time_frame_code(), 1)
+        self.slot.day = 3
+        self.slot.start_hour = datetime.datetime.strptime('16:00', '%H:%M').time()
+        self.slot.save()
+        self.assertEqual(self.slot.get_time_frame_code(), 6)
 
 
 class ShiftModelTest(TestCase):

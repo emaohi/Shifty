@@ -3,9 +3,9 @@ import datetime
 from django.test import TestCase
 
 from core.date_utils import get_next_week_num
-from core.forms import ShiftSlotForm
+from core.forms import ShiftSlotForm, SelectSlotsForm
 from core.models import ShiftSlot
-from core.test.test_helpers import create_new_employee, create_manager_and_employee_groups
+from core.test.test_helpers import create_new_employee, create_manager_and_employee_groups, create_new_manager
 from log.models import Business, EmployeeProfile
 
 
@@ -77,4 +77,44 @@ class ShiftSlotFormTest(TestCase):
         test_emp.role = 'CO'
         test_emp.save()
         form = ShiftSlotForm(self.dummy_slot, business=Business.objects.get(business_name='dummy'))
+        self.assertFalse(form.is_valid())
+
+
+class SelectSlotFormTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        create_new_manager({'username': 'testUser', 'password': 'secret'})
+        cls.emp = create_new_employee({'username': 'testUser1', 'password': 'secret'})
+        cls.next_week_num = get_next_week_num()
+        cls.slot = ShiftSlot.objects.create(business=Business.objects.get(business_name='dummy'),
+                                            week=cls.next_week_num, day='3',
+                                            start_hour='12:00:00', end_hour='13:00:00')
+
+    def setUp(self):
+        self.business = Business.objects.first()
+        self.business.slot_request_enabled = True
+        self.business.save()
+
+    def test_form_should_be_invalid_without_business_enabling(self):
+        self.business.slot_request_enabled = False
+        self.business.save()
+        form = SelectSlotsForm(data={'is_automatic': False, 'requested_slots': None},
+                               instance=None, business=self.business, week=self.next_week_num)
+        self.assertFalse(form.is_valid())
+
+    def test_form_should_be_valid(self):
+        form_1 = SelectSlotsForm(data={'is_automatic': False, 'requested_slots': None},
+                                 instance=None, business=self.business, week=self.next_week_num)
+        form_2 = SelectSlotsForm(data={'is_automatic': True, 'requested_slots': None},
+                                 instance=None, business=self.business, week=self.next_week_num)
+        form_3 = SelectSlotsForm(data={'is_automatic': False, 'requested_slots': [self.slot.pk]},
+                                 instance=None, business=self.business, week=self.next_week_num)
+        self.assertTrue(form_1.is_valid())
+        self.assertTrue(form_2.is_valid())
+        self.assertTrue(form_3.is_valid())
+
+    def test_automatic_request_with_manual_should_be_invalid(self):
+        form = SelectSlotsForm(data={'is_automatic': True, 'requested_slots': [self.slot.pk]},
+                               instance=None, business=self.business, week=self.next_week_num)
         self.assertFalse(form.is_valid())

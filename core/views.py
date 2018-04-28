@@ -294,7 +294,7 @@ def submit_slots_request(request):
     if request.method == 'GET':
         form = SelectSlotsForm(instance=existing_request, business=curr_business,
                                week=next_week_no)
-        existing_slots = existing_request.requested_slots.all()
+        existing_slots = existing_request.requested_slots.all() if existing_request else []
         request_enabled = curr_business.slot_request_enabled
         return render(request, 'employee/slot_list.html', {'form': form, 'existing_slots': existing_slots,
                                                            'request_enabled': request_enabled})
