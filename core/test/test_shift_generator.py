@@ -10,19 +10,22 @@ class NaiveShiftGeneratorTest(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        create_new_employee({'username': 'u1', 'password': 'p1'}, 'WA')
-        create_new_employee({'username': 'u2', 'password': 'p2'}, 'BT')
-        create_new_employee({'username': 'u3', 'password': 'p3'}, 'CO')
+        cls.waiter = create_new_employee({'username': 'u1', 'password': 'p1'}, 'WA')
+        cls.bartender = create_new_employee({'username': 'u2', 'password': 'p2'}, 'BT')
+        cls.cook = create_new_employee({'username': 'u3', 'password': 'p3'}, 'CO')
         cls.business = Business.objects.get(business_name='dummy')
 
     def setUp(self):
         self.shift_generator = NaiveShiftGenerator()
 
-    def test_should_generate_successfully(self):
+    def test_should_generate_successfully_with_only_first_waiter(self):
+        another_waiter = create_new_employee({'username': 'u4', 'password': 'p1'}, 'WA')
         num_of_slots = 3
         slots = create_slots_for_next_week(business=self.business, waiter=1, bartender=1, cook=1, num=num_of_slots)
         self.shift_generator.generate(slots)
         self.assertEqual(Shift.objects.count(), num_of_slots)
+        self.assertEqual(Shift.objects.filter(employees__in=[self.waiter]).count(), num_of_slots)
+        self.assertEqual(Shift.objects.filter(employees__in=[another_waiter]).count(), 0)
 
     def test_should_rollback_in_case_of_failure(self):
         slots = create_slots_for_next_week(business=self.business, waiter=1, bartender=1, cook=1, num=2)

@@ -25,20 +25,13 @@ class AbstractShiftGenerator:
         logger.info('Going to make shifts for slots: %s, using %s generator', str(slots), type(self))
         try:
             with transaction.atomic():
-                for slot in slots:
-                    existing_shifts = Shift.objects.filter(slot=slot)
-                    logger.debug('Going to delete %d shifts for slot %s', existing_shifts.count(), str(slot))
-                    existing_shifts.delete()
-
-                    employees = self.find_employees_for_slot(slot)
-                    shift = Shift.objects.create(slot=slot)
-                    shift.employees.add(*[employee.id for employee in employees])
+                self.generate_shifts_from_slots(slots)
         except (ValueError, TypeError) as e:
             logger.debug('rolling back shift generation transaction: %s', e)
             raise e
 
     @abstractmethod
-    def find_employees_for_slot(self, slot):
+    def generate_shifts_from_slots(self, slots):
         pass
 
 
@@ -50,7 +43,17 @@ class NaiveShiftGenerator(AbstractShiftGenerator):
     def wait(self):
         sleep(7)
 
-    def find_employees_for_slot(self, slot):
+    def generate_shifts_from_slots(self, slots):
+        for slot in slots:
+            existing_shifts = Shift.objects.filter(slot=slot)
+            logger.debug('Going to delete %d shifts for slot %s', existing_shifts.count(), str(slot))
+            existing_shifts.delete()
+
+            employees = self._find_employees_for_slot(slot)
+            shift = Shift.objects.create(slot=slot)
+            shift.employees.add(*[employee.id for employee in employees])
+
+    def _find_employees_for_slot(self, slot):
         all_emps = []
         for role in slot.get_constraints_json():
             all_emps += self._fetch_number_of_role_employees(slot.business, role,
@@ -68,14 +71,15 @@ class NaiveShiftGenerator(AbstractShiftGenerator):
 
 
 class ThoughtfulShiftGenerator(AbstractShiftGenerator):
+
     def __init__(self):
         super(ThoughtfulShiftGenerator, self).__init__()
 
+    def generate_shifts_from_slots(self, slots):
+        pass
+
     def wait(self):
         sleep(10)
-
-    def find_employees_for_slot(self, slot):
-        pass
 
 
 class ShiftGeneratorFactory:
