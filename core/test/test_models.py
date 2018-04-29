@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.test import TestCase
 
+from Shifty.utils import get_time_from_str
 from core.date_utils import get_curr_year, get_next_week_num
 from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage, SavedSlot
 from core.test.test_helpers import create_new_manager, create_new_employee, create_manager_and_employee_groups, \
@@ -103,7 +104,7 @@ class ShiftSlotModelTest(TestCase):
     def test_slot_should_output_correct_time_frame(self):
         self.assertEqual(self.slot.get_time_frame_code(), 1)
         self.slot.day = 3
-        self.slot.start_hour = datetime.datetime.strptime('16:00', '%H:%M').time()
+        self.slot.start_hour = get_time_from_str('16:00')
         self.slot.save()
         self.assertEqual(self.slot.get_time_frame_code(), 6)
 

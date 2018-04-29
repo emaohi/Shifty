@@ -10,6 +10,7 @@ from django.db import models, IntegrityError, transaction
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
+from Shifty.utils import get_time_from_str
 from core.date_utils import get_next_week_num, get_week_range, get_week_string
 from log.models import Business, EmployeeProfile
 
@@ -234,7 +235,7 @@ class ShiftSlot(models.Model):
 
     def get_time_frame_code(self):
         current_day_multiply = int(self.day) * 2
-        return current_day_multiply if self.start_hour > datetime.datetime.strptime('15:00', '%H:%M').time() else\
+        return current_day_multiply if self.start_hour > get_time_from_str('15:00') else\
             current_day_multiply - 1
 
 

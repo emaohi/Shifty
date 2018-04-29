@@ -1,4 +1,6 @@
 import logging
+
+import datetime
 from django.conf import settings
 from time import time
 
@@ -80,3 +82,6 @@ def get_logo_conf():
         dict(angle=20)
     ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
 
+
+def get_time_from_str(time_str):
+    return datetime.datetime.strptime(time_str, '%H:%M').time()
