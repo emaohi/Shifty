@@ -21,8 +21,24 @@ class AbstractShiftGenerator:
     def wait(self):
         pass
 
-    @abstractmethod
     def generate(self, slots):
+        logger.info('Going to make shifts for slots: %s, using %s generator', str(slots), type(self))
+        try:
+            with transaction.atomic():
+                for slot in slots:
+                    existing_shifts = Shift.objects.filter(slot=slot)
+                    logger.debug('Going to delete %d shifts for slot %s', existing_shifts.count(), str(slot))
+                    existing_shifts.delete()
+
+                    employees = self.find_employees_for_slot(slot)
+                    shift = Shift.objects.create(slot=slot)
+                    shift.employees.add(*[employee.id for employee in employees])
+        except (ValueError, TypeError) as e:
+            logger.debug('rolling back shift generation transaction: %s', e)
+            raise e
+
+    @abstractmethod
+    def find_employees_for_slot(self, slot):
         pass
 
 
@@ -34,28 +50,20 @@ class NaiveShiftGenerator(AbstractShiftGenerator):
     def wait(self):
         sleep(7)
 
-    def generate(self, slots):
-        logger.info('Going to NAIVELY make shifts for slots: %s', str(slots))
-        with transaction.atomic():
-            for slot in slots:
-                existing_slots = Shift.objects.filter(slot=slot)
-                logger.info('Going to delete %d shifts for slot %s', existing_slots.count(), str(slot))
-                existing_slots.delete()
-
-                employees = self._naively_find_employees_for_shift(shift_slot=slot)
-                shift = Shift.objects.create(slot=slot)
-                shift.employees.add(*[employee.id for employee in employees])
-
-    def _naively_find_employees_for_shift(self, shift_slot):
+    def find_employees_for_slot(self, slot):
         all_emps = []
-        for role in shift_slot.get_constraints_json():
-            all_emps += self._fetch_number_of_role_employees(shift_slot.business, role,
-                                                             shift_slot.get_constraint_num_of_role(role))
+        for role in slot.get_constraints_json():
+            all_emps += self._fetch_number_of_role_employees(slot.business, role,
+                                                             slot.get_constraint_num_of_role(role))
         return all_emps
 
     @staticmethod
     def _fetch_number_of_role_employees(business, role, num_of_role_emps):
         business_role_emps = business.get_role_employees(role)
+        if len(business_role_emps) < num_of_role_emps:
+            logger.error('number of %s in business %s is less the required for the slot (%s < %s)',
+                         role, business, len(business_role_emps), num_of_role_emps)
+            raise ValueError('too few %ss' % role)
         return business_role_emps[:num_of_role_emps]
 
 
@@ -66,8 +74,8 @@ class ThoughtfulShiftGenerator(AbstractShiftGenerator):
     def wait(self):
         sleep(10)
 
-    def generate(self, slots):
-        logger.info('slots are: %s; not really generating, just passing for a while...', slots)
+    def find_employees_for_slot(self, slot):
+        pass
 
 
 class ShiftGeneratorFactory:

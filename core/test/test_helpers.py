@@ -1,9 +1,11 @@
 import datetime
+import json
 
 from django.contrib.auth.models import Group, User
 
-from core.date_utils import get_today_day_num_str, get_curr_week_num
-from core.models import Shift
+from Shifty.utils import get_time_from_str
+from core.date_utils import get_today_day_num_str, get_curr_week_num, get_curr_year, get_next_week_num
+from core.models import Shift, ShiftSlot
 
 
 def create_manager_and_employee_groups():
@@ -20,10 +22,10 @@ def set_manager(new_user):
     new_user.profile.business.save()
 
 
-def set_employee(new_user):
+def set_employee(new_user, role):
     group, _ = Group.objects.get_or_create(name='Employees')
     group.user_set.add(new_user)
-    new_user.profile.role = 'WA'
+    new_user.profile.role = role
     new_user.profile.save()
 
 
@@ -33,9 +35,9 @@ def create_new_manager(cred_dict):
     disable_mailing(new_user)
 
 
-def create_new_employee(cred_dict):
+def create_new_employee(cred_dict, role='WA'):
     new_user = User.objects.create_user(**cred_dict)
-    set_employee(new_user)
+    set_employee(new_user, role)
     disable_mailing(new_user)
     return new_user.profile
 
@@ -47,6 +49,20 @@ def create_multiple_employees(num):
         cred_dict = {'username': 'test_user_%d' % i, 'password': 'secret'}
         new_emps.append(create_new_employee(cred_dict))
     return new_emps
+
+
+def create_slots_for_next_week(business, waiter='1', bartender='1', cook='1', num=1):
+    slots = []
+    for i in range(num):
+        s = ShiftSlot.objects.create(business=business, year=get_curr_year(), week=get_next_week_num(),
+                                     day=str(i+1), start_hour=get_time_from_str('16:00'),
+                                     end_hour=get_time_from_str('17:00'))
+        s.constraints = json.dumps({'waiter': {'num': waiter}, 'bartender': {'num': bartender},
+                                    'cook': {'num': cook}})
+        s.save()
+        slots.append(s)
+
+    return slots
 
 
 def disable_mailing(user):
