@@ -333,35 +333,39 @@ def is_finish_slots(request):
 
 
 @login_required(login_url='/login')
+@require_GET
 def get_work_duration_data(request):
-    if request.method == 'GET':
-        curr_profile = get_curr_profile(request)
-        curr_business = get_curr_business(request)
-        key = curr_profile.get_eta_cache_key()
+    curr_profile = get_curr_profile(request)
+    curr_business = get_curr_business(request)
+    key = curr_profile.get_eta_cache_key()
 
-        if key not in cache:
-            home_address = curr_profile.home_address
-            work_address = curr_business.address
-            arrival_method = curr_profile.arriving_method
-            duration_client = DurationApiClient(home_address, work_address)
+    if key not in cache:
+        home_address = curr_profile.home_address
+        work_address = curr_business.address
+        arrival_method = curr_profile.arriving_method
+        duration_client = DurationApiClient(home_address, work_address)
 
-            if not home_address or not work_address:
-                return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
+        if not home_address or not work_address:
+            return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
 
-            driving_duration, walking_duration = duration_client.get_dist_data(arrival_method)
+        duration_data = duration_client.get_dist_data(arrival_method)
+        driving_duration = duration_data['driving']
+        walking_duration = duration_data['walking']
 
-            if not walking_duration and not driving_duration:
-                return HttpResponseBadRequest('cant find home to work durations - make sure both business'
-                                              'and home addresses are available')
-            cache.set(key, (driving_duration, walking_duration), settings.DURATION_CACHE_TTL)
-        else:
-            driving_duration, walking_duration = cache.get(key)
+        if not walking_duration and not driving_duration:
+            return HttpResponseBadRequest('cant find home to work durations - make sure both business'
+                                          'and home addresses are available')
+        logger.debug('getting duration from API service')
+        cache.set(key, duration_data, settings.DURATION_CACHE_TTL)
+    else:
+        logger.debug('getting duration from cache')
+        duration_data = cache.get(key)
+        driving_duration = duration_data['driving']
+        walking_duration = duration_data['walking']
 
-        logger.info('found distance data: driving duration is %s and walking duration is %s',
-                    driving_duration, walking_duration)
-        return JsonResponse({'driving': driving_duration, 'walking': walking_duration})
-
-    return HttpResponseBadRequest('cannot get distance data with ' + request.method)
+    logger.info('found distance data: driving duration is %s and walking duration is %s',
+                driving_duration, walking_duration)
+    return JsonResponse(duration_data)
 
 
 @login_required(login_url='/login')

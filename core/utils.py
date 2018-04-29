@@ -179,8 +179,6 @@ class DurationApiClient:
             driving_api_url = settings.DISTANCE_URL % (self.home_address, self.business_address, 'driving',
                                                        settings.DISTANCE_API_KEY)
             json_res['driving'] = requests.get(driving_api_url)
-            json_res['driving_url'] = settings.DIRECTIONS_URL %\
-                (self.home_address, self.business_address, 'driving')
         if arriving_method == 'W' or arriving_method == 'B':
             walking_api_url = settings.DISTANCE_URL % (self.home_address, self.business_address, 'walking',
                                                        settings.DISTANCE_API_KEY)
@@ -188,7 +186,11 @@ class DurationApiClient:
             json_res['walking_url'] = settings.DIRECTIONS_URL %\
                 (self.home_address, self.business_address, 'walking')
 
-        return self._parse_duration_data(json_res)
+        driving_str, walking_str = self._parse_duration_data(json_res)
+
+        return dict(driving_url=settings.DIRECTIONS_URL % (self.home_address, self.business_address, 'driving'),
+                    walking_url=settings.DIRECTIONS_URL % (self.home_address, self.business_address, 'walking'),
+                    driving=driving_str, walking=walking_str)
 
     def _parse_duration_data(self, raw_distance_response):
         logger.debug('parsing raw response: %s', raw_distance_response)
@@ -203,12 +205,12 @@ class DurationApiClient:
     @staticmethod
     def _parse_specific_method_duration(raw_distance_response, method):
         try:
-            walking_duration = json.loads(raw_distance_response.get(method).text).get('rows')[0].get(
+            duration = json.loads(raw_distance_response.get(method).text).get('rows')[0].get(
                 'elements')[0].get('duration').get('text')
         except (KeyError, AttributeError) as e:
             logger.warning('couldn\'t get %s duration: %s', method,  e)
-            walking_duration = ''
-        return walking_duration
+            duration = ''
+        return duration
 
 
 def save_shifts_request(form, profile):

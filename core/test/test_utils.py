@@ -115,25 +115,25 @@ class DurationApiClientTest(TestCase):
         self.duration_client = DurationApiClient('Tel-Aviv', 'Haifa')
 
     def test_should_get_only_driving_distance_data(self):
-        driving, walking = self.duration_client.get_dist_data('D')
-        self.assertFalse(walking)
-        self.assertTrue(driving)
+        duration_data = self.duration_client.get_dist_data('D')
+        self.assertFalse(duration_data['walking'])
+        self.assertTrue(duration_data['driving'])
 
     def test_should_get_only_walking_distance_data(self):
-        driving, walking = self.duration_client.get_dist_data('W')
-        self.assertTrue(walking)
-        self.assertFalse(driving)
+        duration_data = self.duration_client.get_dist_data('W')
+        self.assertFalse(duration_data['driving'])
+        self.assertTrue(duration_data['walking'])
 
     def test_should_get_multiple_distance_data(self):
-        driving, walking = self.duration_client.get_dist_data('B')
-        self.assertTrue(walking)
-        self.assertTrue(driving)
+        duration_data = self.duration_client.get_dist_data('B')
+        self.assertTrue(duration_data['walking'])
+        self.assertTrue(duration_data['driving'])
 
     def test_should_fail_if_no_address_found(self):
         self.duration_client = DurationApiClient('Tel-Aviv', 'Non-existing')
-        driving, walking = self.duration_client.get_dist_data('B')
-        self.assertFalse(walking)
-        self.assertFalse(driving)
+        duration_data = self.duration_client.get_dist_data('B')
+        self.assertFalse(duration_data['walking'])
+        self.assertFalse(duration_data['driving'])
 
 
 class LogoFinderTest(TestCase):
