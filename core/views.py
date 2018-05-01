@@ -376,7 +376,7 @@ def get_slot_request_employees(request, slot_id):
         if not requested_slot.is_next_week():
             return HttpResponseBadRequest('slot is not next week')
 
-        slot_requests = ShiftRequest.objects.filter(requested_slots=requested_slot)
+        slot_requests = ShiftRequest.objects.filter(requested_slots__in=[requested_slot])
 
         return render(request, 'slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests],

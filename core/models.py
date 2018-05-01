@@ -238,6 +238,13 @@ class ShiftSlot(models.Model):
         return current_day_multiply if self.start_hour > get_time_from_str('15:00') else\
             current_day_multiply - 1
 
+    def delete_existing_shift(self):
+        if hasattr(self, 'shift'):
+            logger.debug('Going to delete shift for slot %s', self)
+            self.shift.delete()
+        else:
+            logger.debug('no old shift for slot %s', self)
+
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)

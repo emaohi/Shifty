@@ -45,13 +45,10 @@ class NaiveShiftGenerator(AbstractShiftGenerator):
 
     def generate_shifts_from_slots(self, slots):
         for slot in slots:
-            existing_shifts = Shift.objects.filter(slot=slot)
-            logger.debug('Going to delete %d shifts for slot %s', existing_shifts.count(), str(slot))
-            existing_shifts.delete()
-
-            employees = self._find_employees_for_slot(slot)
+            slot.delete_existing_shift()
             shift = Shift.objects.create(slot=slot)
-            shift.employees.add(*[employee.id for employee in employees])
+            employees = self._find_employees_for_slot(slot)
+            shift.employees.add(*[emp.id for emp in employees])
 
     def _find_employees_for_slot(self, slot):
         all_emps = []
