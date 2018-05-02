@@ -245,6 +245,9 @@ class ShiftSlot(models.Model):
         else:
             logger.debug('no old shift for slot %s', self)
 
+    def is_emp_requested(self, emp):
+        return self.slot_requests.filter(employee=emp).exists()
+
 
 class ShiftRequest(models.Model):
     employee = models.ForeignKey(EmployeeProfile, on_delete=models.CASCADE)

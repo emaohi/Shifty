@@ -52,10 +52,10 @@ def generate_next_week_shifts(business_name, level):
     next_week = get_next_week_num()
     slots = ShiftSlot.objects.filter(business=business, week=next_week)
 
-    shift_generator = ShiftGeneratorFactory.create(level)
+    shift_generator = ShiftGeneratorFactory.create(level, slots)
 
     try:
-        shift_generator.generate(slots)
+        shift_generator.generate()
 
         business.set_shift_generation_success()
         business.save()
