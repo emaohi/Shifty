@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday, ShiftRequest, Shift, ShiftSwap
+from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday, ShiftRequest, Shift, ShiftSwap, SavedSlot
 
 
 class EmployeeRequestAdmin(admin.ModelAdmin):
@@ -17,7 +17,7 @@ admin.site.register(ManagerMessage, ManagerMessageAdmin)
 
 class ShiftSlotAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'business', 'year', 'week', 'day', 'start_hour', 'end_hour', 'constraints',
-                    'holiday', 'get_date', 'get_week_str')
+                    'holiday', 'get_date', 'get_week_str', 'saved_slot')
 admin.site.register(ShiftSlot, ShiftSlotAdmin)
 
 
@@ -37,5 +37,18 @@ admin.site.register(Shift, ShiftAdmin)
 
 
 class ShiftSwapAdmin(admin.ModelAdmin):
-    list_display = ['requester', 'responder', 'requester_shift', 'requested_shift', 'accept_step']
+    list_display = ['id', 'requester', 'responder', 'requester_shift', 'requested_shift',
+                    'accept_step', 'updated_at']
 admin.site.register(ShiftSwap, ShiftSwapAdmin)
+
+
+class ShiftSlotInline(admin.StackedInline):
+    model = ShiftSlot
+
+
+class SavedSlotAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'constraints', 'is_mandatory']
+    inlines = [
+        ShiftSlotInline
+    ]
+admin.site.register(SavedSlot, SavedSlotAdmin)

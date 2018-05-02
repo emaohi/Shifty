@@ -1,6 +1,7 @@
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django import forms
 from django.contrib.auth.models import User
+from django.forms import HiddenInput
 
 from log.models import Business, EmployeeProfile
 
@@ -84,16 +85,22 @@ class EditProfileForm(forms.ModelForm):
     class Meta:
         model = EmployeeProfile
         fields = ['user', 'started_work_date', 'role', 'phone_num', 'birth_date', 'home_address', 'arriving_method',
-                  'rate', 'enable_mailing']
+                  'rate', 'enable_mailing', 'preferred_shift_time_frames']
         widgets = {
             'started_work_date': DateInput(),
             'birth_date': DateInput(),
+            'user': HiddenInput(),
+            'preferred_shift_time_frames': HiddenInput()
         }
         help_texts = {
             'phone_num': 'in form of 05x-xxxxxxx',
             'enable_mailing': 'It is recommended to enable mailing from Shifty',
             'home_address': 'Exact address will enable checking ETA to work',
             'arriving_method': 'Show you ETA and notification for your next shift'
+        }
+        labels = {
+            'user': '',
+            'preferred_shift_time_frames': ''
         }
 
     def __init__(self, *args, **kwargs):
@@ -114,8 +121,6 @@ class EditProfileForm(forms.ModelForm):
         for field in fields_to_disable:
             self.fields[field].disabled = True
 
-        self.fields['user'].widget = forms.HiddenInput()
-        self.fields['user'].label = ''
         for k, v in self.fields.iteritems():
             if k is not 'enable_mailing':
                 v.widget.attrs.update({'class': 'form-control', 'style': 'width: 450px; display: inline'})

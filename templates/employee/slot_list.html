@@ -1,10 +1,42 @@
-<form action="{% url 'slots_request' %}" method="post">
-    <div class="form-group" style="margin-left: 30px">
-        {% csrf_token %}
-        {% for field in form %}
-        {{ field }}
-        {% endfor %}
-        <input type="submit" class="btn btn-success btn-lg" value="Submit"
-               style="margin-top: 30px"/>
+{% load slot_filters %}
+<div class="col-md-7">
+    <h5>Choose non-mandatory slots</h5>
+    {% if request_enabled %}
+    <form action="{% url 'slots_request' %}" method="post">
+        <div class="form-group" style="margin-left: 30px">
+            {% csrf_token %}
+            <div class="row">
+                {{ form.requested_slots }}
+            </div>
+            <div class="row">
+                <strong>OR</strong>
+            </div>
+            <div class="row">
+                {{ form.is_automatic.help_text }} {{ form.is_automatic }}
+            </div>
+            <div class="row">
+                <input type="submit" class="btn btn-success btn-lg" value="Submit"/>
+            </div>
+        </div>
+    </form>
+    {% else %}
+        <p>Slot request disabled</p>
+    {% endif %}
+</div>
+<div class="col-md-4">
+    <h5>
+        Current request
+        <small>accepted in green</small>
+    </h5>
+    <div>
+        <ul class="list-group">
+            {% for slot in existing_slots %}
+                {% if slot.shift and slot|emp_exists:user.profile %}
+                    <li class="list-group-item list-group-item-success">{{ slot }}</li>
+                {% else %}
+                    <li class="list-group-item">{{ slot }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
     </div>
-</form>
+</div>

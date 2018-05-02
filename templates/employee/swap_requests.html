@@ -1,0 +1,47 @@
+{% if swap_requests %}
+    {% for swap_request in swap_requests %}
+        <div class="row" style="margin-top: 20px">
+            <div class="col-xs-6 col-xs-offset-3">
+                <div class="panel panel-default" style="text-align: center">
+                    <div class="panel-heading">
+                        {% if swap_request.is_open %}
+                            <h3 class="panel-title" style="display: inline">Open Swap Request</h3>
+                        {% else %}
+                            <h3 class="panel-title" style="display: inline">Closed Swap Request</h3>
+                        {% endif %}
+                        {% if swap_request.accept_step == 0 and user.profile == swap_request.responder %}
+                            <div style="float: right">
+                                <button type="button" class="btn btn-xs btn-success approve"><span
+                                        class="glyphicon glyphicon-ok-sign"></span> Approve
+                                </button>
+                                <button type="button" class="btn btn-xs btn-danger reject"><span
+                                        class="glyphicon glyphicon-remove"></span> Reject
+                                </button>
+                                <i class="fa fa-spinner fa-spin"
+                                   style="font-size:18px; margin-left: 10px; display: none"></i>
+                            </div>
+                            <span class="hidden-id" style="visibility: hidden">{{ swap_request.id }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="panel-body">
+                        <strong>{{ swap_request.requester }}</strong>, {{ swap_request.requester_shift }}
+                        <i class="fa fa-exchange" style="margin: 10px"></i>
+                        <strong>{{ swap_request.responder }}</strong>, {{ swap_request.requested_shift }}
+                    </div>
+                    <div class="panel-footer accept-step-{{ swap_request.accept_step }}">a
+                        <span style="float: left"><strong>{{ swap_request.get_accept_step_display }}</strong></span>
+                        <span style="float: right"> {{ swap_request.updated_at }} </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div style="text-align: center; margin-top: 20px">
+        {% if is_open %}
+            No open requests found
+        {% else %}
+            No closed requests found
+        {% endif %}
+    </div>
+{% endif %}

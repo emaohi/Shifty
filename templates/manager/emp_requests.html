@@ -1,0 +1,54 @@
+{% if requests %}
+    {% for request in requests %}
+        <div class="row" style="margin-top: 20px">
+        <div class="col-xs-8">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="display: inline">{{ request.subject }}</h3>
+                    <span style="float: right">From: {{ request.get_issuers_string }}</span>
+                </div>
+                <div class="panel-body">
+                    {{ request.text }}
+                </div>
+                {% if is_pending %}
+                    <div class="panel-footer">
+                        <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
+                        <span class="timestamp"> {{ request.sent_time }} </span>
+                        <div style="float: right">
+                            <button type="button" class="btn btn-xs btn-success approve"><span
+                                    class="glyphicon glyphicon-ok-sign"></span> Approve
+                            </button>
+                            <button type="button" class="btn btn-xs btn-danger reject"><span
+                                    class="glyphicon glyphicon-remove"></span> Reject
+                            </button>
+                            <i class="fa fa-spinner fa-spin"
+                               style="font-size:18px; margin-left: 10px; display: none"></i>
+                        </div>
+                    </div>
+                {% else %}
+                    {% if request.status == 'A' %}
+                        <div class="panel-footer approved">
+                    {% else %}
+                        <div class="panel-footer rejected">
+                    {% endif %}
+                    <span class="hidden-id" style="visibility: hidden">{{ request.id }}</span>
+                    <span class="timestamp"> {{ request.sent_time }} </span>
+                    <div style="float: right">
+                        <span>{{ request.get_status_display }}</span>
+                    </div>
+                    </div>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+<div style="text-align: center; margin-top: 20px">
+    {% if is_pending %}
+        No pending requests found
+    {% else %}
+        No closed requests found
+    {% endif %}
+</div>
+{% endif %}

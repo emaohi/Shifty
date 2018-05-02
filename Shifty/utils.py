@@ -1,4 +1,6 @@
 import logging
+
+import datetime
 from django.conf import settings
 from time import time
 
@@ -73,3 +75,13 @@ def get_curr_business(request):
 def wrong_method(request):
     return HttpResponseBadRequest('cannot get here with ' + request.method)
 
+
+def get_logo_conf():
+    return dict(format="png", transformation=[
+        dict(crop="fit", width=80, height=50, radius=10),
+        dict(angle=20)
+    ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
+
+
+def get_time_from_str(time_str):
+    return datetime.datetime.strptime(time_str, '%H:%M').time()

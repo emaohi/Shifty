@@ -199,3 +199,5 @@ DURATION_CACHE_TTL = 15 * 60
 TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 
 USE_TOOLBAR = False
+
+SHIFT_GENERATION_ALGORITHM_LEVEL = 0

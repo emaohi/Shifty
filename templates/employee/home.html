@@ -12,18 +12,16 @@
 {% block style %}
     <style>
 
-        h3, h4, p, .slotRows {
+        h3, h4, p, h5, .slotRows {
+            text-align: center;
+        }
+
+        .panel {
             text-align: center;
         }
 
         #timerH {
             color: red;
-        }
-
-        .not-active {
-            pointer-events: none;
-            cursor: default;
-
         }
 
         .legend {
@@ -40,6 +38,26 @@
             background-color: darkgrey;
             color: black;
         }
+
+        .row {
+            margin-top: 5px;
+        }
+
+        .success {
+            color: green;
+        }
+        .fail {
+            color: red;
+        }
+        .accept-step-1 {
+            background-color: #79aec8;
+        }
+        .accept-step-2 {
+            background-color: darkgreen;
+        }
+        .accept-step--1, .accept-step--2 {
+            background-color: red;
+        }
     </style>
 {% endblock %}
 
@@ -51,8 +69,7 @@
     <div class="container">
         <ul class="nav nav-tabs">
             <li class="active"><a data-toggle="tab" href="#current">Current shifts</a></li>
-            <li><a data-toggle="tab" href="#requests" id="reqId" title="asd,"
-                   {% if not request_enabled %}class="not-active"{% endif %}>Shift Requests
+            <li><a data-toggle="tab" href="#requests" id="reqId" title="asd,">Shift Requests
                 {% if request_enabled %}<span class="label label-success">Enabled</span>
                 {% else %}<span class="label label-danger">Disabled
                     {% if not deadline_date %}(deadline){% endif %}
@@ -61,11 +78,15 @@
                 {% endif %}
             </a></li>
             <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
-            <li><a data-toggle="tab" href="#swaps">Shift swaps</a></li>
+            <li><a data-toggle="tab" href="#swaps">Shift swaps
+                {% if swap_cnt > 0 %}
+                    <span id="swapBadge" class="badge badge-light">{{ swap_cnt }}</span>
+                {% endif %}
+            </a></li>
             <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu test</a></li>
             <li><a data-toggle="tab" href="#messages">Manager Messages
                 {% if new_messages > 0 %}
-                    <span class="badge badge-light">{{ new_messages }}</span>
+                    <span id="msgsBadge" class="badge badge-light">{{ new_messages }}</span>
                 {% endif %}
             </a></li>
         </ul>
@@ -103,7 +124,8 @@
                 <div class="container">
                     <div class="row">
                         <div class="col-md-5 col-md-offset-3">
-                            <h3>Request for next week</h3>
+                            <h3>Request for next week
+                            </h3>
                         </div>
                         <div class="col-md-4">
                             <strong>
@@ -111,27 +133,8 @@
                             </strong>
                         </div>
                     </div>
-                    <div class="row" style="margin-top: 30px">
-                        <div class="col-md-5">
-                            <h4>
-                                New Request
-                                <small>This will override existing request</small>
-                            </h4>
+                    <div class="row" style="margin-top: 20px">
                             <div class="slotRows"></div>
-                        </div>
-                        <div class="col-md-5 col-md-offset-2">
-                            <h4>
-                                Current request
-                                <small>Mandatory slots will be added automatically</small>
-                            </h4>
-                            {% if got_request_slots %}
-                                <ul class="list-group">
-                                    {% for slot in got_request_slots %}
-                                        <li class="list-group-item">{{ slot }}</li>
-                                    {% endfor %}
-                                </ul>
-                            {% endif %}
-                        </div>
                     </div>
                 </div>
             </div>
@@ -140,26 +143,25 @@
             </div>
 
             <div id="swaps" class="tab-pane fade">
-                <h3>Swap shifts</h3>
-                <p>Swap shifts with colleagues</p>
+                <div class="container" style="margin-top: 20px">
+                    <h3>Open Swap Requests</h3>
+                    <div id="openSwaps"></div>
+                    <div style="text-align: center; margin-top: 20px">
+                        <button class="btn btn-lg btn-primary" id="toggleClosed">Show Closed</button>
+                    </div>
+                    <hr>
+                    <div id="closedSwaps" style="margin-top: 30px"></div>
+                </div>
             </div>
 
             <div id="messages" class="tab-pane fade">
                 <div class="container" style="margin-top: 20px">
-                    <h3>Manager messages</h3>
+                    <h3>New Messages</h3>
                     <div id="newMessages"></div>
-                    <div class="row">
-                        <div class="col-xs-5 col-xs-offset-3">
-                            <button class="btn btn-lg btn-primary" id="toggleOld">Show old</button>
-                        </div>
+                    <div style="text-align: center; margin-top: 20px">
+                        <button class="btn btn-lg btn-primary" id="toggleOld">Show old</button>
                     </div>
                     <div id="oldMessages"></div>
-                </div>
-            </div>
-
-            <div id="swapRequests" class="tab-pane fade">
-                <div class="container" style="margin-top: 20px">
-                    <h3>Swap requests</h3>
                 </div>
             </div>
         </div>
@@ -193,7 +195,9 @@
         var shift_employees_url = "{% url 'slot_employees' 0%}";
         var prev_shifts_url = "{% url 'prev_shifts' %}";
         var swapRequstUrl = "{% url 'ask_shift_swap' %}";
+        var swapRequestsUrl = "{% url 'get_swap_requests' %}";
         var getManagerMessagesUrl = "{% url 'manager_messages' %}";
+        var handle_swap_request_url = "{% url 'respond_swap_request' %}";
         var deadline_date = "{{ deadline_date }}";
         var start_date = "{{ start_date }}";
         var first_login = "{{ first_login }}";

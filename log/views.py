@@ -2,10 +2,10 @@ import traceback
 
 import logging
 
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.cache import cache
+from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -14,12 +14,13 @@ from kombu.exceptions import OperationalError
 
 from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
     get_current_week_range, get_curr_week_sunday, get_next_week_sunday
-from core.models import ShiftRequest
-from core.utils import get_employee_requests_with_status, get_eta_cache_key
+from core.models import ShiftRequest, ShiftSwap
+from core.utils import get_employee_requests_with_status
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
 from log.models import EmployeeProfile
 
-from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback
+from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback, \
+    get_logo_conf
 from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger(__name__)
@@ -31,12 +32,7 @@ def manager_home(request):
 
     curr_manager = request.user.profile
 
-    pending_emp_requests = get_employee_requests_with_status(curr_manager, 'P')
-
-    approved_emp_requests = get_employee_requests_with_status(curr_manager, 'A')
-    rejected_emp_requests = get_employee_requests_with_status(curr_manager, 'R')
-
-    done_emp_requests = approved_emp_requests.union(rejected_emp_requests).order_by('-sent_time')
+    pending_requests_cnt = get_employee_requests_with_status(curr_manager, 'P').count()
 
     curr_week_string = get_current_week_string()
     next_week_sunday = get_next_week_sunday()
@@ -47,16 +43,11 @@ def manager_home(request):
     is_finish_slots = curr_manager.business.slot_request_enabled
     logger.info('are slot adding is finished? %s', is_finish_slots)
 
-    logo_conf = dict(format="png", transformation=[
-            dict(crop="fit", width=80, height=50, radius=10),
-            dict(angle=20)
-        ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
-
-    context = {'pending_requests': pending_emp_requests, 'done_requests': done_emp_requests,
+    context = {'requests_cnt': pending_requests_cnt,
                'curr_week_str': curr_week_string, 'start_date': next_week_sunday,
                'current_start_date': get_curr_week_sunday(),
                'deadline_date': deadline_date, 'shifts_generated': get_curr_business(request).shifts_generated,
-               'logo_conf': logo_conf}
+               'logo_conf': get_logo_conf()}
     return render(request, "manager/home.html", context)
 
 
@@ -82,19 +73,18 @@ def emp_home(request):
         get_curr_profile(request).ever_logged_in = True
         get_curr_profile(request).save()
 
-    logo_conf = dict(format="png", transformation=[
-        dict(crop="fit", width=80, height=50, radius=10),
-        dict(angle=20)
-    ]) if settings.DEFAULT_FILE_STORAGE.startswith('cloud') else ''
-
     new_messages = get_curr_profile(request).new_messages
+    open_swap_requests = ShiftSwap.objects.filter(
+        Q(requester=get_curr_profile(request)) | Q(responder=get_curr_profile(request)),
+        accept_step__in=ShiftSwap.open_accept_steps()).count()
 
     return render(request, "employee/home.html", {'got_request_slots': existing_request.requested_slots.all()
                                                   if existing_request else None, 'request_enabled': request_enabled,
                                                   'curr_week_str': curr_week_string,
                                                   'deadline_date': deadline_date_str, 'start_date': curr_week_sunday,
                                                   'first_login': is_first_login, 'generation': generation_status,
-                                                  'logo_conf': logo_conf, 'new_messages': new_messages})
+                                                  'logo_conf': get_logo_conf(), 'new_messages': new_messages,
+                                                  'swap_cnt': open_swap_requests})
 
 
 def register(request):
@@ -132,9 +122,8 @@ def register(request):
             login(request, user)
             return HttpResponseRedirect('/success')
         else:
-            logger.error('manager form or business form are not valid')
-            print manager_form.error_messages
-            print business_form.errors
+            logger.error('manager form or business form are not valid: %s +++ %s',
+                         manager_form.errors, business_form.errors)
     else:
         manager_form = ManagerSignUpForm()
         business_form = BusinessRegistrationForm()
@@ -218,7 +207,8 @@ def add_employees(request):
             return HttpResponseRedirect('/')
     else:
         form = AddEmployeesForm()
-    return render(request, "manager/add_employees.html", {'form': form})
+    logo_conf = get_logo_conf()
+    return render(request, "manager/add_employees.html", {'form': form, 'logo_conf': logo_conf})
 
 
 @login_required(login_url='/login')
@@ -230,7 +220,7 @@ def manage_employees(request):
     all_employees = EmployeeProfile.objects.filter(business=curr_business)
 
     return render(request, 'manager/manage_employees.html',
-                  {'employees': all_employees, 'curr_business': curr_business})
+                  {'employees': all_employees, 'curr_business': curr_business, 'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')
@@ -258,12 +248,12 @@ def edit_profile_form(request):
             messages.success(request, message='successfully edited %s' %
                                               (edited_profile.user.username if is_edited_other else 'yourself'))
             logger.info('going to delete cached ETA duration...')
-            cache.delete(get_eta_cache_key(get_curr_profile(request)))
+            cache.delete(get_curr_profile(request).get_eta_cache_key())
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))
             messages.error(request, message='couldn\'t edit profile: %s' % str(form.errors.as_text()))
-            return redirect('manage_employees')
+            return redirect('/')
 
 
 @login_required(login_url='/login')

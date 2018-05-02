@@ -1,9 +1,13 @@
 from __future__ import unicode_literals, division
 
+import json
 import urllib2
 from datetime import datetime
 from urlparse import urlparse
 
+import logging
+
+from django.conf import settings
 from django.core.cache import cache
 from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
@@ -11,6 +15,10 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+from core.date_utils import get_curr_week_num
+
+logger = logging.getLogger(__name__)
 
 
 class Business(models.Model):
@@ -69,6 +77,15 @@ class Business(models.Model):
     def get_role_employees(self, role):
         return self.get_employees().filter(role=EmployeeProfile.get_roles_reversed()[role.title()])
 
+    def get_waiters(self):
+        return self.get_role_employees('waiter')
+
+    def get_bartenders(self):
+        return self.get_role_employees('bartender')
+
+    def get_cooks(self):
+        return self.get_role_employees('cook')
+
     def has_deadline_day_passed(self):
         today_weekday = datetime.today().weekday() + 2
         today_weekday = 1 if today_weekday == 8 else today_weekday
@@ -92,6 +109,18 @@ class Business(models.Model):
         name = urlparse(url).path.split('/')[-1]
         content = ContentFile(urllib2.urlopen(url).read())
         self.logo.save(name, content, save=False)
+
+    def get_next_week_slots_cache_key(self, week):
+        return "next-week-slots-{0}-{1}".format(self, week)
+
+    def get_cached_next_week_slots(self, week):
+        from core.models import ShiftSlot
+        key = self.get_next_week_slots_cache_key(week)
+        if key not in cache:
+            slots = ShiftSlot.objects.filter(week=week, business=self, is_mandatory=False)
+            cache.set(key, slots, settings.DURATION_CACHE_TTL)
+            return slots
+        return cache.get(key)
 
 
 class EmployeeProfile(models.Model):
@@ -129,6 +158,7 @@ class EmployeeProfile(models.Model):
     )
     arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
     new_messages = models.IntegerField(default=0)
+    preferred_shift_time_frames = models.TextField(blank=True, null=True)
 
     def __str__(self):
         return self.user.username
@@ -159,14 +189,88 @@ class EmployeeProfile(models.Model):
         if self.get_manager():
             return self.get_manager().user
 
-    def reset_new_messages(self):
+    def get_manger_msgs_of_employee(self, is_new):
+        from core.models import ManagerMessage
+        if is_new:
+            messages = ManagerMessage.objects.filter(
+                recipients__in=[self]).order_by('-sent_time')[:self.new_messages]
+            return messages
+
+        key = self.get_old_manager_msgs_cache_key()
+        if key not in cache:
+            messages = ManagerMessage.objects.filter(
+                recipients__in=[self]).order_by('-sent_time')[self.new_messages:]
+            cache.set(key, list(messages), settings.DURATION_CACHE_TTL)
+            logger.debug('Taking old manager messages from DB: %s', messages)
+            return messages
+        logger.debug('Taking old manager messages from cache')
+        return cache.get(key)
+
+    def send_mail_to_manager(self):
+        from Shifty.utils import send_multiple_mails_with_html
+        send_multiple_mails_with_html(subject='New message in Shifty app',
+                                      text='you\'ve got new message from %s' % self.user.username,
+                                      template='html_msgs/new_employee_change_request.html',
+                                      r_2_c_dict={self.get_manager_user():
+                                                      {'employee_first_name': self.user.first_name,
+                                                       'employee_last_name': self.user.last_name}})
+
+    def flush_new_messages(self):
         if self.new_messages > 0:
-            cache.delete(self.get_manager_msg_cache_key())
+            logger.debug('flushing cache of old manager msgs of emp %s', self)
+            cache.delete(self.get_old_manager_msgs_cache_key())
         self.new_messages = 0
         self.save()
 
-    def get_manager_msg_cache_key(self):
+    def flush_swap_requests_cache(self):
+        logger.debug('flushing cache of old swap requests of emp %s', self)
+        cache.delete(self.get_old_swap_requests_cache_key())
+
+    def get_old_manager_msgs_cache_key(self):
+        if self.role == 'MA':
+            raise ValueError('Can\'t manager messages key of emp %s - is manager' % self)
         return "{0}-old-manager-messages".format(self)
+
+    def get_old_swap_requests_cache_key(self):
+        if self.role == 'MA':
+            raise ValueError('Can\'t swap requests key of emp %s - is manager' % self)
+        return "{0}-old-swap-requests".format(self)
+
+    def get_old_employee_requests_cache_key(self):
+        if self.role != 'MA':
+            raise ValueError('Can\'t employee requests key of emp %s - is not manager' % self)
+        return "{0}-old-emp-requests".format(self)
+
+    def get_eta_cache_key(self):
+        return "{0}DURATION-ETA-{1}".format('TEST-' if settings.TESTING else '', self)
+
+    def get_current_week_slots(self):
+        from core.models import ShiftSlot
+        curr_emp_week_slots = ShiftSlot.objects.filter(
+            shift__employees__id__iexact=self.id, week=get_curr_week_num())
+        curr_emp_future_slots = [slot for slot in curr_emp_week_slots if not slot.is_finished()]
+        return curr_emp_future_slots
+
+    def get_next_shifts(self):
+        from core.models import Shift
+        Shift.objects.all().order_by('slot__day', 'slot__ho')
+        ordered_current_week_emp_shifts = self.shifts.filter(slot__week__exact=get_curr_week_num()) \
+            .order_by('slot__day', 'slot__start_hour')
+        return [shift for shift in ordered_current_week_emp_shifts if not shift.slot.is_finished()]
+
+    def get_next_shift(self):
+        next_shifts = self.get_next_shifts()
+        if len(next_shifts) == 0:
+            return None
+        return next_shifts[0]
+
+    def get_previous_shifts(self):
+        return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
+            .order_by('-slot__day', '-slot__start_hour')
+
+    def get_preferred_time_frame_codes(self):
+        return [p['id'] for p in json.loads(self.preferred_shift_time_frames)] \
+            if self.preferred_shift_time_frames else []
 
     @classmethod
     def get_roles_reversed(cls):

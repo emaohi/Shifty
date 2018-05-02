@@ -40,12 +40,13 @@ $(document).ready(function () {
         location.hash = this.getAttribute("href");
     });
 
-    $('.approve').click(function () {
+    $(document.body).on("click", ".approve",function () {
         var request_id = $(this).parents('div').siblings("span:first").text();
         spin_instead_of_btn($(this));
         handle_request("A", request_id);
     });
-    $('.reject').click(function () {
+
+    $(document.body).on("click", ".reject",function () {
         var request_id = $(this).parents('div').siblings("span:first").text();
         spin_instead_of_btn($(this));
         handle_request("R", request_id);
@@ -62,6 +63,15 @@ $(document).ready(function () {
 $(window).on("popstate", function () {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
     $("a[href='" + anchor + "']").tab("show");
+});
+
+$(document).on('shown.bs.tab', 'a[href="#emps_reqs"]', function () {
+    empRequestsAjax('true');
+});
+
+$(document).on("click", "#toggleClosed", function () {
+    $(this).hide();
+    empRequestsAjax('false');
 });
 
 function populate_current_calendar() {
@@ -227,14 +237,16 @@ function display_cal(event_list) {
 
 function showSlotDetails(slotId, constraints_json) {
 
+    var slotModal = $('#slotModal');
+
     $('#constraintTab').html(listifyConstraintJson(constraints_json));
-    $('#slotModal').find('.modal-title').html('Slot #' + slotId + ' constraints');
+    slotModal.find('.modal-title').html('Slot #' + slotId + ' Details');
 
     setSlotEmpList(slotId);
     setShiftEmpList(slotId);
 
     $('#putShiftId').text(slotId);
-    $('#slotModal').modal('show');
+    slotModal.modal('show');
 }
 function setSlotEmpList(slotId) {
     $.ajax({
@@ -365,4 +377,25 @@ function showShiftDetails(shiftId) {
 
 function insertEmployeesToModal(emp_list) {
     $("#shiftEmpsTab").html(emp_list);
+}
+
+function empRequestsAjax(queryParam) {
+    $.ajax({
+        url: getEmployeeRequestsUrl,
+        type: "get",
+        data: {
+            pending: queryParam
+        },
+        success: function(res) {
+            if (queryParam === 'true') {
+                $("#pendingRequests").html(res);
+                $("#requestsBadge").hide();
+            } else {
+                $("#closedRequests").html(res);
+            }
+        },
+        error: function (xhr) {
+            console.error("couldn't get employee requests");
+        }
+    });
 }

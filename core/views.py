@@ -7,24 +7,25 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.cache import cache
+from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
-    HttpResponseBadRequest
+    HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_POST, require_GET
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
-    get_days_hours_from_delta
+    get_days_hours_from_delta, get_curr_week_num, get_current_week_range
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
-from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap
-from core.utils import create_manager_msg, send_mail_to_manager, create_constraint_json_from_form, get_holiday_or_none, \
-    get_color_and_title_from_slot, duplicate_favorite_slot, handle_named_slot, get_dist_data, \
-    save_shifts_request, delete_other_requests, validate_language, get_week_slots, get_slot_calendar_colors, \
-    parse_duration_data, get_eta_cache_key, get_next_shift, get_emp_previous_shifts, get_logo_url, NoLogoFoundError, \
-    get_current_week_slots, get_next_shifts_of_emp, get_manger_msgs_of_employee
+from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
+from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
+    NoLogoFoundError, get_employee_requests_with_status, \
+    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
-    get_curr_business, wrong_method
+    get_curr_business, wrong_method, get_logo_conf
 from core import tasks
 from log.models import EmployeeProfile
 
@@ -39,9 +40,10 @@ def report_incorrect_detail(request):
         incorrect_field = request.POST.get('incorrect_field')
         fix_suggestion = request.POST.get('fix_suggestion')
         curr_val = request.POST.get('curr_val')
+        language_validator = LanguageValidator(settings.PROFANITY_SERVICE_URL)
 
         logger.info('checking language')
-        if not validate_language(fix_suggestion):
+        if not language_validator.validate(fix_suggestion):
             logger.info('bad language detected')
             return HttpResponseBadRequest('NOT SENT - BAD LANGUAGE')
 
@@ -56,7 +58,7 @@ def report_incorrect_detail(request):
         # add the employee's manager to the recipients list
         new_request.issuers.add(reporting_profile)
         try:
-            send_mail_to_manager(request.user)
+            get_curr_profile(request).send_mail_to_manager()
         except EmailWaitError as e:
             return HttpResponseServerError(e.message)
 
@@ -119,70 +121,87 @@ def broadcast_message(request):
 @require_GET
 def get_manager_messages(request):
     curr_emp_profile = get_curr_profile(request)
-    is_new = request.GET.get('new')
-    manager_messages = get_manger_msgs_of_employee(curr_emp_profile, True if is_new == 'true' else False)
+    is_new_str = request.GET.get('new')
+    is_new = True if is_new_str == 'true' else False
+    manager_messages = curr_emp_profile.get_manger_msgs_of_employee(is_new)
 
-    logger.info('resetting new messages for emp %s', str(curr_emp_profile))
-    curr_emp_profile.reset_new_messages()
+    logger.debug('flushing new messages cache for emp %s', str(curr_emp_profile))
+    curr_emp_profile.flush_new_messages()
 
-    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages})
+    return render(request, "employee/manager_messages.html", {'manager_msgs': manager_messages, 'is_new': is_new})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+@require_GET
+def get_employee_requests(request):
+    curr_manager = get_curr_profile(request)
+    is_pending_str = request.GET.get('pending')
+    is_pending = True if is_pending_str == 'true' else False
+    if is_pending:
+        emp_requests = get_employee_requests_with_status(curr_manager, 'P')
+    else:
+        key = curr_manager.get_old_employee_requests_cache_key()
+        if key not in cache:
+            logger.debug('Taking old employee requests from DB: %s', messages)
+            emp_requests = get_employee_requests_with_status(curr_manager, 'A', 'R')
+            cache.set(key, list(emp_requests), settings.DURATION_CACHE_TTL)
+        else:
+            logger.debug('Taking old employee requests from cache')
+            emp_requests = cache.get(key)
+
+    return render(request, 'manager/emp_requests.html', {'requests': emp_requests, 'is_pending': is_pending})
 
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_shift_slot(request):
     business = get_curr_business(request)
+
     slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
-        .values('name').distinct() if t['name'] != 'Custom']
+                  .values('name').distinct() if t['name'] != 'Custom']
 
     if request.method == 'POST':
-
         slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
         if slot_form.is_valid():
             data = slot_form.cleaned_data
-            day = data['day']
-            start_hour = data['start_hour']
-            end_hour = data['end_hour']
+            constraint_creator = SlotConstraintCreator(data)
+            slot_creator = SlotCreator(business, data, constraint_creator)
 
-            if data['name'] == '':
-                name = data.get('save_as', None)
-
-                slot_constraint_json = create_constraint_json_from_form(data)
-
-                slot_holiday = get_holiday_or_none(get_curr_year(), data['day'], get_next_week_num())
-
-                new_slot = ShiftSlot(business=request.user.profile.business, day=day,
-                                     start_hour=start_hour, end_hour=end_hour,
-                                     constraints=json.dumps(slot_constraint_json),
-                                     week=get_next_week_num(), holiday=slot_holiday, is_mandatory=data['mandatory'])
-                if name:
-                    new_slot.name = name
-                new_slot.save()
-
-                if name and name != 'Custom':
-                    handle_named_slot(business, name)
-            else:
-                new_name = data['name']
-                cloned_slot = duplicate_favorite_slot(business, new_name)
-                ShiftSlot.objects.filter(id=cloned_slot.id).update(day=day, week=get_next_week_num(),
-                                                                   start_hour=start_hour, end_hour=end_hour)
-            messages.success(request, 'slot form was ok')
-            return HttpResponseRedirect('/')
+            try:
+                slot_creator.create()
+                messages.success(request, 'slot form was ok')
+                return HttpResponseRedirect('/')
+            except ObjectDoesNotExist as e:
+                logger.error('object does not exist: %s', e)
+                return HttpResponseBadRequest('object does not exist: %s' % str(e))
         else:
             day = request.POST.get('day')
-            slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
+            slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
             return render(request, 'manager/new_shift.html', {'form': slot_form, 'week_range': get_next_week_string(),
                                                               'holiday': slot_holiday}, status=400)
     else:
         day = request.GET.get('day', '')
         start_hour = request.GET.get('startTime', '')
 
-        slot_holiday = get_holiday_or_none(get_curr_year(), day, get_next_week_num())
+        slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
 
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
-                             names=((name, name) for name in slot_names))
+                             names=((name[0], name[0]) for name in
+                                    SavedSlot.objects.exclude(name__startswith='Custom').values_list('name')))
+
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
-                                                          'holiday': slot_holiday})
+                                                          'holiday': slot_holiday, 'logo_conf': get_logo_conf()})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_manager_callback)
+@require_GET
+def saved_slot_exist(request, slot_name):
+    curr_business = get_curr_business(request)
+    if SavedSlot.objects.filter(name=slot_name, shiftslot__business=curr_business).exists():
+        return HttpResponse('')
+    return HttpResponseNotFound('')
 
 
 @login_required(login_url='/login')
@@ -200,7 +219,7 @@ def update_shift_slot(request, slot_id):
         slot_form = ShiftSlotForm(request.POST, business=business)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
-            slot_constraint_json = create_constraint_json_from_form(data)
+            slot_constraint_json = SlotConstraintCreator(data).create()
 
             logger.info('new end hour is %s', str(data['end_hour']))
             ShiftSlot.objects.filter(id=slot_id).update(business=request.user.profile.business, day=data['day'],
@@ -221,7 +240,8 @@ def update_shift_slot(request, slot_id):
                                       'end_hour': end_hour.replace('-', ':'), 'mandatory': is_mandatory},
                              business=business)
         return render(request, 'manager/update_shift.html', {'form': form, 'week_range': get_next_week_string(),
-                                                             'id': slot_id, 'holiday': updated_slot.holiday})
+                                                             'id': slot_id, 'holiday': updated_slot.holiday,
+                                                             'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')
@@ -247,9 +267,9 @@ def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
 
-    next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
+    next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))
     for slot in next_week_slots:
-        text_color, title = get_color_and_title_from_slot(slot)
+        text_color, title = slot.get_color_and_title()
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
                                    'start': slot.start_time_str(),
                                    'end': slot.end_time_str(),
@@ -267,22 +287,28 @@ def get_next_week_slots_calendar(request):
 def submit_slots_request(request):
     next_week_no = get_next_week_num()
     curr_business = get_curr_business(request)
+    curr_profile = get_curr_profile(request)
+    start_week, end_week = get_current_week_range()
+    existing_request = ShiftRequest.objects.filter(employee=curr_profile,
+                                                   submission_time__range=[start_week, end_week]).last()
     if request.method == 'GET':
-        form = SelectSlotsForm(business=curr_business, week=next_week_no)
-        return render(request, 'employee/slot_list.html', {'form': form})
+        form = SelectSlotsForm(instance=existing_request, business=curr_business,
+                               week=next_week_no)
+        existing_slots = existing_request.requested_slots.all() if existing_request else []
+        request_enabled = curr_business.slot_request_enabled
+        return render(request, 'employee/slot_list.html', {'form': form, 'existing_slots': existing_slots,
+                                                           'request_enabled': request_enabled})
     else:
-        form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no)
+        form = SelectSlotsForm(request.POST, business=curr_business, week=next_week_no, instance=existing_request)
         if form.is_valid():
-            shifts_request = save_shifts_request(form, request)
-            delete_other_requests(request, shifts_request)
+            shifts_request = save_shifts_request(form, curr_profile)
 
             logger.info('slots chosen are: %s', str(shifts_request.requested_slots.all()))
             messages.success(request, 'request saved')
-            return HttpResponseRedirect('/')
         else:
             logger.error('couldn\'t save slots request: %s', str(form.errors.as_text()))
             messages.error(request, message='couldn\'t save slots request: %s' % str(form.errors.as_text()))
-            return render(request, 'employee/home.html', {'form': form})
+        return HttpResponseRedirect('/')
 
 
 @login_required(login_url='/login')
@@ -307,50 +333,52 @@ def is_finish_slots(request):
 
 
 @login_required(login_url='/login')
+@require_GET
 def get_work_duration_data(request):
-    if request.method == 'GET':
+    curr_profile = get_curr_profile(request)
+    curr_business = get_curr_business(request)
+    key = curr_profile.get_eta_cache_key()
 
-        key = get_eta_cache_key(get_curr_profile(request))
+    if key not in cache:
+        home_address = curr_profile.home_address
+        work_address = curr_business.address
+        arrival_method = curr_profile.arriving_method
+        duration_client = DurationApiClient(home_address, work_address)
 
-        if key not in cache:
-            home_address = get_curr_profile(request).home_address
-            work_address = get_curr_business(request).address
+        if not home_address or not work_address:
+            return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
 
-            if not home_address or not work_address:
-                return HttpResponseBadRequest('can\'t get distance data - work address or home address are not set')
+        duration_data = duration_client.get_dist_data(arrival_method)
+        driving_duration = duration_data['driving']
+        walking_duration = duration_data['walking']
 
-            arrival_method = get_curr_profile(request).arriving_method
+        if not walking_duration and not driving_duration:
+            return HttpResponseBadRequest('cant find home to work durations - make sure both business'
+                                          'and home addresses are available')
+        logger.debug('getting duration from API service')
+        cache.set(key, duration_data, settings.DURATION_CACHE_TTL)
+    else:
+        logger.debug('getting duration from cache')
+        duration_data = cache.get(key)
+        driving_duration = duration_data['driving']
+        walking_duration = duration_data['walking']
 
-            raw_distance_data = get_dist_data(home_address, work_address, arrival_method)
-
-            driving_duration, walking_duration = parse_duration_data(raw_distance_data)
-
-            if not walking_duration and not driving_duration:
-                return HttpResponseBadRequest('cant find home to work durations - make sure both business'
-                                              'and home addresses are available')
-            cache.set(key, (driving_duration, walking_duration), settings.DURATION_CACHE_TTL)
-        else:
-            driving_duration, walking_duration = cache.get(key)
-
-        logger.info('found distance data: driving duration is %s and walking duration is %s',
-                    driving_duration, walking_duration)
-        return JsonResponse({'driving': driving_duration, 'walking': walking_duration})
-
-    return HttpResponseBadRequest('cannot get distance data with ' + request.method)
+    logger.info('found distance data: driving duration is %s and walking duration is %s',
+                driving_duration, walking_duration)
+    return JsonResponse(duration_data)
 
 
 @login_required(login_url='/login')
 @user_passes_test(must_be_manager_callback)
 def get_slot_request_employees(request, slot_id):
     if request.method == 'GET':
-        print ShiftSlot.objects.first().id
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if not requested_slot.is_next_week():
             return HttpResponseBadRequest('slot is not next week')
 
-        slot_requests = ShiftRequest.objects.filter(requested_slots=requested_slot)
+        slot_requests = ShiftRequest.objects.filter(requested_slots__in=[requested_slot])
 
-        return render(request, 'manager/slot_request_emp_list.html',
+        return render(request, 'slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests],
                        'empty_msg': 'No employees chose this slot'})
 
@@ -364,12 +392,12 @@ def generate_shifts(request):
         business.save()
 
         if settings.CELERY:
-            tasks.generate_next_week_shifts.delay(business.business_name)
+            tasks.generate_next_week_shifts.delay(business.business_name, settings.SHIFT_GENERATION_ALGORITHM_LEVEL)
         else:
-            tasks.generate_next_week_shifts(business.business_name)
+            tasks.generate_next_week_shifts(business.business_name, settings.SHIFT_GENERATION_ALGORITHM_LEVEL)
 
     if request.method == 'POST':
-        next_week_slots = get_week_slots(get_curr_business(request), get_next_week_num())
+        next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))
         if not len(next_week_slots):
             messages.error(request, 'No slots next week !')
             return HttpResponseBadRequest('No slots next week !')
@@ -388,17 +416,18 @@ def generate_shifts(request):
 @login_required(login_url='/login')
 def get_slot_employees(request, slot_id):
     if request.method == 'GET':
+        curr_employee = get_curr_profile(request)
         requested_slot = ShiftSlot.objects.get(id=slot_id)
         if requested_slot.was_shift_generated():
             shift = requested_slot.shift
-            curr_emp_future_slots = get_next_shifts_of_emp(get_curr_profile(request))
+            curr_emp_future_slots = curr_employee.get_current_week_slots()
             offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
-            return render(request, 'manager/slot_request_emp_list.html',
+            return render(request, 'slot_request_emp_list.html',
                           {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
                            'curr_emp': get_curr_profile(request),
-                           'future_shifts': curr_emp_future_slots, 'offer_swap': offer_swap})
+                           'future_slots': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
-            logger.error('cant find shift for slot id %s', slot_id)
+            logger.warning('Can\'t get employees for slot id %s, shift was not generated', slot_id)
             return HttpResponse('Cant find shift for this slot')
 
     return wrong_method(request)
@@ -409,13 +438,14 @@ def get_calendar_current_week_shifts(request):
     if request.method == 'GET':
         shifts_json = []
 
-        current_week_slots = get_current_week_slots(get_curr_business(request))
+        current_week_slots = ShiftSlot.objects.filter(week=get_curr_week_num(),
+                                                      business=get_curr_business(request))
 
         for slot in current_week_slots:
             if not slot.was_shift_generated():
                 continue
 
-            bg_color, text_color = get_slot_calendar_colors(get_curr_profile(request), slot)
+            bg_color, text_color = slot.get_calendar_colors(get_curr_profile(request))
 
             jsoned_shift = json.dumps({'id': str(slot.id), 'title': slot.name,
                                        'start': slot.start_time_str(),
@@ -432,12 +462,10 @@ def get_calendar_current_week_shifts(request):
 @user_passes_test(must_be_manager_callback)
 def submit_shift_summary(request, slot_id):
     shift = Shift.objects.get(slot=ShiftSlot.objects.get(pk=slot_id))
-    old_rank = shift.rank
     if request.method == 'POST':
         summary_form = ShiftSummaryForm(request.POST, id=slot_id, instance=shift)
         if summary_form.is_valid():
             summary_form.save()
-            shift.update_emp_rates(old_rank)
             messages.success(request, message='Shift summary submitted')
             return HttpResponseRedirect('/')
         else:
@@ -457,7 +485,7 @@ def submit_shift_summary(request, slot_id):
 @require_GET
 def get_time_to_next_shift(request):
     curr_emp = get_curr_profile(request)
-    next_shift = get_next_shift(curr_emp)
+    next_shift = curr_emp.get_next_shift()
     if not next_shift:
         logger.warning('no upcoming shift for emp %s', request.user.username)
         return HttpResponseBadRequest('No upcoming shift was found...')
@@ -472,7 +500,7 @@ def get_time_to_next_shift(request):
 @require_GET
 def get_prev_shifts(request):
     curr_emp = get_curr_profile(request)
-    prev_shifts = get_emp_previous_shifts(curr_emp)
+    prev_shifts = curr_emp.get_previous_shifts()
     if len(prev_shifts) == 0:
         logger.warning('no previous shifts for emp %s', request.user.username)
         return HttpResponseBadRequest('No previous shifts was found...')
@@ -485,7 +513,7 @@ def get_prev_shifts(request):
 @user_passes_test(must_be_employee_callback)
 def export_shifts_csv(request):
     curr_emp = get_curr_profile(request)
-    prev_shifts = get_emp_previous_shifts(curr_emp)
+    prev_shifts = curr_emp.get_previous_shifts()
 
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="prev_shifts.csv"'
@@ -503,8 +531,9 @@ def export_shifts_csv(request):
 @require_GET
 def get_logo_suggestion(request):
     business_name = request.GET.get('name', '')
+    logo_finder = LogoUrlFinder(settings.LOGO_LOOKUP_URL)
     try:
-        logo_url = get_logo_url(business_name)
+        logo_url = logo_finder.find_logo(business_name)
     except NoLogoFoundError as e:
         logger.warning('couldn\'t found url for name: %s', business_name)
         return HttpResponseBadRequest('Couldn\'t find logo... %s' % e.message)
@@ -517,7 +546,7 @@ def get_logo_suggestion(request):
 @user_passes_test(must_be_employee_callback)
 @require_POST
 def ask_shift_swap(request):
-    if request.method == 'POST':
+    try:
         responder = EmployeeProfile.objects.get(user__username=request.POST.get('requested_employee'))
         requested_shift = ShiftSlot.objects.get(id=int(request.POST.get('requested_shift'))).shift
         requester_shift = ShiftSlot.objects.get(id=int(request.POST.get('requester_shift'))).shift
@@ -527,3 +556,46 @@ def ask_shift_swap(request):
                                  requested_shift=requested_shift,
                                  requester_shift=requester_shift)
         return HttpResponse('ok')
+    except (ValueError, IntegrityError) as e:
+        return HttpResponseBadRequest('bad request: %s' % e.message)
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+@require_GET
+def get_swap_requests(request):
+    curr_employee = get_curr_profile(request)
+    is_open = True if request.GET.get('state') == 'open' else False
+    if is_open:
+        swap_requests = ShiftSwap.objects.filter(
+            Q(requester=curr_employee) | Q(responder=curr_employee),
+            accept_step__in=ShiftSwap.open_accept_steps()).order_by('-updated_at')
+    else:
+        key = curr_employee.get_old_swap_requests_cache_key()
+        if key not in cache:
+            swap_requests = ShiftSwap.objects.filter(
+                Q(requester=curr_employee) | Q(responder=curr_employee),
+                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at')
+            cache.set(key, list(swap_requests), settings.DURATION_CACHE_TTL)
+            logger.debug('Taking old swap requests from DB: %s', swap_requests)
+
+        logger.debug('Taking old swap requests from cache')
+        swap_requests = cache.get(key)
+
+    return render(request, 'employee/swap_requests.html', {'swap_requests': swap_requests, 'is_open': is_open})
+
+
+@login_required(login_url='/login')
+@user_passes_test(must_be_employee_callback)
+@require_POST
+def respond_swap_request(request):
+    try:
+        swap_request = ShiftSwap.objects.get(pk=request.POST.get('emp_request_id'))
+        logger.debug('swap request id is %s', swap_request)
+        is_accept = request.POST.get('is_accept') == 'true'
+        swap_request.accept_step = 1 if is_accept else -1
+        logger.info('saving %s : %s...', swap_request, 'accept' if is_accept else 'reject')
+        swap_request.save()
+        return HttpResponse('ok')
+    except KeyError as e:
+        return HttpResponseBadRequest('Bad request: ' + str(e))

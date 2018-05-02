@@ -112,3 +112,7 @@ def get_week_range(date):
 
 def get_days_hours_from_delta(td):
     return td.days, td.seconds//3600
+
+
+def timestamp_now():
+    return int((datetime.datetime.utcnow() - datetime.datetime(1970, 1, 1)).total_seconds() * 1000)
