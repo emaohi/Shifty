@@ -226,7 +226,7 @@ class GetDurationDataViewTest(TestCase):
     @patch.object(DurationApiClient, 'get_dist_data')
     def test_view_should_succeed(self, mock_func):
 
-        mock_func.return_value = ('1', '2')
+        mock_func.return_value = {'driving': '1', 'walking': '2'}
 
         set_address_to_employee(username=self.manager_credentials['username'], address='Haifa')
         self.client.login(**self.manager_credentials)
