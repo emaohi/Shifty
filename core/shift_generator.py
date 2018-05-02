@@ -140,7 +140,7 @@ class ThoughtfulShiftGenerator(AbstractShiftGenerator):
 
     @staticmethod
     def _get_sorted_by_slot(emps, slot):
-        return sorted(emps, key=lambda emp: slot.is_emp_requested(emp))
+        return sorted(emps, key=slot.is_emp_requested)
 
 
 class ShiftGeneratorFactory:
