@@ -15,7 +15,7 @@ DATABASES = {
     }
 }
 
-for app in ['log', 'core', 'menu']:
+for app in ['log', 'core', 'menu', 'Shifty']:
     LOGGING['loggers'][app]['level'] = 'DEBUG'
 
 CELERY = True
@@ -41,6 +41,7 @@ if DEBUG:
     )
 
     DEBUG_TOOLBAR_PANELS = [
+        'ddt_request_history.panels.request_history.RequestHistoryPanel',
         'debug_toolbar.panels.versions.VersionsPanel',
         'debug_toolbar.panels.timer.TimerPanel',
         'debug_toolbar.panels.settings.SettingsPanel',
@@ -57,5 +58,6 @@ if DEBUG:
     USE_TOOLBAR = True
 
     DEBUG_TOOLBAR_CONFIG = {
+        'SHOW_TOOLBAR_CALLBACK': 'ddt_request_history.panels.request_history.allow_ajax',
         'INTERCEPT_REDIRECTS': False,
     }

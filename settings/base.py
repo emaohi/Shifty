@@ -167,7 +167,13 @@ LOGGING = {
             'level': 'INFO',
             'handlers': ['console-verbose', 'sentry'],
             'propagate': False,
+        },
+        'Shifty': {
+            'level': 'INFO',
+            'handlers': ['console-verbose', 'sentry'],
+            'propagate': False,
         }
+
     },
 }
 

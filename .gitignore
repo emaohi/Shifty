@@ -14,3 +14,4 @@ media/
 Dockerfile
 docker-compose.yml
 run_celery.sh
+locustfile.py
