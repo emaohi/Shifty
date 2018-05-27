@@ -266,7 +266,7 @@ class EmployeeProfile(models.Model):
 
     def get_previous_shifts(self):
         return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
-            .order_by('-slot__day', '-slot__start_hour')
+            .order_by('-slot__day', '-slot__start_hour').select_related('slot')
 
     def get_preferred_time_frame_codes(self):
         return [p['id'] for p in json.loads(self.preferred_shift_time_frames)] \

@@ -4,9 +4,11 @@ import datetime
 from django.conf import settings
 from time import time
 
+from django.contrib.auth.models import User
 from django.http import HttpResponseBadRequest
 
 from Shifty import tasks
+from log.models import EmployeeProfile
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +72,11 @@ def get_curr_profile(request):
 
 def get_curr_business(request):
     return get_curr_profile(request).business
+
+
+def get_profile_and_business(request):
+    curr_user = User.objects.filter(username=request.user.get_username()).select_related('profile__business').first()
+    return curr_user.profile, curr_user.profile.business
 
 
 def wrong_method(request):

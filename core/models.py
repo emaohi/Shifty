@@ -315,7 +315,7 @@ class Shift(models.Model):
             return 'No employees for this shift'
 
     def get_employees_comma_string(self):
-        return ', '.join([emp.user.username for emp in self.employees.all()])
+        return ', '.join([emp.user.username for emp in self.employees.all().select_related('user')])
 
     def emp_exists(self, emp):
         return emp in self.employees.all()
@@ -348,8 +348,7 @@ class ShiftSwap(models.Model):
         if self.accept_step == 1:
             logger.debug('saved shiftSwap of status 1, going to create employeeRequest')
             self.employee_request = EmployeeRequest.objects.create(type='S')
-            self.employee_request.issuers.add(self.requester)
-            self.employee_request.issuers.add(self.responder)
+            self.employee_request.issuers.add(self.requester, self.responder)
         elif self.accept_step == 2 or self.accept_step == -2:
             logger.debug('saved shiftSwap of status %d', self.accept_step)
             self.handle_manager_action(self.accept_step)

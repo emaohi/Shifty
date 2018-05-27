@@ -20,7 +20,7 @@ from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditF
 from log.models import EmployeeProfile
 
 from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback, \
-    get_logo_conf
+    get_logo_conf, get_profile_and_business
 from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,8 @@ def manager_home(request):
 @login_required(login_url="/login")
 @user_passes_test(must_be_employee_callback, login_url='/')
 def emp_home(request):
+    profile, business = get_profile_and_business(request)
+
     start_week, end_week = get_current_week_range()
     existing_request = ShiftRequest.objects.filter(employee=get_curr_profile(request),
                                                    submission_time__range=[start_week, end_week]).first()
@@ -62,16 +64,16 @@ def emp_home(request):
     curr_week_string = get_current_week_string()
     curr_week_sunday = get_curr_week_sunday()
 
-    generation_status = get_curr_business(request).shifts_generated
+    generation_status = business.shifts_generated
 
-    request_enabled = get_curr_business(request).slot_request_enabled and deadline_date_str
+    request_enabled = business.slot_request_enabled and deadline_date_str
 
     is_first_login = False
-    if not get_curr_profile(request).ever_logged_in:
+    if not profile.ever_logged_in:
         logger.info('first login')
         is_first_login = True
-        get_curr_profile(request).ever_logged_in = True
-        get_curr_profile(request).save()
+        profile.ever_logged_in = True
+        profile.save()
 
     new_messages = get_curr_profile(request).new_messages
     open_swap_requests = ShiftSwap.objects.filter(
@@ -168,7 +170,7 @@ def edit_business(request):
 @user_passes_test(must_be_manager_callback, login_url='/employee')
 def add_employees(request):
     if request.method == 'POST':
-        # get the number of fields (minus the csrf token) and divide by 4 as every user has 4 fields
+        # get the number of fields (minus the csrf token) and divide by 5 as every user has 5 fields
         num_of_employees = (len(request.POST) - 1) / 5
         form = AddEmployeesForm(request.POST, extra=num_of_employees)
 
@@ -293,5 +295,3 @@ def home_or_login(request):
         return redirect("login_success")
     else:
         return redirect("login")
-
-

@@ -575,7 +575,9 @@ def get_swap_requests(request):
         if key not in cache:
             swap_requests = ShiftSwap.objects.filter(
                 Q(requester=curr_employee) | Q(responder=curr_employee),
-                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at')
+                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at')\
+                .select_related('requester__user', 'responder__user', 'requested_shift', 'requester_shift',
+                                'requested_shift__slot', 'requester_shift__slot')
             cache.set(key, list(swap_requests), settings.DURATION_CACHE_TTL)
             logger.debug('Taking old swap requests from DB: %s', swap_requests)
 
