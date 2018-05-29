@@ -59,7 +59,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def _pick_role():
-        return random.choice([choice[0] for choice in EmployeeProfile.ROLE_CHOICES])
+        return random.choice([choice[0] for choice in EmployeeProfile.ROLE_CHOICES if choice[1] != 'Manager'])
 
     @staticmethod
     def _pick_business():

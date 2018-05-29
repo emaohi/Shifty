@@ -43,7 +43,7 @@ def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
 def get_employee_requests_with_status(manager, *statuses):
     business_employees = manager.business.get_employees()
     return EmployeeRequest.objects.filter(issuers__in=business_employees, status__in=[status for status in statuses]). \
-        distinct().order_by('-sent_time')
+        distinct().order_by('-sent_time').prefetch_related('issuers__user')
 
 
 class SlotConstraintCreator:

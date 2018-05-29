@@ -102,7 +102,6 @@
                 {% else %}<span class="label label-default">Not generated</span>
                 {% endif %}
             </a></li>
-            <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu Test</a></li>
             <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests
                 {% if requests_cnt > 0 %}
@@ -232,9 +231,6 @@
                         <div id="calDiv"></div>
                     </div>
                 </div>
-            </div>
-            <div id="previous" class="tab-pane fade">
-                <p>Previous shifts here</p>
             </div>
         </div>
     </div>

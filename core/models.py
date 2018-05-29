@@ -7,6 +7,7 @@ import json
 import logging
 
 from django.db import models, IntegrityError, transaction
+from django.db.models import F
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
@@ -400,10 +401,8 @@ class ShiftSwap(models.Model):
 # pylint: disable=unused-argument
 @receiver(m2m_changed, sender=ManagerMessage.recipients.through)
 def update_employee(sender, **kwargs):
-    for emp in kwargs.pop('instance').recipients.all():
-        logger.debug('incrementing new message for emp %s', str(emp))
-        emp.new_messages += 1
-        emp.save()
+    logger.info('incrementing new message for employees in message')
+    kwargs.pop('instance').recipients.all().update(new_messages=F('new_messages') + 1)
 
 
 # pylint: disable=unused-argument

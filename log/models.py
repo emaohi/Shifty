@@ -72,7 +72,7 @@ class Business(models.Model):
         return self.get_business_type_display()
 
     def get_employees(self):
-        return self.employeeprofile_set.all()
+        return self.employeeprofile_set.all().prefetch_related('user')
 
     def get_role_employees(self, role):
         return self.get_employees().filter(role=EmployeeProfile.get_roles_reversed()[role.title()])

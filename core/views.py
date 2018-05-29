@@ -100,7 +100,8 @@ def broadcast_message(request):
             new_manager_msg = broadcast_form.save(commit=False)
 
             try:
-                create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text)
+                create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text,
+                                   wait_for_mail_results=False)
             except EmailWaitError as e:
                 return HttpResponseServerError(e.message)
 
@@ -143,7 +144,7 @@ def get_employee_requests(request):
     else:
         key = curr_manager.get_old_employee_requests_cache_key()
         if key not in cache:
-            logger.debug('Taking old employee requests from DB: %s', messages)
+            logger.debug('Taking old employee requests from DB')
             emp_requests = get_employee_requests_with_status(curr_manager, 'A', 'R')
             cache.set(key, list(emp_requests), settings.DURATION_CACHE_TTL)
         else:
@@ -267,7 +268,8 @@ def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
 
-    next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))
+    next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(),
+                                               business=get_curr_business(request)).select_related('shift')
     for slot in next_week_slots:
         text_color, title = slot.get_color_and_title()
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
