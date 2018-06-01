@@ -13,6 +13,7 @@ from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -266,7 +267,9 @@ class EmployeeProfile(models.Model):
 
     def get_previous_shifts(self):
         return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
-            .order_by('-slot__day', '-slot__start_hour').select_related('slot')
+            .order_by('-slot__day', '-slot__start_hour')\
+            .select_related('slot').prefetch_related(Prefetch('employees',
+                                                              queryset=EmployeeProfile.objects.select_related('user')))
 
     def get_preferred_time_frame_codes(self):
         return [p['id'] for p in json.loads(self.preferred_shift_time_frames)] \

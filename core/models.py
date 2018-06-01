@@ -316,7 +316,7 @@ class Shift(models.Model):
             return 'No employees for this shift'
 
     def get_employees_comma_string(self):
-        return ', '.join([emp.user.username for emp in self.employees.all().select_related('user')])
+        return ', '.join([emp.user.username for emp in self.employees.all()])
 
     def emp_exists(self, emp):
         return emp in self.employees.all()

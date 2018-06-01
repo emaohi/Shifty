@@ -3,6 +3,7 @@ import random
 import string
 from time import time
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 
 from log.models import EmployeeProfile, Business
@@ -11,20 +12,30 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'populate DB with emp_num employees. roles and business are picked randomly...'
+    help = 'populate DB with emp_num employees. By default business is picked randomly...'
 
     def add_arguments(self, parser):
         parser.add_argument('emp_num', type=int)
+        parser.add_argument('--business')
 
-    def _create_employees(self, num):
+    def handle(self, *args, **options):
+        try:
+            start_time = time()
+            self._create_employees(options['emp_num'], options['business'])
+            end_time = time()
+            logger.info('population took: %s seconds', end_time - start_time)
+        except ObjectDoesNotExist:
+            logger.error('no such business')
+
+    def _create_employees(self, num, business):
         for i in range(num):
             created_user = User.objects.create_user(username=self._create_username(i), password=self._create_password(),
                                                     email=self._create_email())
-            self.set_emp(created_user)
+            self._set_emp(created_user, business)
 
-    def set_emp(self, created_user):
+    def _set_emp(self, created_user, business_name):
         role = self._pick_role()
-        business = self._pick_business()
+        business = Business.objects.get(pk=business_name) if business_name else self._pick_business()
 
         logger.info('creating employee username: %s, role: %s in business: %s', created_user.username, role, business)
 
@@ -33,12 +44,6 @@ class Command(BaseCommand):
         emp.role = role
         emp.save()
         Group.objects.get(name='Employees').user_set.add(created_user)
-
-    def handle(self, *args, **options):
-        start_time = time()
-        self._create_employees(options['emp_num'])
-        end_time = time()
-        logger.info('population took: %s seconds', end_time - start_time)
 
     @staticmethod
     def _create_username(i):
