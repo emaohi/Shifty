@@ -120,7 +120,9 @@ class Business(models.Model):
         if key not in cache:
             slots = ShiftSlot.objects.filter(week=week, business=self, is_mandatory=False)
             cache.set(key, slots, settings.DURATION_CACHE_TTL)
+            logger.debug('getting next week slots from DB')
             return slots
+        logger.debug('getting next week slots from cache')
         return cache.get(key)
 
 
@@ -229,7 +231,7 @@ class EmployeeProfile(models.Model):
 
     def get_old_manager_msgs_cache_key(self):
         if self.role == 'MA':
-            raise ValueError('Can\'t manager messages key of emp %s - is manager' % self)
+            raise ValueError('Can\'t get manager messages key of emp %s - is manager' % self)
         return "{0}-old-manager-messages".format(self)
 
     def get_old_swap_requests_cache_key(self):
@@ -267,7 +269,7 @@ class EmployeeProfile(models.Model):
 
     def get_previous_shifts(self):
         return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
-            .order_by('-slot__day', '-slot__start_hour')\
+            .order_by('-slot__week', '-slot__day', '-slot__start_hour')\
             .select_related('slot').prefetch_related(Prefetch('employees',
                                                               queryset=EmployeeProfile.objects.select_related('user')))
 

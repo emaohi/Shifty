@@ -21,6 +21,11 @@ class Quiz(models.Model):
     score_to_pass = models.IntegerField(default=60)
     time_to_pass = models.IntegerField(default=10)
 
+    class Meta:
+        unique_together = [
+            ['business', 'role']
+        ]
+
     def __str__(self):
         return self.name
 

@@ -117,7 +117,7 @@ class ShiftSlot(models.Model):
     year = models.IntegerField(choices=YEAR_CHOICES, default=datetime.datetime.now().year)
 
     WEEK_CHOICES = [(w, w) for w in range(1, 53)]
-    week = models.IntegerField(choices=WEEK_CHOICES, default=1)
+    week = models.IntegerField(choices=WEEK_CHOICES, default=1, db_index=True)
 
     DAYS_OF_WEEK = (
         ('1', 'Sunday'),

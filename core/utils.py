@@ -19,11 +19,8 @@ logger = logging.getLogger(__name__)
 
 def create_manager_msg(recipients, subject, text, wait_for_mail_results=True):
     curr_business = recipients.first().business
-    manager_msg = ManagerMessage(business=curr_business, sent_time=timezone.now(),
-                                 subject=subject, text=text)
-    manager_msg.save()
-
-    recipients = recipients.exclude(user=curr_business.manager)
+    manager_msg = ManagerMessage.objects.create(business=curr_business, sent_time=timezone.now(),
+                                                subject=subject, text=text)
     manager_msg.recipients = recipients
     manager_msg.save()
 

@@ -78,9 +78,12 @@ def handle_employee_request(request):
 
         logger.info('creating manager msg in response to the employee request')
         try:
-            create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
-                               text='Your following request has been %s by your manager:\n %s' %
-                                    (emp_request.get_status_display(), emp_request.text))
+            create_manager_msg(
+                recipients=emp_request.issuers.select_related('user').exclude(user=get_curr_business(request).manager),
+                subject='Your request status has been changed',
+                text='Your following request has been %s by your manager:\n %s' %
+                     (emp_request.get_status_display(), emp_request.text)
+            )
         except EmailWaitError as e:
             return HttpResponseServerError(e.message)
 
@@ -425,7 +428,8 @@ def get_slot_employees(request, slot_id):
             curr_emp_future_slots = curr_employee.get_current_week_slots()
             offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
             return render(request, 'slot_request_emp_list.html',
-                          {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
+                          {'emps': shift.employees.select_related('user').all(),
+                           'empty_msg': 'No employees in this shift :(',
                            'curr_emp': get_curr_profile(request),
                            'future_slots': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
@@ -577,7 +581,7 @@ def get_swap_requests(request):
         if key not in cache:
             swap_requests = ShiftSwap.objects.filter(
                 Q(requester=curr_employee) | Q(responder=curr_employee),
-                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at')\
+                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at') \
                 .select_related('requester__user', 'responder__user', 'requested_shift', 'requester_shift',
                                 'requested_shift__slot', 'requester_shift__slot')
             cache.set(key, list(swap_requests), settings.DURATION_CACHE_TTL)
