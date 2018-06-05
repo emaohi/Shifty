@@ -22,7 +22,7 @@ from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, Shi
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
     NoLogoFoundError, get_employee_requests_with_status, \
-    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator
+    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -162,11 +162,10 @@ def get_employee_requests(request):
 def add_shift_slot(request):
     business = get_curr_business(request)
 
-    slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
-                  .values('name').distinct() if t['name'] != 'Custom']
+    slot_names_generator = ((name, name) for name in get_business_slot_names(business))
 
     if request.method == 'POST':
-        slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
+        slot_form = ShiftSlotForm(request.POST, business=business, names=slot_names_generator)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             constraint_creator = SlotConstraintCreator(data)
@@ -191,8 +190,7 @@ def add_shift_slot(request):
         slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
 
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
-                             names=((name[0], name[0]) for name in
-                                    SavedSlot.objects.exclude(name__startswith='Custom').values_list('name')))
+                             names=slot_names_generator)
 
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                           'holiday': slot_holiday, 'logo_conf': get_logo_conf()})

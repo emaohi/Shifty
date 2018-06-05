@@ -7,7 +7,9 @@ import urllib
 import requests
 from bs4 import BeautifulSoup
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 from django.utils import timezone
+from django_redis import get_redis_connection
 
 from core.date_utils import get_date, get_next_week_num, get_curr_year
 from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, SavedSlot
@@ -110,6 +112,7 @@ class SlotCreator:
         self.business = business
         self.slot_data = slot_data
         self.constraint_creator = constraint_creator
+        self.native_redis_client = RedisNativeHandler()
 
     def create(self):
         if self.slot_data['name'] == '':
@@ -137,13 +140,17 @@ class SlotCreator:
                                  end_hour=self.slot_data['end_hour'], saved_slot=saved_slot)
 
     def _create_slot_with_name(self, new_slot, slot_constraint_json):
-        logger.info('Going to create/update named slot with name %s', self.slot_data['save_as'])
-        new_saved_slot, created = SavedSlot.objects.update_or_create(name=self.slot_data.get('save_as'),
+        slot_name = self.slot_data.get('save_as')
+        logger.info('Going to create/update named slot with name %s', slot_name)
+        new_saved_slot, created = SavedSlot.objects.update_or_create(name=slot_name,
                                                                      defaults={
-                                                                    'constraints': json.dumps(slot_constraint_json),
-                                                                    'is_mandatory': self.slot_data['mandatory']
-                                                                     })
-        logger.debug('created: %s', created)
+                                                                        'constraints': json.dumps(slot_constraint_json),
+                                                                        'is_mandatory': self.slot_data['mandatory']
+                                                                         })
+        logger.debug('saved slot %s', 'created' if created else 'updated')
+        if created:
+            logger.debug('adding slot name %s to cache set', slot_name)
+            self.native_redis_client.add_to_set(self.business.get_slot_names_cache_key(), slot_name)
         new_slot.saved_slot = new_saved_slot
         new_slot.save()
 
@@ -233,6 +240,35 @@ class LogoUrlFinder:
             return soup.findAll("div", {"class": "Logo"})[0].find("img")['src']
         except (KeyError, IndexError) as e:
             raise NoLogoFoundError('Couldn\'t extract image src url from soup... %s' % str(e))
+
+
+def get_business_slot_names(business):
+    key = business.get_slot_names_cache_key()
+    redis_handler = RedisNativeHandler()
+    if key not in cache:
+        slot_names = {t['name'] for t in ShiftSlot.objects.filter(business=business)
+                      .values('name').distinct() if t['name'] != 'Custom'}
+        redis_handler.add_to_set(key, *slot_names)
+        logger.debug('getting slot names of business %s from DB', business.business_name)
+        return slot_names
+    logger.debug('getting slot names of business %s from cache', business.business_name)
+    return redis_handler.get_members_of_set(key)
+
+
+class RedisNativeHandler:
+
+    def __init__(self):
+        self.connection = get_redis_connection('default')
+        self.version = 1
+
+    def add_to_set(self, set_name, *values):
+        self.connection.sadd(self._append_version_prefix(set_name), *values)
+
+    def get_members_of_set(self, set_name):
+        return self.connection.smembers(self._append_version_prefix(set_name))
+
+    def _append_version_prefix(self, key):
+        return ':%s:%s' % (self.version, key)
 
 
 class NoLogoFoundError(Exception):

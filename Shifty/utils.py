@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseBadRequest
 
 from Shifty import tasks
-from log.models import EmployeeProfile
 
 logger = logging.getLogger(__name__)
 

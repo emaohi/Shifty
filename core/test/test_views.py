@@ -248,6 +248,7 @@ class GetDurationDataViewTest(TestCase):
 
 
 @override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
+@patch.object(NativeRedisHandler)
 class GetNextShiftTimer(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}

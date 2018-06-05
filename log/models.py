@@ -125,6 +125,9 @@ class Business(models.Model):
         logger.debug('getting next week slots from cache')
         return cache.get(key)
 
+    def get_slot_names_cache_key(self):
+        return "{0}-slot-names".format(self)
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)
