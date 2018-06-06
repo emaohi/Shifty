@@ -16,6 +16,7 @@ from log.models import EmployeeProfile
 patch.object = patch.object
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class EmployeeRequestViewTest(TestCase):
     incorrect_data = {'incorrect_data': 'incorrect', 'fix_suggestion': 'fix'}
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
@@ -46,6 +47,7 @@ class EmployeeRequestViewTest(TestCase):
         self.assertRedirects(resp, reverse('manager_home') + '?next=' + urllib.quote(reverse('report_incorrect'), ""))
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class HandleRequestViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
@@ -84,6 +86,7 @@ class HandleRequestViewTest(TestCase):
         self.client.post(reverse('report_incorrect'), data=incorrect_data)
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class BroadcastMessageViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
@@ -123,6 +126,7 @@ class BroadcastMessageViewTest(TestCase):
 
 
 # pylint: disable=unused-argument
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 @patch.object(RedisNativeHandler, 'add_to_set')
 class AddShiftSlotViewTest(TestCase):
     dummy_slot = {
@@ -172,6 +176,7 @@ class AddShiftSlotViewTest(TestCase):
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('add_shift_slot'), ""))
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class DeleteShiftSlotViewTest(TestCase):
     dummy_slot = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
@@ -190,7 +195,8 @@ class DeleteShiftSlotViewTest(TestCase):
     def setUp(self):
 
         self.client.login(**self.manager_credentials)
-        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        with patch.object(RedisNativeHandler, 'add_to_set'):
+            self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.client.logout()
 
     def test_view_url_exists_at_desired_location(self):
@@ -301,6 +307,7 @@ class GetNextShiftTimer(TestCase):
             user__username=self.emp_credentials['username']))
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class GetSlotRequestersViewTest(TestCase):
     dummy_slot = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '1',
@@ -319,7 +326,8 @@ class GetSlotRequestersViewTest(TestCase):
 
     def setUp(self):
         self.client.login(**self.manager_credentials)
-        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        with patch.object(RedisNativeHandler, 'add_to_set'):
+            self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.client.post(reverse('finish_slots'), {'isFinished': 'true'})
         self.client.logout()
 
@@ -336,7 +344,7 @@ class GetSlotRequestersViewTest(TestCase):
         self.assertEqual(resp.context['emps'][0].user.username, 'testuser1')
 
 
-@override_settings(CELERY=False)
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class GenerateShiftsViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
@@ -367,6 +375,7 @@ class GenerateShiftsViewTest(TestCase):
         self.assertTrue(Shift.objects.exists())
 
 
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
 class GetLogoUrlViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}

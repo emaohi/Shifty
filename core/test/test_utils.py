@@ -1,5 +1,6 @@
 import json
 
+from mock import patch
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.test import TestCase
@@ -7,7 +8,8 @@ from django.test import TestCase
 from core.models import ShiftSlot, SavedSlot
 from core.test.test_helpers import add_fields_to_slot, get_business_of_username, create_new_manager
 from core.utils import SlotConstraintCreator, LanguageValidator, SlotCreator, DurationApiClient, LogoUrlFinder, \
-    NoLogoFoundError
+    NoLogoFoundError, RedisNativeHandler
+patch.object = patch.object
 
 
 class ConstraintCreatorTest(TestCase):
@@ -80,8 +82,8 @@ class SlotCreatorTest(TestCase):
         constraint_creator = SlotConstraintCreator(self.dummy_slot_data)
         creator = SlotCreator(business=self.manager_business, slot_data=self.dummy_slot_data,
                               constraint_creator=constraint_creator)
-
-        creator.create()
+        with patch.object(RedisNativeHandler, 'add_to_set'):
+            creator.create()
 
         self.assertTrue(SavedSlot.objects.filter(name='new-slot').exists())
         self.assertTrue(ShiftSlot.objects.filter(name='new-slot').exists())
