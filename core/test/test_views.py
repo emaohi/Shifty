@@ -11,7 +11,7 @@ from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
     create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee, \
     make_slot_this_in_n_hour_from_now, create_shifts_for_slots
-from core.utils import DurationApiClient
+from core.utils import DurationApiClient, RedisNativeHandler
 from log.models import EmployeeProfile
 patch.object = patch.object
 
@@ -122,6 +122,8 @@ class BroadcastMessageViewTest(TestCase):
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('broadcast_msg'), ""))
 
 
+# pylint: disable=unused-argument
+@patch.object(RedisNativeHandler, 'add_to_set')
 class AddShiftSlotViewTest(TestCase):
     dummy_slot = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
@@ -142,13 +144,13 @@ class AddShiftSlotViewTest(TestCase):
 
         self.client.logout()
 
-    def test_view_url_exists_at_desired_location(self):
+    def test_view_url_exists_at_desired_location(self, mocked):
         self.client.login(**self.manager_credentials)
         resp = self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.assertEqual(str(resp.context['user']), self.manager_credentials['username'])
         self.assertEqual(resp.status_code, 200)
 
-    def test_initial_form_exist_and_contain_initial_day_and_start_hour(self):
+    def test_initial_form_exist_and_contain_initial_day_and_start_hour(self, mocked):
         self.client.login(**self.manager_credentials)
 
         test_day = '2'
@@ -160,11 +162,11 @@ class AddShiftSlotViewTest(TestCase):
         self.assertEqual(resp.context['form'].initial['day'], test_day)
         self.assertEqual(resp.context['form'].initial['start_hour'], test_start_time.replace('-', ':'))
 
-    def test_view_should_redirect_when_not_logged_in(self):
+    def test_view_should_redirect_when_not_logged_in(self, mocked):
         resp = self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.assertRedirects(resp, reverse('login') + '?next=' + urllib.quote(reverse('add_shift_slot'), ""))
 
-    def test_view_should_redirect_when_employee_is_logged(self):
+    def test_view_should_redirect_when_employee_is_logged(self, mocked):
         self.client.login(**self.emp_credentials)
         resp = self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         self.assertRedirects(resp, reverse('emp_home') + '?next=' + urllib.quote(reverse('add_shift_slot'), ""))
@@ -248,7 +250,6 @@ class GetDurationDataViewTest(TestCase):
 
 
 @override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
-@patch.object(NativeRedisHandler)
 class GetNextShiftTimer(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
@@ -265,8 +266,9 @@ class GetNextShiftTimer(TestCase):
         add_fields_to_slot(cls.dummy_slot)
 
     def setUp(self):
-        self.client.login(**self.manager_credentials)
-        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        with patch.object(RedisNativeHandler, 'add_to_set'):
+            self.client.login(**self.manager_credentials)
+            self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
 
     def test_view_should_succeed_when_one_slot(self):
         self._create_upcoming_shifts_for_existing_slots(1)
@@ -280,7 +282,8 @@ class GetNextShiftTimer(TestCase):
     def test_view_should_choose_earliest_when_two_slots(self):
         second_slot = {k: v for k, v in self.dummy_slot.items()}
         second_slot['day'] = '2'
-        self.client.post(reverse('add_shift_slot'), data=second_slot, follow=True)
+        with patch.object(RedisNativeHandler, 'add_to_set'):
+            self.client.post(reverse('add_shift_slot'), data=second_slot, follow=True)
 
         self._create_upcoming_shifts_for_existing_slots(2)
 
@@ -356,7 +359,8 @@ class GenerateShiftsViewTest(TestCase):
 
     def test_should_succeed_if_slot_exist(self):
         self.client.login(**self.manager_credentials)
-        self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
+        with patch.object(RedisNativeHandler, 'add_to_set'):
+            self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
         resp = self.client.post(reverse('generate_shifts'))
         self.assertEqual(resp.status_code, 200)
 

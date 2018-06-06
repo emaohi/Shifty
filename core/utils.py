@@ -258,14 +258,15 @@ def get_business_slot_names(business):
 class RedisNativeHandler:
 
     def __init__(self):
-        self.connection = get_redis_connection('default')
         self.version = 1
 
     def add_to_set(self, set_name, *values):
-        self.connection.sadd(self._append_version_prefix(set_name), *values)
+        connection = get_redis_connection('default')
+        connection.sadd(self._append_version_prefix(set_name), *values)
 
     def get_members_of_set(self, set_name):
-        return self.connection.smembers(self._append_version_prefix(set_name))
+        connection = get_redis_connection('default')
+        return connection.smembers(self._append_version_prefix(set_name))
 
     def _append_version_prefix(self, key):
         return ':%s:%s' % (self.version, key)
