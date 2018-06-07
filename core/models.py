@@ -34,6 +34,13 @@ class EmployeeRequest(models.Model):
     )
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='O')
 
+    class Meta:
+        ordering = ['-sent_time']
+        indexes = [
+            models.Index(fields=['type']),
+            models.Index(fields=['status']),
+        ]
+
     def get_issuers_string(self):
         return ', '.join(str(emp) for emp in self.issuers.all())
     get_issuers_string.short_description = 'issuers'

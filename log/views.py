@@ -219,7 +219,7 @@ def manage_employees(request):
     curr_business = request.user.profile.business
 
     logger.info('getting business employees')
-    all_employees = EmployeeProfile.objects.filter(business=curr_business)
+    all_employees = EmployeeProfile.objects.filter(business=curr_business).select_related('user')
 
     return render(request, 'manager/manage_employees.html',
                   {'employees': all_employees, 'curr_business': curr_business, 'logo_conf': get_logo_conf()})
