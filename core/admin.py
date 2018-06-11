@@ -5,6 +5,7 @@ from .models import EmployeeRequest, ManagerMessage, ShiftSlot, Holiday, ShiftRe
 
 class EmployeeRequestAdmin(admin.ModelAdmin):
     list_display = ('get_issuers_string', 'type', 'text', 'status', 'sent_time')
+    raw_id_fields = ('issuers',)
 
 admin.site.register(EmployeeRequest, EmployeeRequestAdmin)
 
@@ -28,6 +29,7 @@ admin.site.register(Holiday, HolidayAdmin)
 
 class ShiftRequestAdmin(admin.ModelAdmin):
     list_display = ('id', 'employee', 'week_range', 'get_slots', 'submission_time')
+    raw_id_fields = ('employee',)
 admin.site.register(ShiftRequest, ShiftRequestAdmin)
 
 

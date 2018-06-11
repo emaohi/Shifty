@@ -13,6 +13,7 @@ from django.core.files.base import ContentFile
 from django.core.validators import RegexValidator
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Prefetch
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -72,7 +73,7 @@ class Business(models.Model):
         return self.get_business_type_display()
 
     def get_employees(self):
-        return self.employeeprofile_set.all()
+        return self.employeeprofile_set.all().prefetch_related('user')
 
     def get_role_employees(self, role):
         return self.get_employees().filter(role=EmployeeProfile.get_roles_reversed()[role.title()])
@@ -119,8 +120,13 @@ class Business(models.Model):
         if key not in cache:
             slots = ShiftSlot.objects.filter(week=week, business=self, is_mandatory=False)
             cache.set(key, slots, settings.DURATION_CACHE_TTL)
+            logger.debug('getting next week slots from DB')
             return slots
+        logger.debug('getting next week slots from cache')
         return cache.get(key)
+
+    def get_slot_names_cache_key(self):
+        return "{0}-slot-names".format(self)
 
 
 class EmployeeProfile(models.Model):
@@ -228,7 +234,7 @@ class EmployeeProfile(models.Model):
 
     def get_old_manager_msgs_cache_key(self):
         if self.role == 'MA':
-            raise ValueError('Can\'t manager messages key of emp %s - is manager' % self)
+            raise ValueError('Can\'t get manager messages key of emp %s - is manager' % self)
         return "{0}-old-manager-messages".format(self)
 
     def get_old_swap_requests_cache_key(self):
@@ -266,7 +272,9 @@ class EmployeeProfile(models.Model):
 
     def get_previous_shifts(self):
         return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
-            .order_by('-slot__day', '-slot__start_hour')
+            .order_by('-slot__week', '-slot__day', '-slot__start_hour')\
+            .select_related('slot').prefetch_related(Prefetch('employees',
+                                                              queryset=EmployeeProfile.objects.select_related('user')))
 
     def get_preferred_time_frame_codes(self):
         return [p['id'] for p in json.loads(self.preferred_shift_time_frames)] \

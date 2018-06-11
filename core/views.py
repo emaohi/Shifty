@@ -22,7 +22,7 @@ from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, Shi
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
     NoLogoFoundError, get_employee_requests_with_status, \
-    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator
+    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -78,9 +78,12 @@ def handle_employee_request(request):
 
         logger.info('creating manager msg in response to the employee request')
         try:
-            create_manager_msg(recipients=emp_request.issuers.all(), subject='Your request status has been changed',
-                               text='Your following request has been %s by your manager:\n %s' %
-                                    (emp_request.get_status_display(), emp_request.text))
+            create_manager_msg(
+                recipients=emp_request.issuers.select_related('user').exclude(user=get_curr_business(request).manager),
+                subject='Your request status has been changed',
+                text='Your following request has been %s by your manager:\n %s' %
+                     (emp_request.get_status_display(), emp_request.text)
+            )
         except EmailWaitError as e:
             return HttpResponseServerError(e.message)
 
@@ -100,7 +103,8 @@ def broadcast_message(request):
             new_manager_msg = broadcast_form.save(commit=False)
 
             try:
-                create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text)
+                create_manager_msg(recipients=recipients, subject=new_manager_msg.subject, text=new_manager_msg.text,
+                                   wait_for_mail_results=False)
             except EmailWaitError as e:
                 return HttpResponseServerError(e.message)
 
@@ -143,7 +147,7 @@ def get_employee_requests(request):
     else:
         key = curr_manager.get_old_employee_requests_cache_key()
         if key not in cache:
-            logger.debug('Taking old employee requests from DB: %s', messages)
+            logger.debug('Taking old employee requests from DB')
             emp_requests = get_employee_requests_with_status(curr_manager, 'A', 'R')
             cache.set(key, list(emp_requests), settings.DURATION_CACHE_TTL)
         else:
@@ -158,11 +162,10 @@ def get_employee_requests(request):
 def add_shift_slot(request):
     business = get_curr_business(request)
 
-    slot_names = [t['name'] for t in ShiftSlot.objects.filter(business=business)
-                  .values('name').distinct() if t['name'] != 'Custom']
+    slot_names_generator = ((name, name) for name in get_business_slot_names(business))
 
     if request.method == 'POST':
-        slot_form = ShiftSlotForm(request.POST, business=business, names=((name, name) for name in slot_names))
+        slot_form = ShiftSlotForm(request.POST, business=business, names=slot_names_generator)
         if slot_form.is_valid():
             data = slot_form.cleaned_data
             constraint_creator = SlotConstraintCreator(data)
@@ -187,8 +190,7 @@ def add_shift_slot(request):
         slot_holiday = get_holiday(get_curr_year(), day, get_next_week_num())
 
         form = ShiftSlotForm(initial={'day': day, 'start_hour': start_hour.replace('-', ':')}, business=business,
-                             names=((name[0], name[0]) for name in
-                                    SavedSlot.objects.exclude(name__startswith='Custom').values_list('name')))
+                             names=slot_names_generator)
 
         return render(request, 'manager/new_shift.html', {'form': form, 'week_range': get_next_week_string(),
                                                           'holiday': slot_holiday, 'logo_conf': get_logo_conf()})
@@ -267,7 +269,8 @@ def get_next_week_slots_calendar(request):
     shifts_json = []
     slot_id_to_constraints_dict = {}
 
-    next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(), business=get_curr_business(request))
+    next_week_slots = ShiftSlot.objects.filter(week=get_next_week_num(),
+                                               business=get_curr_business(request)).select_related('shift')
     for slot in next_week_slots:
         text_color, title = slot.get_color_and_title()
         jsoned_shift = json.dumps({'id': str(slot.id), 'title': title,
@@ -376,7 +379,8 @@ def get_slot_request_employees(request, slot_id):
         if not requested_slot.is_next_week():
             return HttpResponseBadRequest('slot is not next week')
 
-        slot_requests = ShiftRequest.objects.filter(requested_slots__in=[requested_slot])
+        slot_requests = ShiftRequest.objects.filter(
+            requested_slots__in=[requested_slot]).select_related('employee__user')
 
         return render(request, 'slot_request_emp_list.html',
                       {'emps': [req.employee for req in slot_requests],
@@ -423,7 +427,8 @@ def get_slot_employees(request, slot_id):
             curr_emp_future_slots = curr_employee.get_current_week_slots()
             offer_swap = (len(curr_emp_future_slots) > 0) and (not get_curr_profile(request) in shift.employees.all())
             return render(request, 'slot_request_emp_list.html',
-                          {'emps': shift.employees.all(), 'empty_msg': 'No employees in this shift :(',
+                          {'emps': shift.employees.select_related('user').all(),
+                           'empty_msg': 'No employees in this shift :(',
                            'curr_emp': get_curr_profile(request),
                            'future_slots': curr_emp_future_slots, 'offer_swap': offer_swap})
         else:
@@ -575,7 +580,9 @@ def get_swap_requests(request):
         if key not in cache:
             swap_requests = ShiftSwap.objects.filter(
                 Q(requester=curr_employee) | Q(responder=curr_employee),
-                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at')
+                accept_step__in=ShiftSwap.closed_accept_steps()).order_by('-updated_at') \
+                .select_related('requester__user', 'responder__user', 'requested_shift', 'requester_shift',
+                                'requested_shift__slot', 'requester_shift__slot')
             cache.set(key, list(swap_requests), settings.DURATION_CACHE_TTL)
             logger.debug('Taking old swap requests from DB: %s', swap_requests)
 

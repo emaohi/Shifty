@@ -7,6 +7,7 @@ import json
 import logging
 
 from django.db import models, IntegrityError, transaction
+from django.db.models import F
 from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
@@ -32,6 +33,13 @@ class EmployeeRequest(models.Model):
         ('P', 'Profile change'), ('S', 'Shift swap'), ('M', 'Menu test retry'), ('O', 'Other')
     )
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default='O')
+
+    class Meta:
+        ordering = ['-sent_time']
+        indexes = [
+            models.Index(fields=['type']),
+            models.Index(fields=['status']),
+        ]
 
     def get_issuers_string(self):
         return ', '.join(str(emp) for emp in self.issuers.all())
@@ -116,7 +124,7 @@ class ShiftSlot(models.Model):
     year = models.IntegerField(choices=YEAR_CHOICES, default=datetime.datetime.now().year)
 
     WEEK_CHOICES = [(w, w) for w in range(1, 53)]
-    week = models.IntegerField(choices=WEEK_CHOICES, default=1)
+    week = models.IntegerField(choices=WEEK_CHOICES, default=1, db_index=True)
 
     DAYS_OF_WEEK = (
         ('1', 'Sunday'),
@@ -348,8 +356,7 @@ class ShiftSwap(models.Model):
         if self.accept_step == 1:
             logger.debug('saved shiftSwap of status 1, going to create employeeRequest')
             self.employee_request = EmployeeRequest.objects.create(type='S')
-            self.employee_request.issuers.add(self.requester)
-            self.employee_request.issuers.add(self.responder)
+            self.employee_request.issuers.add(self.requester, self.responder)
         elif self.accept_step == 2 or self.accept_step == -2:
             logger.debug('saved shiftSwap of status %d', self.accept_step)
             self.handle_manager_action(self.accept_step)
@@ -401,10 +408,8 @@ class ShiftSwap(models.Model):
 # pylint: disable=unused-argument
 @receiver(m2m_changed, sender=ManagerMessage.recipients.through)
 def update_employee(sender, **kwargs):
-    for emp in kwargs.pop('instance').recipients.all():
-        logger.debug('incrementing new message for emp %s', str(emp))
-        emp.new_messages += 1
-        emp.save()
+    logger.info('incrementing new message for employees in message')
+    kwargs.pop('instance').recipients.all().update(new_messages=F('new_messages') + 1)
 
 
 # pylint: disable=unused-argument

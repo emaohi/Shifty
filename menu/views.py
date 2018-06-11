@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import json
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
 from django.shortcuts import render
 from django.templatetags.static import static
@@ -175,25 +174,25 @@ def try_again(request):
 @login_required(login_url="/login")
 @user_passes_test(must_be_employee_callback)
 def ask_another_test_try(request):
+
+    curr_emp = get_curr_profile(request)
+
     if request.method == 'GET':
         response = {}
         try:
-            old_emp_request = EmployeeRequest.objects.get(issuers__in=EmployeeProfile.objects.filter(
-                id=get_curr_profile(request).id), type='M')
-            response['retry_status'] = old_emp_request.get_status_display()
-        except ObjectDoesNotExist:
+            existing_request = EmployeeRequest.objects.filter(issuers__in=[curr_emp.pk], type='M').last()
+            response['retry_status'] = existing_request.get_status_display()
+        except AttributeError:
             response['retry_status'] = 'non-exist'
         return JsonResponse(response)
 
-    if request.method == 'POST':
-        curr_emp = get_curr_profile(request)
+    elif request.method == 'POST':
         logger.info('got retry employee request from: ' + str(curr_emp))
         try:
-            existing_request = EmployeeRequest.objects.get(issuers__in=EmployeeProfile.objects.filter(
-                id=get_curr_profile(request).id), type='M')
+            existing_request = EmployeeRequest.objects.filter(issuers__in=[curr_emp.pk], type='M').last()
             return HttpResponseBadRequest('menu test retry request (with status %s) already exist for this employee'
                                           % existing_request.get_status_display())
-        except ObjectDoesNotExist:
+        except AttributeError:
             new_emp_req = EmployeeRequest(type='M')
             new_emp_req.save()
             new_emp_req.issuers.add(curr_emp)
