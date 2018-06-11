@@ -1062,7 +1062,7 @@ module.exports = module.exports.toString();
 /***/ "../../../../../src/app/quiz/quiz.component.html":
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"quiz.isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n  <a href=\"/menu/test/create\" class=\"btn btn-info\" *ngIf=\"quiz && quiz.isPreview\">Menu test creator</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<div class=\"container\" *ngIf=\"errMsg\">\n  <h3>{{errMsg}}</h3>\n  <div *ngIf=\"retryStatus\" [ngClass]=\"{'approved': retryStatus  == 'Approved', 'rejected': retryStatus  == 'Rejected'}\">\n    <p *ngIf=\"retryStatus == 'non-exist'\">You can ask your manager to let you do this test again</p>\n    <p *ngIf=\"retryStatus == 'Pending'\">Your manager still has not responded to your request to retry</p>\n    <p *ngIf=\"retryStatus == 'Rejected'\">Unfortunately your manager rejected your request for retry :(</p>\n    <p *ngIf=\"retryStatus == 'Approved'\">Your manager approved your request to do this test again !</p>\n    <button class=\"btn btn-info\" *ngIf=\"retryStatus == 'non-exist'\" (click)=\"askRetry()\">\n      Ask your manager for retry</button>\n    <button class=\"btn btn-primary\" *ngIf=\"retryStatus == 'Approved'\" (click)=\"retryQuiz()\">\n      Retry quiz</button>\n  </div>\n</div>\n"
+module.exports = "<div class=\"jumbotron\">\n  <div *ngIf=\"quiz\">\n    <h2>\n      <small *ngIf=\"isPreview\"><i>PREVIEW MODE OF:</i></small>\n      {{quiz.name}}\n    </h2>\n    <p >You'll have {{quiz.time}} minutes to solve it, minimum score is {{quiz.scoreToPass}}, Good luck</p>\n  </div>\n  <a href=\"/\" class=\"btn btn-primary\">Back to dashboard</a>\n  <a href=\"/menu/test/create\" class=\"btn btn-info\" *ngIf=\"isPreview\">Menu test creator</a>\n</div>\n<div class=\"container\" *ngIf=\"mode == 'quiz' && quiz\">\n  <div class=\"badge badge-info\">Question {{currIndex + 1}} of {{quiz.questions.length}}.</div>\n  <h2>{{currIndex + 1}}. <span [innerHTML]=\"getCurrQuestion().name\"></span></h2>\n  <div class=\"row\">\n    <div class=\"col-md-6\" *ngFor=\"let answer of getCurrQuestion().answers\">\n      <div class=\"option\">\n        <label class=\"\" [attr.for]=\"answer.id\">\n          <input id=\"{{answer.id}}\" type=\"checkbox\" [(ngModel)]=\"answer.selected\"/>\n          {{answer.name}}\n        </label>\n      </div>\n    </div>\n  </div>\n  <hr>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-default\" (click)=\"goTo(0);\">First</button>\n    <button class=\"btn btn-info\" (click)=\"goTo(currIndex - 1);\">Prev</button>\n    <button class=\"btn btn-primary\" (click)=\"goTo(currIndex + 1);\">Next</button>\n    <button class=\"btn btn-default\" (click)=\"goTo(count - 1);\">Last</button>\n  </div>\n  <div class=\"text-sm-center\">\n    <button class=\"btn btn-success\" (click)=\"mode = 'review'\" style=\"margin-top: 20px\">Review and submit</button>\n  </div>\n</div>\n\n<app-quiz-review [quiz]=\"quiz\" (showQuestion)=\"showQuestion($event)\"\n                 *ngIf=\"mode == 'review' && quiz\"></app-quiz-review>\n\n<div class=\"container\" *ngIf=\"errMsg\">\n  <h3>{{errMsg}}</h3>\n  <div *ngIf=\"retryStatus\" [ngClass]=\"{'approved': retryStatus  == 'Approved', 'rejected': retryStatus  == 'Rejected'}\">\n    <p *ngIf=\"retryStatus == 'non-exist'\">You can ask your manager to let you do this test again</p>\n    <p *ngIf=\"retryStatus == 'Pending'\">Your manager still has not responded to your request to retry</p>\n    <p *ngIf=\"retryStatus == 'Rejected'\">Unfortunately your manager rejected your request for retry :(</p>\n    <p *ngIf=\"retryStatus == 'Approved'\">Your manager approved your request to do this test again !</p>\n    <button class=\"btn btn-info\" *ngIf=\"retryStatus == 'non-exist'\" (click)=\"askRetry()\">\n      Ask your manager for retry</button>\n    <button class=\"btn btn-primary\" *ngIf=\"retryStatus == 'Approved'\" (click)=\"retryQuiz()\">\n      Retry quiz</button>\n  </div>\n</div>\n"
 
 /***/ }),
 
@@ -1095,12 +1095,12 @@ var QuizComponent = (function () {
     }
     QuizComponent.prototype.ngOnInit = function () {
         this.loadQuiz();
-        // this.getRetryStatus();
     };
     QuizComponent.prototype.loadQuiz = function () {
         var _this = this;
         this.quizService.getQuiz().subscribe(function (res) {
             console.log(JSON.stringify(res));
+            _this.isPreview = res['is_preview'];
             _this.quiz = __WEBPACK_IMPORTED_MODULE_1__models_quiz__["a" /* Quiz */].createFrom(res);
             console.log(JSON.stringify(_this.quiz));
             _this.count = _this.quiz.questions.length;
@@ -1110,8 +1110,12 @@ var QuizComponent = (function () {
                 _this.errMsg = err.error;
                 _this.getRetryStatus();
             }
+            else if (err['status'] == 503) {
+                _this.errMsg = "There is no quiz of this role yet.... but you can create one :)";
+                _this.isPreview = true;
+            }
             else {
-                _this.errMsg = "Unexpected error: " + err.error;
+                _this.errMsg = "Failed to load quiz: " + err.error;
             }
         });
     };
