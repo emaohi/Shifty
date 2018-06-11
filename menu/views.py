@@ -199,4 +199,3 @@ def ask_another_test_try(request):
             new_emp_req.issuers.add(curr_emp)
             return JsonResponse({'created': 'ok'})
 
-
