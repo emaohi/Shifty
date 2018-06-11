@@ -248,7 +248,8 @@ def get_business_slot_names(business):
     if key not in cache:
         slot_names = {t['name'] for t in ShiftSlot.objects.filter(business=business)
                       .values('name').distinct() if t['name'] != 'Custom'}
-        redis_handler.add_to_set(key, *slot_names)
+        if slot_names:
+            redis_handler.add_to_set(key, *slot_names)
         logger.debug('getting slot names of business %s from DB', business.business_name)
         return slot_names
     logger.debug('getting slot names of business %s from cache', business.business_name)

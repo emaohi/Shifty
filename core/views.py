@@ -531,8 +531,6 @@ def export_shifts_csv(request):
     return response
 
 
-@login_required(login_url='/login')
-@user_passes_test(must_be_manager_callback)
 @require_GET
 def get_logo_suggestion(request):
     business_name = request.GET.get('name', '')

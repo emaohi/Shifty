@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 import json
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound
+from django.http import JsonResponse, HttpResponseBadRequest, HttpResponseNotFound, HttpResponse
 from django.shortcuts import render
 from django.templatetags.static import static
 
@@ -38,16 +38,17 @@ def get_quiz(request):
             logger.warning('recent score detected: %d', recent_score)
             return HttpResponseBadRequest('You\'ve recently done menu test with score %d.' % recent_score)
         if request.user.profile.role == 'MA':
-            quiz_qs = Quiz.objects.filter(business=get_curr_business(request))
-            quiz = quiz_qs.first()
+            quiz = Quiz.objects.filter(business=get_curr_business(request)).first()
             is_preview = True
+            if not quiz:
+                return HttpResponse(status=503)
         else:
             quiz = Quiz.objects.filter(business=get_curr_business(request), role=get_curr_profile(request).role). \
                 first()
             is_preview = False
-        if not quiz:
-            return HttpResponseNotFound('There are not any quizzes for %s yet' %
-                                        get_curr_profile(request).get_role_display())
+            if not quiz:
+                return HttpResponseNotFound('There are not any quizzes for %s yet' %
+                                            get_curr_profile(request).get_role_display())
         response = quiz.serialize(is_preview)
 
         logger.info('data is ' + str(response))
