@@ -4,6 +4,7 @@ from log.forms import LoginForm
 
 from django.contrib.auth import views as django_views
 from log import views as log_views
+from log.views import HealthCheckCustomView
 from . import views
 
 urlpatterns = [
@@ -14,6 +15,7 @@ urlpatterns = [
     url(r'^login/$', django_views.login, {'template_name': 'login.html',
                                           'authentication_form': LoginForm, 'redirect_authenticated_user': True},
         name='login'),
+    url(r'^ht/$', HealthCheckCustomView.as_view()),
     url(r'^register/$', log_views.register, name='register'),
     url(r'^success/$', views.success, name='success'),
     url(r'^logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),

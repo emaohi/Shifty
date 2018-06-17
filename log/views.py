@@ -10,6 +10,8 @@ from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
+from django.utils.decorators import method_decorator
+from health_check.views import MainView
 from kombu.exceptions import OperationalError
 
 from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
@@ -20,7 +22,7 @@ from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditF
 from log.models import EmployeeProfile
 
 from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback, \
-    get_logo_conf, get_profile_and_business
+    get_logo_conf, get_profile_and_business, must_be_superuser_callback
 from log.utils import NewEmployeeHandler
 
 logger = logging.getLogger(__name__)
@@ -295,3 +297,9 @@ def home_or_login(request):
         return redirect("login_success")
     else:
         return redirect("login")
+
+
+class HealthCheckCustomView(MainView):
+    @method_decorator(user_passes_test(must_be_superuser_callback, redirect_field_name=None))
+    def dispatch(self, request, *args, **kwargs):
+        return super(HealthCheckCustomView, self).dispatch(request, *args, **kwargs)
