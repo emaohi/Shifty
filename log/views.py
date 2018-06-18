@@ -20,8 +20,8 @@ from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditF
 from log.models import EmployeeProfile
 
 from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback, \
-    get_logo_conf, get_profile_and_business
-from log.utils import NewEmployeeHandler
+    get_logo_conf, get_profile_and_business, EmailWaitError
+from log.utils import NewEmployeeHandler, send_new_employees_mails
 
 logger = logging.getLogger(__name__)
 
@@ -199,11 +199,11 @@ def add_employees(request):
 
             try:
                 logger.info('sending mails to new employees')
-                new_employee_handler.send_new_employees_mails(mail_dics)
+                send_new_employees_mails(mail_dics)
                 messages.success(request, 'successfully added %s employees to %s' % (str(num_of_employees),
                                                                                      curr_business))
-            except OperationalError as e:
-                logger.error('sending emails failed ' + str(e.message) + str(traceback.format_exc()))
+            except (OperationalError, EmailWaitError) as e:
+                logger.error('sending emails failed ' + str(e.message))
                 messages.error(request, 'failed to send mails to employees')
 
             return HttpResponseRedirect('/')

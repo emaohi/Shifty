@@ -44,22 +44,6 @@ class NewEmployeeHandler:
                 'business': self.manager.profile.business.business_name, 'username': self.user_created.username,
                 'password': self.password_created, 'first_name': self.firs_name, 'to_email': self.user_created}
 
-    @staticmethod
-    def send_new_employees_mails(mail_dicts=None):
-
-        recipients = [_dict['to_email'] for _dict in mail_dicts]
-        # remove non-serializable form dicts
-        for _dict in mail_dicts:
-            _dict.pop('to_email')
-
-        recipient_to_context_dict = dict(zip(recipients, mail_dicts))
-        template = 'html_msgs/new_employee_email_msg.html'
-        subject = 'Sent from Shifty App'
-        text = 'you\'ve been added to shifty as an employee'
-
-        send_multiple_mails_with_html(subject=subject, text=text,
-                                      template=template, r_2_c_dict=recipient_to_context_dict)
-
     def _generate_username(self):
         # first name and last letter of last name
         suggested_username = self.firs_name + self.last_name[0]
@@ -83,3 +67,17 @@ class NewEmployeeHandler:
     def _generate_password(length):
         return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
+
+def send_new_employees_mails(mail_dicts=None):
+
+    recipients = [_dict['to_email'] for _dict in mail_dicts]
+    # remove non-serializable form dicts
+    for _dict in mail_dicts:
+        _dict.pop('to_email')
+
+    recipient_to_context_dict = dict(zip(recipients, mail_dicts))
+
+    send_multiple_mails_with_html(subject='Sent from Shifty App',
+                                  text='you\'ve been added to shifty as an employee',
+                                  template='html_msgs/new_employee_email_msg.html',
+                                  r_2_c_dict=recipient_to_context_dict, wait_for_results=True, update_emp=True)

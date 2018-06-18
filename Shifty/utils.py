@@ -12,7 +12,7 @@ from Shifty import tasks
 logger = logging.getLogger(__name__)
 
 
-def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_results=True):
+def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_results=True, update_emp=False):
 
     is_celery = settings.CELERY
     async_tasks = []
@@ -22,13 +22,15 @@ def send_multiple_mails_with_html(subject, text, template, r_2_c_dict, wait_for_
     recp_list = {recip: value for recip, value in r_2_c_dict.iteritems() if recip.profile.enable_mailing}
 
     for recp, context in recp_list.iteritems():
-        send_mail_params = [recp.email, subject, text, template, context]
-        async_tasks.append(tasks.send_mail.delay(*send_mail_params) if is_celery else
-                           tasks.send_mail(*send_mail_params))
+        send_mail_params = [recp.email, subject, text, template, context, recp.id if update_emp else None]
 
-    if is_celery and wait_for_results:
-        if not wait_for_tasks_to_be_completed(async_tasks):
-            raise EmailWaitError('Waited too much for mails to be sent')
+        if is_celery:
+            async_tasks.append(tasks.send_mail.delay(*send_mail_params))
+            if wait_for_results:
+                if not wait_for_tasks_to_be_completed(async_tasks):
+                    raise EmailWaitError('Waited too much for mails to be sent')
+        else:
+            tasks.send_mail(*send_mail_params)
 
 
 def now_millis():

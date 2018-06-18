@@ -165,6 +165,7 @@ class EmployeeProfile(models.Model):
     arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
     new_messages = models.IntegerField(default=0)
     preferred_shift_time_frames = models.TextField(blank=True, null=True)
+    credentials_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
