@@ -1,9 +1,10 @@
+from smtplib import SMTPAuthenticationError
+
 import requests
 from django.conf import settings
+from django.core.mail import EmailMultiAlternatives
 from health_check.backends import BaseHealthCheckBackend
 from health_check.exceptions import ServiceReturnedUnexpectedResult, ServiceUnavailable
-
-from core.tasks import add
 
 
 class CeleryHealthCheckBackend(BaseHealthCheckBackend):
@@ -12,6 +13,7 @@ class CeleryHealthCheckBackend(BaseHealthCheckBackend):
     critical_service = False
 
     def check_status(self):
+        from core.tasks import add
         timeout = getattr(settings, 'HEALTHCHECK_CELERY_TIMEOUT', 3)
         try:
             result = add.delay(4, 4)
@@ -80,3 +82,18 @@ class LogoFinderCheckBackend(BaseHealthCheckBackend):
 
     def identifier(self):
         return 'Logo finder'
+
+
+class GmailCheckBackend(BaseHealthCheckBackend):
+    #: The status endpoints will respond with a 200 status code
+    #: even if the check errors.
+    critical_service = False
+
+    def check_status(self):
+        try:
+            EmailMultiAlternatives('s', 't', 'shifty.moti@gmail.com', ['shifty.moti@gmail.com']).send()
+        except SMTPAuthenticationError as e:
+            self.add_error(ServiceUnavailable("SMTP error"), e)
+
+    def identifier(self):
+        return 'Gmail checker'
