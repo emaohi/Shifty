@@ -25,7 +25,10 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'raven.contrib.django.raven_compat',
-    'log',
+    'health_check',                             # required
+    'health_check.db',                          # stock Django health checkers
+    'health_check.cache',
+    'log.apps.LogConfig',
     'core',
     'menu'
 ]

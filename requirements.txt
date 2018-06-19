@@ -99,3 +99,4 @@ Werkzeug==0.12.2
 whitenoise==3.3.0
 wrapt==1.10.10
 zope.interface==4.4.3
+django-health-check==3.6.1
