@@ -67,6 +67,13 @@ def must_be_employee_callback(user):
     return False
 
 
+def must_be_superuser_callback(user):
+    if user.is_superuser:
+        return True
+    logger.error('cant proceed - you are not superuser !')
+    return False
+
+
 def get_curr_profile(request):
     return request.user.profile
 

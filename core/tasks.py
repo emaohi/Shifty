@@ -46,6 +46,11 @@ def reset_shift_generation_status():
 
 
 @shared_task
+def add(x, y):
+    return x + y
+
+
+@shared_task
 def generate_next_week_shifts(business_name, level):
 
     business = Business.objects.get(pk=business_name)
