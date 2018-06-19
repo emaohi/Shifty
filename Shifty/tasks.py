@@ -1,6 +1,8 @@
 from __future__ import absolute_import, unicode_literals
 
 import logging
+from smtplib import SMTPAuthenticationError
+
 from celery import shared_task
 from django.contrib.auth.models import User
 from django.core.mail import EmailMultiAlternatives
@@ -18,10 +20,16 @@ def send_mail(recipient, subject, text, html_to_render, context, recipient_id=No
                                      text,
                                      'shifty.moti@gmail.com', [recipient])
     message.attach_alternative(html_content, 'text/html')
-    message.send()
 
-    if recipient_id:
-        logger.info('going to set true credentials_sent of emp id %s', recipient_id)
-        recp = User.objects.get(pk=recipient_id)
-        recp.profile.credentials_sent = True
-        recp.save()
+    try:
+        message.send()
+        if recipient_id:
+            recp = User.objects.get(pk=recipient_id)
+            recp.profile.credentials_sent = True
+            recp.save()
+            logger.info('credentials_sent of emp id %s set to true', recipient_id)
+    except SMTPAuthenticationError as e:
+        logger.error('Failed to send mail via Gmail: %s', e.message)
+        if recipient_id:
+            logger.warning('Didn\'t set true credentials_sent of emp id %s', recipient_id)
+        raise e

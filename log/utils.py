@@ -25,7 +25,7 @@ class NewEmployeeHandler:
     def create_employee(self):
 
         username = self._generate_username()
-        self.password_created = self._generate_password(6)
+        self.password_created = generate_password(6)
 
         self.user_created = User.objects.create_user(username=username, password=self.password_created,
                                                      email=self.email,
@@ -63,10 +63,6 @@ class NewEmployeeHandler:
             curr = int(split_name[1])
             return '%s_%s' % (split_name[0], str(curr+1))
 
-    @staticmethod
-    def _generate_password(length):
-        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
-
 
 def send_new_employees_mails(mail_dicts=None):
 
@@ -80,4 +76,8 @@ def send_new_employees_mails(mail_dicts=None):
     send_multiple_mails_with_html(subject='Sent from Shifty App',
                                   text='you\'ve been added to shifty as an employee',
                                   template='html_msgs/new_employee_email_msg.html',
-                                  r_2_c_dict=recipient_to_context_dict, wait_for_results=True, update_emp=True)
+                                  r_2_c_dict=recipient_to_context_dict, wait_for_results=False, update_emp=True)
+
+
+def generate_password(length):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))

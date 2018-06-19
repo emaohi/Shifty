@@ -18,7 +18,7 @@ from log.models import Business
 logger = logging.getLogger(__name__)
 
 
-@periodic_task(run_every=crontab(minute=0, hour=0))
+@periodic_task(run_every=crontab(minute=0, hour=0, day_of_week=0))
 def get_holidays():
 
     logger.info("XXXX - In get holidays task")

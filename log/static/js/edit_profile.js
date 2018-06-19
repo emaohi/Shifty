@@ -109,12 +109,15 @@ function makeData() {
         ],
         selected: []
     };
-    var preferred_times = $.parseJSON($("#id_preferred_shift_time_frames").val());
-    for (var i = 0; i < preferred_times.length; i++) {
-        for (var j = 0; j < data.available.length; j++){
-            if (data['available'][j]['id'] === preferred_times[i]['id']) {
-                data['selected'].push(preferred_times[i]);
-                data['available'].splice(j, 1);
+    var currentPreferred = $("#id_preferred_shift_time_frames").val()
+    if (currentPreferred) {
+        var preferred_times = $.parseJSON(currentPreferred);
+        for (var i = 0; i < preferred_times.length; i++) {
+            for (var j = 0; j < data.available.length; j++){
+                if (data['available'][j]['id'] === preferred_times[i]['id']) {
+                    data['selected'].push(preferred_times[i]);
+                    data['available'].splice(j, 1);
+                }
             }
         }
     }

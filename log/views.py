@@ -1,5 +1,3 @@
-import traceback
-
 import logging
 
 from django.contrib import messages
