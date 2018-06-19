@@ -18,6 +18,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from core.date_utils import get_curr_week_num
+from log.utils import generate_password
 
 logger = logging.getLogger(__name__)
 
@@ -165,6 +166,7 @@ class EmployeeProfile(models.Model):
     arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
     new_messages = models.IntegerField(default=0)
     preferred_shift_time_frames = models.TextField(blank=True, null=True)
+    credentials_sent = models.BooleanField(default=False)
 
     def __str__(self):
         return self.user.username
@@ -279,6 +281,15 @@ class EmployeeProfile(models.Model):
     def get_preferred_time_frame_codes(self):
         return [p['id'] for p in json.loads(self.preferred_shift_time_frames)] \
             if self.preferred_shift_time_frames else []
+
+    def generate_mail_context(self):
+        logger.debug('Going to update password of %s', self.user.username)
+        new_password = generate_password(6)
+        self.user.set_password(new_password)
+        self.user.save()
+        return {'manager': self.get_manager_user().username, 'role': self.get_role_display(),
+                'business': self.business.business_name, 'username': self.user.username,
+                'password': new_password, 'first_name': self.user.first_name, 'to_email': self.user}
 
     @classmethod
     def get_roles_reversed(cls):

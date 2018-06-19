@@ -25,7 +25,7 @@ class NewEmployeeHandler:
     def create_employee(self):
 
         username = self._generate_username()
-        self.password_created = self._generate_password(6)
+        self.password_created = generate_password(6)
 
         self.user_created = User.objects.create_user(username=username, password=self.password_created,
                                                      email=self.email,
@@ -43,22 +43,6 @@ class NewEmployeeHandler:
         return {'manager': self.manager.username, 'role': self.user_created.profile.get_role_display(),
                 'business': self.manager.profile.business.business_name, 'username': self.user_created.username,
                 'password': self.password_created, 'first_name': self.firs_name, 'to_email': self.user_created}
-
-    @staticmethod
-    def send_new_employees_mails(mail_dicts=None):
-
-        recipients = [_dict['to_email'] for _dict in mail_dicts]
-        # remove non-serializable form dicts
-        for _dict in mail_dicts:
-            _dict.pop('to_email')
-
-        recipient_to_context_dict = dict(zip(recipients, mail_dicts))
-        template = 'html_msgs/new_employee_email_msg.html'
-        subject = 'Sent from Shifty App'
-        text = 'you\'ve been added to shifty as an employee'
-
-        send_multiple_mails_with_html(subject=subject, text=text,
-                                      template=template, r_2_c_dict=recipient_to_context_dict)
 
     def _generate_username(self):
         # first name and last letter of last name
@@ -79,7 +63,21 @@ class NewEmployeeHandler:
             curr = int(split_name[1])
             return '%s_%s' % (split_name[0], str(curr+1))
 
-    @staticmethod
-    def _generate_password(length):
-        return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
 
+def send_new_employees_mails(mail_dicts=None):
+
+    recipients = [_dict['to_email'] for _dict in mail_dicts]
+    # remove non-serializable form dicts
+    for _dict in mail_dicts:
+        _dict.pop('to_email')
+
+    recipient_to_context_dict = dict(zip(recipients, mail_dicts))
+
+    send_multiple_mails_with_html(subject='Sent from Shifty App',
+                                  text='you\'ve been added to shifty as an employee',
+                                  template='html_msgs/new_employee_email_msg.html',
+                                  r_2_c_dict=recipient_to_context_dict, wait_for_results=False, update_emp=True)
+
+
+def generate_password(length):
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(length))
