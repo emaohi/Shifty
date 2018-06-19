@@ -18,5 +18,5 @@ class LogConfig(AppConfig):
         plugin_dir.register(CeleryHealthCheckBackend)
         plugin_dir.register(ProfanityCheckBackend)
         plugin_dir.register(GoogleApiCheckBackend)
-        plugin_dir.register(LogoFinderCheckBackend),
-        plugin_dir.register(GmailCheckBackend),
+        plugin_dir.register(LogoFinderCheckBackend)
+        plugin_dir.register(GmailCheckBackend)
