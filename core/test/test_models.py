@@ -1,12 +1,13 @@
 from django.contrib.auth.models import User
 from django.db import IntegrityError
+from django.db.models.signals import m2m_changed, post_save
 from django.test import TestCase
 
 from Shifty.utils import get_time_from_str
 from core.date_utils import get_curr_year, get_next_week_num
 from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage, SavedSlot
 from core.test.test_helpers import create_new_manager, create_new_employee, create_manager_and_employee_groups, \
-    create_multiple_employees
+    create_multiple_employees, CatchSignal
 from log.models import Business, EmployeeProfile
 
 
@@ -205,3 +206,31 @@ class ShiftSwapModelTest(TestCase):
         first_emp = EmployeeProfile.objects.get(user__username=self.first_emp_credentials['username'])
         second_emp = EmployeeProfile.objects.get(user__username=self.second_emp_credentials['username'])
         return first_emp, second_emp
+
+
+class SignalModelsTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.test_business = Business.objects.create(business_name='testBiz')
+        create_new_employee({'username': 'testUser1', 'password': 'secret1'})
+        cls.first_slot = ShiftSlot.objects.create(business=cls.test_business, day='1',
+                                                  start_hour='12:00:00', end_hour='13:00:00', constraints='{}')
+
+    def setUp(self):
+        self.manager_message = ManagerMessage.objects.create(business=self.test_business, subject='s', text='t')
+
+    def test_should_catch_m2m_changed_signal_when_adding_recipients(self):
+        with CatchSignal(m2m_changed) as handler:
+            self.manager_message.recipients.add(EmployeeProfile.objects.first())
+        handler.assert_called()
+
+    def test_should_not_catch_m2m_changed_signal_when_no_adding_recipients(self):
+        with CatchSignal(m2m_changed) as handler:
+            self.manager_message.text = 'another'
+        handler.assert_not_called()
+
+    def test_should_catch_post_save(self):
+        with CatchSignal(post_save) as handler:
+            Shift.objects.create(slot=self.first_slot)
+        handler.assert_called()

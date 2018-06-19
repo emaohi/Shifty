@@ -1,6 +1,7 @@
 import datetime
 import json
 
+import mock
 from django.contrib.auth.models import Group, User
 
 from Shifty.utils import get_time_from_str
@@ -110,3 +111,16 @@ def create_shifts_for_slots(slots, emps):
         shift.employees.add(*list(emps))
         shift.save()
         print '------ shift: %s created' % str(shift)
+
+
+class CatchSignal:
+    def __init__(self, signal):
+        self.signal = signal
+        self.handler = mock.Mock()
+
+    def __enter__(self):
+        self.signal.connect(self.handler)
+        return self.handler
+
+    def __exit__(self, exc_type, exc_value, tb):
+        self.signal.disconnect(self.handler)
