@@ -16,8 +16,6 @@ from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, Sav
 from Shifty.utils import send_multiple_mails_with_html
 from django.conf import settings
 
-from log.models import EmployeeProfile
-
 logger = logging.getLogger(__name__)
 
 

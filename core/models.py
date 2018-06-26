@@ -8,7 +8,7 @@ import logging
 
 from django.db import models, IntegrityError, transaction
 from django.db.models import F
-from django.db.models.signals import m2m_changed, post_save, pre_save
+from django.db.models.signals import m2m_changed, pre_save
 from django.dispatch import receiver
 
 from Shifty.utils import get_time_from_str

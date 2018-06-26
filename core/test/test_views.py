@@ -400,7 +400,7 @@ class GetLogoUrlViewTest(TestCase):
 
 
 @override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
-class GetLogoUrlViewTest(TestCase):
+class GetLeaderBoardViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
@@ -416,7 +416,9 @@ class GetLogoUrlViewTest(TestCase):
     def test_should_get_first_5_employees(self):
         self._update_rates()
 
-        res = self.client.get(reverse('get_leader_board'))
+        with patch.object(RedisNativeHandler, 'add_to_sorted_set'):
+            res = self.client.get(reverse('get_leader_board'))
+
         self.assertJSONEqual(res.content, [
             {'username': 'test_user_5', 'rate': 5.0},
             {'username': 'test_user_4', 'rate': 4.0},
