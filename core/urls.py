@@ -30,4 +30,5 @@ urlpatterns = [
     url(r'^emp_requests/$', views.get_employee_requests, name='emp_requests'),
     url(r'^swap_requests/$', views.get_swap_requests, name='get_swap_requests'),
     url(r'^respond_swap_request/$', views.respond_swap_request, name='respond_swap_request'),
+    url(r'^get_leaders/$', views.get_leader_board, name='get_leader_board'),
 ]

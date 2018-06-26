@@ -35,6 +35,7 @@ admin.site.register(ShiftRequest, ShiftRequestAdmin)
 
 class ShiftAdmin(admin.ModelAdmin):
     list_display = ['slot', 'rank', 'get_employees_string', 'get_date']
+    raw_id_fields = ('employees',)
 admin.site.register(Shift, ShiftAdmin)
 
 

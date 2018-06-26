@@ -16,6 +16,8 @@ from core.models import ManagerMessage, EmployeeRequest, Holiday, ShiftSlot, Sav
 from Shifty.utils import send_multiple_mails_with_html
 from django.conf import settings
 
+from log.models import EmployeeProfile
+
 logger = logging.getLogger(__name__)
 
 
@@ -265,12 +267,60 @@ class RedisNativeHandler:
         connection = get_redis_connection('default')
         connection.sadd(self._append_version_prefix(set_name), *values)
 
+    def add_to_sorted_set(self, set_name, *values):
+        connection = get_redis_connection('default')
+        connection.zadd(self._append_version_prefix(set_name), *values)
+
     def get_members_of_set(self, set_name):
         connection = get_redis_connection('default')
         return connection.smembers(self._append_version_prefix(set_name))
 
+    def get_first_of_sorted_set(self, sorted_set_name, start, stop):
+        connection = get_redis_connection('default')
+        return connection.zrevrange(self._append_version_prefix(sorted_set_name), start, stop, withscores=True)
+
+    def increment_score_of_member(self, sorted_set_name, member, incr_by):
+        connection = get_redis_connection('default')
+        return connection.zincrby(self._append_version_prefix(sorted_set_name), member, amount=incr_by)
+
     def _append_version_prefix(self, key):
         return ':%s:%s' % (self.version, key)
+
+
+class LeaderBoardHandler:
+    def __init__(self, business):
+        self.business = business
+        self.redis_handler = RedisNativeHandler()
+
+    def fetch(self):
+        key = self.business.get_leaders_cache_key()
+        if key not in cache:
+            leaders = self.business.get_employees().exclude(role='MA').order_by('-rate')[:5]
+            if leaders:
+                self.redis_handler.add_to_sorted_set(key, *self._leaders_names_rates_list(leaders))
+            logger.debug('Cant find %s leaders in cache; getting them from DB and creating cache leader-board',
+                         self.business.business_name)
+            return [{'username': e.user.username, 'rate': e.rate} for e in leaders]
+        logger.debug('getting leaders of business %s from cache', self.business.business_name)
+        leader_list_from_cache = self.redis_handler.get_first_of_sorted_set(key, 0, 4)
+        return self._prepare_leader_list(leader_list_from_cache)
+
+    def update_ranks(self, employees, incr_by):
+        key = self.business.get_leaders_cache_key()
+        for emp in employees:
+            self.redis_handler.increment_score_of_member(key, emp.user.username, incr_by)
+
+    @staticmethod
+    def _leaders_names_rates_list(leader_emps):
+        result = []
+        for e in leader_emps:
+            result.append(e.rate)
+            result.append(e.user.username)
+        return result
+
+    @staticmethod
+    def _prepare_leader_list(leader_list_from_cache):
+        return [{'username': entry[0], 'rate': entry[1]} for entry in leader_list_from_cache]
 
 
 class NoLogoFoundError(Exception):

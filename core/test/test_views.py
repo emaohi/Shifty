@@ -10,7 +10,7 @@ from core.date_utils import get_days_hours_from_delta
 from core.models import EmployeeRequest, ShiftSlot, Shift
 from core.test.test_helpers import create_new_manager, create_new_employee, \
     create_manager_and_employee_groups, add_fields_to_slot, set_address_to_business, set_address_to_employee, \
-    make_slot_this_in_n_hour_from_now, create_shifts_for_slots
+    make_slot_this_in_n_hour_from_now, create_shifts_for_slots, create_multiple_employees
 from core.utils import DurationApiClient, RedisNativeHandler
 from log.models import EmployeeProfile
 patch.object = patch.object
@@ -193,7 +193,6 @@ class DeleteShiftSlotViewTest(TestCase):
         add_fields_to_slot(cls.dummy_slot)
 
     def setUp(self):
-
         self.client.login(**self.manager_credentials)
         with patch.object(RedisNativeHandler, 'add_to_set'):
             self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
@@ -398,3 +397,37 @@ class GetLogoUrlViewTest(TestCase):
         restaurant = 'blabla'
         res = self.client.get(reverse('logo_suggestion') + '?name=%s' % restaurant)
         self.assertEqual(res.status_code, 400)
+
+
+@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
+class GetLogoUrlViewTest(TestCase):
+    emp_credentials = {'username': 'testuser1', 'password': 'secret'}
+    manager_credentials = {'username': 'testuser2', 'password': 'secret'}
+
+    @classmethod
+    def setUpTestData(cls):
+        create_manager_and_employee_groups()
+        create_new_manager(cls.manager_credentials)
+        create_multiple_employees(7)
+
+    def setUp(self):
+        self.client.login(**self.manager_credentials)
+
+    def test_should_get_first_5_employees(self):
+        self._update_rates()
+
+        res = self.client.get(reverse('get_leader_board'))
+        self.assertJSONEqual(res.content, [
+            {'username': 'test_user_5', 'rate': 5.0},
+            {'username': 'test_user_4', 'rate': 4.0},
+            {'username': 'test_user_3', 'rate': 3.0},
+            {'username': 'test_user_2', 'rate': 2.0},
+            {'username': 'test_user_1', 'rate': 1.0},
+        ])
+
+    @staticmethod
+    def _update_rates():
+        for i in range(5):
+            emp = EmployeeProfile.objects.get(user__username='test_user_%s' % (i+1))
+            emp.rate = i+1
+            emp.save()

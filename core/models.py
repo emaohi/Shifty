@@ -8,7 +8,7 @@ import logging
 
 from django.db import models, IntegrityError, transaction
 from django.db.models import F
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import m2m_changed, post_save, pre_save
 from django.dispatch import receiver
 
 from Shifty.utils import get_time_from_str
@@ -294,7 +294,7 @@ class ShiftRequest(models.Model):
 class Shift(models.Model):
     slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
-    rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=50)
+    rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=0)
     total_tips = models.IntegerField(default=0)
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
@@ -413,14 +413,20 @@ def update_employee(sender, **kwargs):
 
 
 # pylint: disable=unused-argument
-@receiver(post_save, sender=Shift)
+@receiver(pre_save, sender=Shift)
 def update_employee_rates(sender, **kwargs):
+    from core.utils import LeaderBoardHandler
     shift = kwargs.pop('instance')
+    prev_rank = Shift.objects.get(pk=shift.pk).rank
     if shift.employees.exists():
-        adding_val = shift.rank/shift.employees.count()
-        logger.info('in Shift model post_save signal, incrementing rates of employees by %s...', adding_val)
-        for emp in shift.employees.all():
-            emp.rate += adding_val
-            emp.save()
+        emp_cnt = shift.employees.count()
+        adding_val = shift.rank / emp_cnt
+        sub_val = prev_rank / emp_cnt
+        logger.info('in Shift model pre_save signal, incrementing rates of employees by %s'
+                    ' and subtracting by %s...', adding_val, sub_val)
+        shift_emps = shift.employees.all()
+        shift_emps.update(rate=F('rate') + adding_val - sub_val)
+        logger.info('updating cache leader board by %.3f', adding_val - sub_val)
+        LeaderBoardHandler(shift.employees.first().business).update_ranks(shift_emps, adding_val - sub_val)
     else:
         logger.debug('saving shift without employees(yet)...')
