@@ -2,13 +2,16 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.db.models.signals import m2m_changed, post_save
 from django.test import TestCase
+from mock import patch
 
 from Shifty.utils import get_time_from_str
 from core.date_utils import get_curr_year, get_next_week_num
 from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage, SavedSlot
 from core.test.test_helpers import create_new_manager, create_new_employee, create_manager_and_employee_groups, \
     create_multiple_employees, CatchSignal
+from core.utils import RedisNativeHandler
 from log.models import Business, EmployeeProfile
+patch.object = patch.object
 
 
 class EmployeeRequestModelTest(TestCase):
@@ -126,7 +129,8 @@ class ShiftModelTest(TestCase):
                                                    start_hour='16:00:00', end_hour='18:00:00', constraints='{}')
 
     def setUp(self):
-        self.first_shift, self.second_shift = self._create_shifts()
+        with patch.object(RedisNativeHandler, 'increment_score_of_member'):
+            self.first_shift, self.second_shift = self._create_shifts()
 
     def test_emp_rate_should_be_updated_correctly(self):
         self.first_shift.rank = 3
