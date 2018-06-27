@@ -112,6 +112,7 @@ class ShiftSlotModelTest(TestCase):
         self.assertEqual(self.slot.get_time_frame_code(), 6)
 
 
+@patch.object(RedisNativeHandler, 'increment_score_of_member')
 class ShiftModelTest(TestCase):
 
     first_emp_credentials = {'username': 'testUser1', 'password': 'secret1'}
@@ -129,10 +130,10 @@ class ShiftModelTest(TestCase):
                                                    start_hour='16:00:00', end_hour='18:00:00', constraints='{}')
 
     def setUp(self):
-        with patch.object(RedisNativeHandler, 'increment_score_of_member'):
-            self.first_shift, self.second_shift = self._create_shifts()
+        self.first_shift, self.second_shift = self._create_shifts()
 
-    def test_emp_rate_should_be_updated_correctly(self):
+    # pylint: disable=unused-argument
+    def test_emp_rate_should_be_updated_correctly(self, redis_func_mock):
         self.first_shift.rank = 3
         self.first_shift.save()
         self.emp.refresh_from_db()
