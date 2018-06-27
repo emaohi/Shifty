@@ -6,9 +6,10 @@ import json
 
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.db.models import F
-from django.db.models.signals import m2m_changed, pre_save
+from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from Shifty.utils import get_time_from_str
@@ -301,6 +302,28 @@ class Shift(models.Model):
     def __str__(self):
         return 'shift of slot: ' + str(self.slot)
 
+    def save(self, *args, **kwargs):
+        from core.utils import LeaderBoardHandler
+        try:
+            prev_rank = Shift.objects.get(pk=self.pk).rank
+        except ObjectDoesNotExist:
+            logger.debug('new shift, setting old rank to zero')
+            prev_rank = 0.0
+
+        super(Shift, self).save(*args, **kwargs)
+
+        if self.employees.exists():
+            emp_cnt = self.employees.count()
+
+            adding_val = (self.rank - prev_rank) / emp_cnt
+            logger.info('in Shift model pre_save signal, incrementing rates of employees by %s', adding_val)
+            shift_emps = self.employees.all()
+            shift_emps.update(rate=F('rate') + adding_val)
+            logger.info('updating cache leader board by %.3f', adding_val)
+            LeaderBoardHandler(self.employees.first().business).update_ranks(shift_emps, adding_val)
+        else:
+            logger.debug('saving shift without employees(yet)...')
+
     def add_employee(self, emp):
         self.employees.add(emp)
 
@@ -410,23 +433,3 @@ class ShiftSwap(models.Model):
 def update_employee(sender, **kwargs):
     logger.info('incrementing new message for employees in message')
     kwargs.pop('instance').recipients.all().update(new_messages=F('new_messages') + 1)
-
-
-# pylint: disable=unused-argument
-@receiver(pre_save, sender=Shift)
-def update_employee_rates(sender, **kwargs):
-    from core.utils import LeaderBoardHandler
-    shift = kwargs.pop('instance')
-    prev_rank = Shift.objects.get(pk=shift.pk).rank
-    if shift.employees.exists():
-        emp_cnt = shift.employees.count()
-        adding_val = shift.rank / emp_cnt
-        sub_val = prev_rank / emp_cnt
-        logger.info('in Shift model pre_save signal, incrementing rates of employees by %s'
-                    ' and subtracting by %s...', adding_val, sub_val)
-        shift_emps = shift.employees.all()
-        shift_emps.update(rate=F('rate') + adding_val - sub_val)
-        logger.info('updating cache leader board by %.3f', adding_val - sub_val)
-        LeaderBoardHandler(shift.employees.first().business).update_ranks(shift_emps, adding_val - sub_val)
-    else:
-        logger.debug('saving shift without employees(yet)...')

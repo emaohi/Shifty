@@ -276,7 +276,8 @@ class GetNextShiftTimer(TestCase):
             self.client.post(reverse('add_shift_slot'), data=self.dummy_slot, follow=True)
 
     def test_view_should_succeed_when_one_slot(self):
-        self._create_upcoming_shifts_for_existing_slots(1)
+        with patch.object(RedisNativeHandler, 'increment_score_of_member'):
+            self._create_upcoming_shifts_for_existing_slots(1)
 
         self.client.login(**self.emp_credentials)
         resp = self.client.get(reverse('time_to_next_shift'))
@@ -289,8 +290,8 @@ class GetNextShiftTimer(TestCase):
         second_slot['day'] = '2'
         with patch.object(RedisNativeHandler, 'add_to_set'):
             self.client.post(reverse('add_shift_slot'), data=second_slot, follow=True)
-
-        self._create_upcoming_shifts_for_existing_slots(2)
+        with patch.object(RedisNativeHandler, 'increment_score_of_member'):
+            self._create_upcoming_shifts_for_existing_slots(2)
 
         self.client.login(**self.emp_credentials)
         resp = self.client.get(reverse('time_to_next_shift'))
