@@ -20,6 +20,7 @@ $(document).ready(function () {
     });
 
     populate_current_calendar();
+    fetchLeaderBoard();
 
 
     $('.edit-slot').click(function () {
@@ -396,6 +397,25 @@ function empRequestsAjax(queryParam) {
         },
         error: function (xhr) {
             console.error("couldn't get employee requests");
+        }
+    });
+}
+
+function fetchLeaderBoard() {
+   $.ajax({
+        url: getLeaderBoardUrl,
+        type: "get",
+        success: function(res) {
+            console.log("got: " + JSON.stringify(res));
+            var buffer = "";
+            $.each(res, function (l) {
+                buffer+=" <li class='list-inline-item'>" + (l+1) + ". <b>" + res[l]["username"] +
+                    "</b>: " + res[l]["rate"] + "</li>";
+            });
+            $(".leaderboard").html(buffer);
+        },
+        error: function (xhr) {
+            console.error("couldn't get leader board");
         }
     });
 }

@@ -127,7 +127,20 @@
             </div>
 
             <div id="emps" class="tab-pane fade">
-                <div class="row" style="margin-top: 130px">
+                <div class="row" style="margin-top: 30px">
+                    <div class="col-md-7 col-md-offset-3">
+                        <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h5 style="text-align: center">Leader-board</h5>
+                        </div>
+                            <div class="panel-body">
+                                <ol class="list-inline leaderboard">
+                                </ol>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="margin-top: 30px">
                     <div class="col-md-5 col-md-offset-1">
                         <div class="panel panel-default">
                             <div class="panel-body"><img src="{% static 'imgs/download.jpeg' %}"></div>
@@ -297,6 +310,7 @@
         var generate_shifts_url = "{% url 'generate_shifts' %}";
         var summary_url = "{% url 'submit_shift_summary' 0%}";
         var getEmployeeRequestsUrl = "{% url 'emp_requests' %}";
+        var getLeaderBoardUrl = "{% url 'get_leader_board' %}";
         var start_date = "{{ start_date }}";
         var current_start_date = "{{ current_start_date }}";
         var deadline_date = "{{ deadline_date }}";

@@ -318,7 +318,7 @@ class LeaderBoardHandler:
 
     @staticmethod
     def _prepare_leader_list(leader_list_from_cache):
-        return [{'username': entry[0], 'rate': entry[1]} for entry in leader_list_from_cache]
+        return [{'username': entry[0], 'rate': '%.2f' % entry[1]} for entry in leader_list_from_cache]
 
 
 class NoLogoFoundError(Exception):
