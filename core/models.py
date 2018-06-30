@@ -6,9 +6,10 @@ import json
 
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.db.models import F
-from django.db.models.signals import m2m_changed, post_save
+from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
 
 from Shifty.utils import get_time_from_str
@@ -294,12 +295,34 @@ class ShiftRequest(models.Model):
 class Shift(models.Model):
     slot = models.OneToOneField(ShiftSlot, on_delete=models.CASCADE, related_name='shift', primary_key=False)
     employees = models.ManyToManyField(EmployeeProfile, related_name='shifts')
-    rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=50)
+    rank = models.IntegerField(choices=[(i + 1, i + 1) for i in range(100)], default=0)
     total_tips = models.IntegerField(default=0)
     remarks = models.TextField(max_length=200, null=True, blank=True)
 
     def __str__(self):
         return 'shift of slot: ' + str(self.slot)
+
+    def save(self, *args, **kwargs):
+        from core.utils import LeaderBoardHandler
+        try:
+            prev_rank = Shift.objects.get(pk=self.pk).rank
+        except ObjectDoesNotExist:
+            logger.debug('new shift, setting old rank to zero')
+            prev_rank = 0.0
+
+        super(Shift, self).save(*args, **kwargs)
+
+        if self.employees.exists():
+            emp_cnt = self.employees.count()
+
+            adding_val = (self.rank - prev_rank) / emp_cnt
+            logger.info('in Shift model pre_save signal, incrementing rates of employees by %s', adding_val)
+            shift_emps = self.employees.all()
+            shift_emps.update(rate=F('rate') + adding_val)
+            logger.info('updating cache leader board by %.3f', adding_val)
+            LeaderBoardHandler(self.employees.first().business).update_ranks(shift_emps, adding_val)
+        else:
+            logger.debug('saving shift without employees(yet)...')
 
     def add_employee(self, emp):
         self.employees.add(emp)
@@ -410,17 +433,3 @@ class ShiftSwap(models.Model):
 def update_employee(sender, **kwargs):
     logger.info('incrementing new message for employees in message')
     kwargs.pop('instance').recipients.all().update(new_messages=F('new_messages') + 1)
-
-
-# pylint: disable=unused-argument
-@receiver(post_save, sender=Shift)
-def update_employee_rates(sender, **kwargs):
-    shift = kwargs.pop('instance')
-    if shift.employees.exists():
-        adding_val = shift.rank/shift.employees.count()
-        logger.info('in Shift model post_save signal, incrementing rates of employees by %s...', adding_val)
-        for emp in shift.employees.all():
-            emp.rate += adding_val
-            emp.save()
-    else:
-        logger.debug('saving shift without employees(yet)...')

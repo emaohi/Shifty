@@ -129,6 +129,9 @@ class Business(models.Model):
     def get_slot_names_cache_key(self):
         return "{0}-slot-names".format(self)
 
+    def get_leaders_cache_key(self):
+        return "{0}-leaders".format(self)
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)
@@ -160,10 +163,10 @@ class EmployeeProfile(models.Model):
     menu_score = models.IntegerField(null=True, blank=True)
 
     ever_logged_in = models.BooleanField(default=False)
-    ARRIVAL_METHOD_CHOCIES = (
+    ARRIVAL_METHOD_CHOICES = (
         ('D', 'driving'), ('W', 'walking'), ('B', 'both')
     )
-    arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOCIES, default='D')
+    arriving_method = models.CharField(max_length=1, choices=ARRIVAL_METHOD_CHOICES, default='D')
     new_messages = models.IntegerField(default=0)
     preferred_shift_time_frames = models.TextField(blank=True, null=True)
     credentials_sent = models.BooleanField(default=False)

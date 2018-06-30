@@ -22,7 +22,8 @@ from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, Shi
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
     NoLogoFoundError, get_employee_requests_with_status, \
-    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names
+    SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names, \
+    LeaderBoardHandler
 
 from Shifty.utils import must_be_manager_callback, EmailWaitError, must_be_employee_callback, get_curr_profile, \
     get_curr_business, wrong_method, get_logo_conf
@@ -604,3 +605,14 @@ def respond_swap_request(request):
         return HttpResponse('ok')
     except KeyError as e:
         return HttpResponseBadRequest('Bad request: ' + str(e))
+
+
+@login_required(login_url='/login')
+@require_GET
+def get_leader_board(request):
+    curr_business = get_curr_business(request)
+
+    logger.info('fetching leaders of business %s', curr_business.pk)
+    current_leaders = LeaderBoardHandler(curr_business).fetch()
+
+    return JsonResponse(current_leaders, safe=False)
