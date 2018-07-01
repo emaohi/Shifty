@@ -400,16 +400,22 @@ class GetLogoUrlViewTest(TestCase):
         self.assertEqual(res.status_code, 400)
 
 
-@override_settings(CELERY=False)
+@override_settings(CACHES={'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': "redis://127.0.0.1:6379/2",
+    }}, CELERY=False)
 class GetLeaderBoardViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
 
     @classmethod
     def setUpTestData(cls):
+        from django.core.cache import cache
         create_manager_and_employee_groups()
         create_new_manager(cls.manager_credentials)
         create_multiple_employees(7)
+        print 'clearing cache...'
+        cache.clear()
 
     def setUp(self):
         self.client.login(**self.manager_credentials)
