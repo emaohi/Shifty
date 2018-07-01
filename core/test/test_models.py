@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.db.models.signals import m2m_changed, post_save
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from mock import patch
 
 from Shifty.utils import get_time_from_str
@@ -112,7 +112,9 @@ class ShiftSlotModelTest(TestCase):
         self.assertEqual(self.slot.get_time_frame_code(), 6)
 
 
-@patch.object(RedisNativeHandler, 'increment_score_of_member')
+@override_settings(CACHES={'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': "redis://127.0.0.1:6379/2"}})
 class ShiftModelTest(TestCase):
 
     first_emp_credentials = {'username': 'testUser1', 'password': 'secret1'}
@@ -132,8 +134,7 @@ class ShiftModelTest(TestCase):
     def setUp(self):
         self.first_shift, self.second_shift = self._create_shifts()
 
-    # pylint: disable=unused-argument
-    def test_emp_rate_should_be_updated_correctly(self, redis_func_mock):
+    def test_emp_rate_should_be_updated_correctly(self):
         self.first_shift.rank = 3
         self.first_shift.save()
         self.emp.refresh_from_db()
