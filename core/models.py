@@ -117,6 +117,17 @@ class SavedSlot(models.Model):
     def __str__(self):
         return 'saved shift slot %s, constraints: %s' % (self.name, self.constraints)
 
+    def to_search(self):
+        from core.search import SavedSlotIndex
+        obj = SavedSlotIndex(
+            meta={'id': self.id},
+            name=self.name,
+            constraints=json.loads(self.constraints),
+            is_mandatory=self.is_mandatory
+        )
+        obj.save()
+        return obj.to_dict(include_meta=True)
+
 
 class ShiftSlot(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
