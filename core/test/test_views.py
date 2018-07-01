@@ -400,7 +400,7 @@ class GetLogoUrlViewTest(TestCase):
         self.assertEqual(res.status_code, 400)
 
 
-@override_settings(CACHES={'default': {'BACKEND': 'django.core.cache.backends.dummy.DummyCache'}}, CELERY=False)
+@override_settings(CELERY=False)
 class GetLeaderBoardViewTest(TestCase):
     emp_credentials = {'username': 'testuser1', 'password': 'secret'}
     manager_credentials = {'username': 'testuser2', 'password': 'secret'}
