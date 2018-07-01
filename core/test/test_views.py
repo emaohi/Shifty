@@ -417,8 +417,8 @@ class GetLeaderBoardViewTest(TestCase):
     def test_should_get_first_5_employees(self):
         self._update_rates()
 
-        with patch.object(RedisNativeHandler, 'add_to_sorted_set'):
-            res = self.client.get(reverse('get_leader_board'))
+        # with patch.object(RedisNativeHandler, 'add_to_sorted_set'):
+        res = self.client.get(reverse('get_leader_board'))
 
         self.assertJSONEqual(res.content, [
             {'username': 'test_user_5', 'rate': 5.0},
