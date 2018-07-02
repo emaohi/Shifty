@@ -9,7 +9,6 @@ from core.date_utils import get_curr_year, get_next_week_num
 from core.models import ShiftSlot, Shift, ShiftSwap, EmployeeRequest, ManagerMessage, SavedSlot
 from core.test.test_helpers import create_new_manager, create_new_employee, create_manager_and_employee_groups, \
     create_multiple_employees, CatchSignal
-from core.utils import RedisNativeHandler
 from log.models import Business, EmployeeProfile
 patch.object = patch.object
 
