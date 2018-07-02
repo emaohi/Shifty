@@ -1,6 +1,8 @@
 machine:
   environment:
     DJANGO_SETTINGS_MODULE: settings.circle
+  services:
+    - redis
 
 test:
   pre:
