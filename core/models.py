@@ -349,6 +349,9 @@ class Shift(models.Model):
     def get_date(self):
         return self.slot.get_date()
 
+    def get_datetime(self):
+        return self.slot.get_datetime()
+
     def calculate_employee_tip(self):
         try:
             return self.total_tips / self.employees.count()
@@ -361,6 +364,19 @@ class Shift(models.Model):
 
     def emp_exists(self, emp):
         return emp in self.employees.all()
+
+    def to_search(self):
+        from core.search import ShiftIndex
+        obj = ShiftIndex(
+            meta={'id': self.id},
+            date=self.get_datetime(),
+            employees=dict(employees=[e.user.username for e in self.employees.all()]),
+            rate=self.rank,
+            tips=self.total_tips,
+            remarks=self.remarks
+        )
+        obj.save()
+        return obj.to_dict(include_meta=True)
 
 
 class ShiftSwap(models.Model):
