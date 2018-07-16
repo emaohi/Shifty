@@ -20,6 +20,7 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
     get_days_hours_from_delta, get_curr_week_num, get_current_week_range
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
+from core.search import search_term
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
     NoLogoFoundError, get_employee_requests_with_status, \
     SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names, \
@@ -616,3 +617,13 @@ def get_leader_board(request):
     current_leaders = LeaderBoardHandler(curr_business).fetch()
 
     return JsonResponse(current_leaders, safe=False)
+
+
+@login_required(login_url='/login')
+@require_GET
+def search(request):
+    query_string = request.GET.get('query')
+    logger.info('Got search request with query=%s', query_string)
+    res = search_term(q=query_string)
+    logger.info('search results: %s', res)
+    return JsonResponse(res)
