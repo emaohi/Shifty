@@ -11,6 +11,7 @@ from django.conf import settings
 
 from core.date_utils import get_next_week_num
 from core.models import ShiftSlot
+from core.search import bulk_indexing
 from core.shift_generator import ShiftGeneratorFactory
 from core.utils import save_holidays
 from log.models import Business
@@ -45,6 +46,18 @@ def reset_shift_generation_status():
         b.save()
 
 
+@periodic_task(run_every=crontab(minute=0, hour='*/2'))
+def index_elastic_search():
+    logger.info('Going to index shifts and saved-slots to ES...')
+    try:
+        err = bulk_indexing()
+        if err:
+            raise Exception('got errors while indexing: %s', err)
+        return 'Indexing to ElasticSearch completed successfully'
+    except Exception as e:
+            raise Exception('got errors while indexing: %s', e)
+
+
 @shared_task
 def add(x, y):
     return x + y
@@ -64,7 +77,7 @@ def generate_next_week_shifts(business_name, level):
 
         business.set_shift_generation_success()
         business.save()
-        logger.info('generated shifts for business %s week num %d', business.business_name, next_week)
+        logger.info('Generated shifts for business %s week num %d', business.business_name, next_week)
 
     except Exception as e:
         business.set_shift_generation_failure()
