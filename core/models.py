@@ -117,17 +117,6 @@ class SavedSlot(models.Model):
     def __str__(self):
         return 'saved shift slot %s, constraints: %s' % (self.name, self.constraints)
 
-    def to_search(self):
-        from core.search import SavedSlotIndex
-        obj = SavedSlotIndex(
-            meta={'id': self.id},
-            name=self.name,
-            constraints=json.loads(self.constraints),
-            is_mandatory=self.is_mandatory
-        )
-        obj.save()
-        return obj.to_dict(include_meta=True)
-
 
 class ShiftSlot(models.Model):
     business = models.ForeignKey(Business, on_delete=models.CASCADE)
@@ -168,12 +157,12 @@ class ShiftSlot(models.Model):
                 str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.pk:  # created
             if self.saved_slot:
                 self._update_saved_slot_upon_creation()
             else:
                 self.name = self.name if self.name else 'Custom'
-        else:
+        else:  # updated
             if self.saved_slot:
                 self._validate_saved_slot_fields_maintained()
             else:
@@ -330,7 +319,7 @@ class Shift(models.Model):
             logger.info('in Shift model pre_save signal, incrementing rates of employees by %s', adding_val)
             shift_emps = self.employees.all()
             shift_emps.update(rate=F('rate') + adding_val)
-            logger.info('updating cache leader board by %.3f', adding_val)
+            logger.debug('updating cache leader board by %.3f', adding_val)
             LeaderBoardHandler(self.employees.first().business).update_ranks(shift_emps, adding_val)
         else:
             logger.debug('saving shift without employees(yet)...')
@@ -348,6 +337,9 @@ class Shift(models.Model):
 
     def get_date(self):
         return self.slot.get_date()
+
+    def get_name(self):
+        return self.slot.name
 
     def get_datetime(self):
         return self.slot.get_datetime()
@@ -369,6 +361,7 @@ class Shift(models.Model):
         from core.search import ShiftIndex
         obj = ShiftIndex(
             meta={'id': self.id},
+            name=self.get_name(),
             date=self.get_datetime(),
             employees=dict(employees=[e.user.username for e in self.employees.all()]),
             rate=self.rank,
