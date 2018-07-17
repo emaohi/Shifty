@@ -34,7 +34,7 @@ def search_term(q):
     client = Elasticsearch()
 
     s = Search(using=client,) \
-       .query(MultiMatch(query=q, type='cross_fields'))
+       .query(MultiMatch(query=q, type='cross_fields', operator='and'))
     response = s.execute()
 
     return [dict(index=hit.meta.index, score=hit.meta.score, body=hit.to_dict()) for hit in response]
