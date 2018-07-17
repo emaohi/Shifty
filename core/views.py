@@ -621,9 +621,9 @@ def get_leader_board(request):
 
 @login_required(login_url='/login')
 @require_GET
-def search(request):
+def search_text(request):
     query_string = request.GET.get('query')
     logger.info('Got search request with query=%s', query_string)
     res = search_term(q=query_string)
     logger.info('search results: %s', res)
-    return JsonResponse(res)
+    return JsonResponse(res, safe=False)

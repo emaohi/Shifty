@@ -31,4 +31,5 @@ urlpatterns = [
     url(r'^swap_requests/$', views.get_swap_requests, name='get_swap_requests'),
     url(r'^respond_swap_request/$', views.respond_swap_request, name='respond_swap_request'),
     url(r'^get_leaders/$', views.get_leader_board, name='get_leader_board'),
+    url(r'^search_text/$', views.search_text, name='full_text_search'),
 ]
