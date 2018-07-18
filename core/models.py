@@ -457,6 +457,6 @@ def update_employee(sender, **kwargs):
 
 # pylint: disable=unused-argument,unused-variable
 @receiver(post_save, sender=Shift)
-def update_employee(sender, instance, created, **kwargs):
+def flush_prev_shifts(sender, instance, created, **kwargs):
     if created:
         instance.slot.business.flush_prev_shifts_cache()

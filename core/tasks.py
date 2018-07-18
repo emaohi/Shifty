@@ -55,7 +55,7 @@ def index_elastic_search():
             raise Exception('got errors while indexing: %s', err)
         return 'Indexing to ElasticSearch completed successfully'
     except Exception as e:
-            raise Exception('got errors while indexing: %s', e)
+        raise Exception('got errors while indexing: %s', e)
 
 
 @shared_task

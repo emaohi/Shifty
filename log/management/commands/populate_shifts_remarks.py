@@ -16,6 +16,7 @@ class Command(BaseCommand):
 
     help = 'populate shifts remarks with random quotes'
 
+    # # pylint: disable=broad-except
     def handle(self, *args, **options):
         try:
             start_time = time()
