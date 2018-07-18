@@ -3,6 +3,7 @@ import logging
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.cache import cache
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
 from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import render, redirect
@@ -208,8 +209,7 @@ def add_employees(request):
             return HttpResponseRedirect('/')
     else:
         form = AddEmployeesForm()
-    logo_conf = get_logo_conf()
-    return render(request, "manager/add_employees.html", {'form': form, 'logo_conf': logo_conf})
+    return render(request, "manager/add_employees.html", {'form': form, 'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')
@@ -219,9 +219,18 @@ def manage_employees(request):
 
     logger.info('getting business employees')
     all_employees = EmployeeProfile.objects.filter(business=curr_business).select_related('user')
+    paginator = Paginator(all_employees, 10)
+
+    page = request.GET.get('page', 1)
+    try:
+        page_employees = paginator.page(page)
+    except PageNotAnInteger:
+        page_employees = paginator.page(1)
+    except EmptyPage:
+        page_employees = paginator.page(paginator.num_pages)
 
     return render(request, 'manager/manage_employees.html',
-                  {'employees': all_employees, 'curr_business': curr_business, 'logo_conf': get_logo_conf()})
+                  {'employees': page_employees, 'curr_business': curr_business, 'logo_conf': get_logo_conf()})
 
 
 @login_required(login_url='/login')

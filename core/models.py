@@ -9,7 +9,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.db.models import F
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
 from Shifty.utils import get_time_from_str
@@ -316,7 +316,7 @@ class Shift(models.Model):
             emp_cnt = self.employees.count()
 
             adding_val = (self.rank - prev_rank) / emp_cnt
-            logger.info('in Shift model pre_save signal, incrementing rates of employees by %s', adding_val)
+            logger.info('in Shift model pre_save signal, incrementing rates of %s employees by %s', emp_cnt, adding_val)
             shift_emps = self.employees.all()
             shift_emps.update(rate=F('rate') + adding_val)
             logger.debug('updating cache leader board by %.3f', adding_val)
@@ -453,3 +453,10 @@ class ShiftSwap(models.Model):
 def update_employee(sender, **kwargs):
     logger.info('incrementing new message for employees in message')
     kwargs.pop('instance').recipients.all().update(new_messages=F('new_messages') + 1)
+
+
+# pylint: disable=unused-argument,unused-variable
+@receiver(post_save, sender=Shift)
+def update_employee(sender, instance, created, **kwargs):
+    if created:
+        instance.slot.business.flush_prev_shifts_cache()

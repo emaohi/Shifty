@@ -189,7 +189,7 @@ function getPreviousShifts() {
         url: prev_shifts_url,
         type: "get",
         success: function (res) {
-            $("#previous").html(res);
+            $("#shiftList").html(res);
         },
         error: function (xhr) {
             if (xhr.status === 400) {

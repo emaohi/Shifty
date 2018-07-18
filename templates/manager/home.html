@@ -55,7 +55,11 @@
 
         }
 
-        .btn-group, h3 {
+        h3 {
+            text-align: center;
+        }
+
+        .btn-group {
             display: inline-block;
         }
 
@@ -102,6 +106,7 @@
                 {% else %}<span class="label label-default">Not generated</span>
                 {% endif %}
             </a></li>
+            <li><a data-toggle="tab" href="#previous">Previous shifts</a></li>
             <li class="pull-right"><a href="{% url 'menu_test_main' %}">Menu Test</a></li>
             <li class="pull-right"><a data-toggle="tab" href="#emps_reqs">Employees Requests
                 {% if requests_cnt > 0 %}
@@ -130,9 +135,9 @@
                 <div class="row" style="margin-top: 30px">
                     <div class="col-md-7 col-md-offset-3">
                         <div class="panel panel-default">
-                        <div class="panel-heading">
-                            <h5 style="text-align: center">Leader-board</h5>
-                        </div>
+                            <div class="panel-heading">
+                                <h5 style="text-align: center">Leader-board</h5>
+                            </div>
                             <div class="panel-body">
                                 <ol class="list-inline leaderboard">
                                 </ol>
@@ -198,6 +203,26 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div id="previous" class="tab-pane fade">
+                <div class="container" style="margin-top: 20px">
+                    <div class="row">
+                        <div class="col-md-5 col-md-offset-3">
+                            <h3>Previous Shifts
+                                <a class="btn btn-primary" href="{% url 'shifts_csv' %}">Download CSV file</a>
+                            </h3>
+                        </div>
+                        <div class="col-md-3">
+                            <input id="esText" class="form-control" type="text" placeholder="Search shifts..">
+                            <div class="btn-group" style="margin-top: 10px">
+                                <button id="esSearch" type="button" class="btn btn-primary">Search</button>
+                                <button id="esClean" type="button" class="btn btn-default">Clean search</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="shiftList">
                     </div>
                 </div>
             </div>
@@ -305,6 +330,8 @@
         var next_slots_url = "{% url 'get_next_slots' %}";
         var finish_slots_url = "{% url 'finish_slots' %}";
         var current_shifts_url = "{% url 'get_current_shifts' %}";
+        var prev_shifts_url = "{% url 'prev_shifts' %}";
+        var text_search_url = "{% url 'full_text_search' %}";
         var slot_request_employees = "{% url 'slot_request_employees' 0%}";
         var slot_employees = "{% url 'slot_employees' 0%}";
         var generate_shifts_url = "{% url 'generate_shifts' %}";
