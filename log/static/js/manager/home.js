@@ -62,16 +62,13 @@ $(document).ready(function () {
         updateFinishedSlots(false);
     });
 
-    $('#esSearch').click(function () {
-        var data = $("#esText").val();
-        console.log("clicked.." + data);
-        if (data) {
-            EsSearch(data);
-        }
-    });
-
-    $('#esClean').click(function () {
-        getPreviousShifts();
+    $("#esText").keyup(function () {
+       var searchData = $("#esText").val();
+       if (searchData.length === 0) {
+           getPreviousShifts();
+        } else if (searchData.length > 2) {
+           EsSearch(searchData);
+       }
     });
 });
 $(window).on("popstate", function () {

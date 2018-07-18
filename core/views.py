@@ -16,6 +16,7 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_POST, require_GET
+from elasticsearch import RequestError
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
     get_days_hours_from_delta, get_curr_week_num, get_current_week_range
@@ -628,6 +629,10 @@ def get_leader_board(request):
 def search_text(request):
     query_string = request.GET.get('query')
     logger.info('Got search request with query=%s', query_string)
-    res = search_term(q=query_string)
-    logger.info('Found %s search results', len(res))
-    return render(request, 'manager/es_shifts.html', {'shifts': res})
+    try:
+        res = search_term(q=query_string)
+        logger.info('Found %s search results', len(res))
+        return render(request, 'manager/es_shifts.html', {'shifts': res})
+    except RequestError as e:
+        logger.error('problem with searching elastic search: %s', e.message)
+        return HttpResponseServerError

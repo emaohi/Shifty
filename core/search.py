@@ -2,9 +2,9 @@ from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from elasticsearch_dsl import DocType, Text, Object, Integer, Date, Search
 from elasticsearch_dsl.connections import connections
-from elasticsearch_dsl.query import MultiMatch
+from elasticsearch_dsl.query import MultiMatch, MatchPhrasePrefix
 
-from core.models import SavedSlot, Shift
+from core.models import Shift
 
 connections.create_connection()
 
@@ -34,7 +34,7 @@ def search_term(q):
     client = Elasticsearch()
 
     s = Search(using=client,) \
-       .query(MultiMatch(query=q, type='cross_fields', operator='and'))
+        .query(MatchPhrasePrefix(remarks={"query": q}))
     response = s.execute()
 
     return [dict(index=hit.meta.index, score=hit.meta.score, body=hit.to_dict()) for hit in response]
