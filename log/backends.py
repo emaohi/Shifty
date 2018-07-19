@@ -84,6 +84,24 @@ class LogoFinderCheckBackend(BaseHealthCheckBackend):
         return 'Logo finder'
 
 
+class ElasticSearchBackend(BaseHealthCheckBackend):
+    #: The status endpoints will respond with a 200 status code
+    #: even if the check errors.
+    critical_service = False
+
+    def check_status(self):
+        try:
+            res = requests.get(settings.ELASTIC_SEARCH_HOST)
+            if res.status_code != 200:
+                self.add_error(ServiceReturnedUnexpectedResult(
+                    "ElasticSearch service return status code: %s" % res.status_code))
+        except requests.exceptions.RequestException as e:
+            self.add_error(ServiceUnavailable("Unknown error"), e)
+
+    def identifier(self):
+        return 'ElasticSearch'
+
+
 class GmailCheckBackend(BaseHealthCheckBackend):
     #: The status endpoints will respond with a 200 status code
     #: even if the check errors.

@@ -21,6 +21,7 @@ $(document).ready(function () {
 
     populate_current_calendar();
     fetchLeaderBoard();
+    getPreviousShifts();
 
 
     $('.edit-slot').click(function () {
@@ -59,6 +60,15 @@ $(document).ready(function () {
 
     $('#resetSlots').click(function () {
         updateFinishedSlots(false);
+    });
+
+    $("#esText").keyup(function () {
+       var searchData = $("#esText").val();
+       if (searchData.length === 0) {
+           getPreviousShifts();
+        } else if (searchData.length > 2) {
+           EsSearch(searchData);
+       }
     });
 });
 $(window).on("popstate", function () {
@@ -416,6 +426,38 @@ function fetchLeaderBoard() {
         },
         error: function (xhr) {
             console.error("couldn't get leader board");
+        }
+    });
+}
+
+function getPreviousShifts() {
+    $.ajax({
+        url: prev_shifts_url,
+        type: "get",
+        success: function (res) {
+            $("#shiftList").html(res);
+        },
+        error: function (xhr) {
+            if (xhr.status === 400) {
+                $("#previous").html("<h3>No previous shifts...</h3>");
+            } else {
+                $("#previous").html("<h3>Server error trying to get previous shifts...</h3>");
+                console.error('No previous shifts...');
+            }
+        }
+    });
+}
+
+function EsSearch(data) {
+    $.ajax({
+        url: text_search_url + "?query=" + data,
+        type: "get",
+        success: function (res) {
+            $("#shiftList").html(res);
+        },
+        error: function (xhr) {
+            $("#shiftList").html("<h3>Server error trying to search shifts...</h3>");
+            console.error('search shifts failed...');
         }
     });
 }

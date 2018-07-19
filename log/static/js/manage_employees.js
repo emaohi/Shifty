@@ -4,7 +4,7 @@
 
 $(document).ready(function () {
 
-    $('.table-striped').paging({limit:5});
+    // $('.table-striped').paging({limit:5});
 
     var curr_modal_username = "";
 

@@ -6,6 +6,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['shifty-app.herokuapp.com']
 
+ELASTIC_SEARCH_HOST = 'https://4x6a0d8d5b:f35zpwauc2@redwood-3158069.us-east-1.bonsaisearch.net'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',

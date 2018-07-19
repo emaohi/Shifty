@@ -46,15 +46,19 @@
         .success {
             color: green;
         }
+
         .fail {
             color: red;
         }
+
         .accept-step-1 {
             background-color: #79aec8;
         }
+
         .accept-step-2 {
             background-color: darkgreen;
         }
+
         .accept-step--1, .accept-step--2 {
             background-color: red;
         }
@@ -134,12 +138,23 @@
                         </div>
                     </div>
                     <div class="row" style="margin-top: 20px">
-                            <div class="slotRows"></div>
+                        <div class="slotRows"></div>
                     </div>
                 </div>
             </div>
 
             <div id="previous" class="tab-pane fade">
+                <div class="container" style="margin-top: 20px">
+                    <div class="row">
+                        <div class="col-md-5 col-md-offset-3">
+                            <h3>Previous Shifts
+                                <a class="btn btn-primary" href="{% url 'shifts_csv' %}">Download CSV file</a>
+                            </h3>
+                        </div>
+                    </div>
+                    <div id="shiftList">
+                    </div>
+                </div>
             </div>
 
             <div id="swaps" class="tab-pane fade">

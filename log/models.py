@@ -132,6 +132,30 @@ class Business(models.Model):
     def get_leaders_cache_key(self):
         return "{0}-leaders".format(self)
 
+    def get_previous_shifts(self):
+        from core.models import Shift
+        key = self.get_prev_shifts_cache_key()
+        if key not in cache:
+            logger.info('getting previous shifts for business %s from DB', self)
+            prev_shifts = Shift.objects.filter(slot__week__lt=get_curr_week_num(), slot__business=self) \
+                .order_by('-slot__week', '-slot__day', '-slot__start_hour') \
+                .select_related('slot').prefetch_related(Prefetch('employees',
+                                                                  queryset=EmployeeProfile.objects.select_related(
+                                                                      'user')))
+            cache.set(key, prev_shifts)
+        else:
+            logger.info('getting previous shifts for business %s from cache', self)
+            prev_shifts = cache.get(key)
+
+        return prev_shifts
+
+    def get_prev_shifts_cache_key(self):
+        return "{0}-prev-shifts".format(self)
+
+    def flush_prev_shifts_cache(self):
+        logger.debug('flushing cache of prev shifts of business %s...', self)
+        cache.delete(self.get_prev_shifts_cache_key())
+
 
 class EmployeeProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile', primary_key=False)
@@ -277,7 +301,7 @@ class EmployeeProfile(models.Model):
 
     def get_previous_shifts(self):
         return self.shifts.filter(slot__week__lt=get_curr_week_num()) \
-            .order_by('-slot__week', '-slot__day', '-slot__start_hour')\
+            .order_by('-slot__week', '-slot__day', '-slot__start_hour') \
             .select_related('slot').prefetch_related(Prefetch('employees',
                                                               queryset=EmployeeProfile.objects.select_related('user')))
 

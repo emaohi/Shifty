@@ -15,11 +15,13 @@ from django.utils import timezone
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseServerError, JsonResponse, \
     HttpResponseBadRequest, HttpResponseNotFound
 from django.views.decorators.http import require_POST, require_GET
+from elasticsearch import RequestError
 
 from core.date_utils import get_next_week_string, get_curr_year, get_next_week_num, \
     get_days_hours_from_delta, get_curr_week_num, get_current_week_range
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
+from core.search import search_term
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
     NoLogoFoundError, get_employee_requests_with_status, \
     SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names, \
@@ -502,21 +504,24 @@ def get_time_to_next_shift(request):
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_employee_callback)
 @require_GET
 def get_prev_shifts(request):
     curr_emp = get_curr_profile(request)
-    prev_shifts = curr_emp.get_previous_shifts()
+    curr_business = get_curr_business(request)
+    is_manager = request.user.groups.filter(name='Managers').exists()
+    if is_manager:
+        prev_shifts = curr_business.get_previous_shifts()
+    else:
+        prev_shifts = curr_emp.get_previous_shifts()
     if len(prev_shifts) == 0:
         logger.warning('no previous shifts for emp %s', request.user.username)
         return HttpResponseBadRequest('No previous shifts was found...')
-    logger.info('Found %d previous shifts for user %s', len(prev_shifts), request.user.username)
+    logger.info('Found %d previous shifts', len(prev_shifts))
 
-    return render(request, 'employee/previous_shifts.html', {'prev_shifts': prev_shifts})
+    return render(request, 'previous_shifts.html', {'prev_shifts': prev_shifts, 'manager': is_manager})
 
 
 @login_required(login_url='/login')
-@user_passes_test(must_be_employee_callback)
 def export_shifts_csv(request):
     curr_emp = get_curr_profile(request)
     prev_shifts = curr_emp.get_previous_shifts()
@@ -616,3 +621,17 @@ def get_leader_board(request):
     current_leaders = LeaderBoardHandler(curr_business).fetch()
 
     return JsonResponse(current_leaders, safe=False)
+
+
+@login_required(login_url='/login')
+@require_GET
+def search_text(request):
+    query_string = request.GET.get('query')
+    logger.info('Got search request with query=%s', query_string)
+    try:
+        res = search_term(q=query_string)
+        logger.info('Found %s search results', len(res))
+        return render(request, 'manager/es_shifts.html', {'shifts': res})
+    except RequestError as e:
+        logger.error('problem with searching elastic search: %s', e.message)
+        return HttpResponseServerError

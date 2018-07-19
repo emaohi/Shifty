@@ -1,0 +1,37 @@
+{% for shift in prev_shifts %}
+    <div class="row" style="margin-top: 10px">
+        <div class="col-xs-5 col-xs-offset-3">
+            <div class="panel panel-default" style="text-align: center">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="display: inline">
+                        {% if manager %}
+                            {{ shift.get_name }}:
+                        {% endif %}
+                        {{ shift.slot.get_datetime_str }}
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <p style="text-align: center">
+                        <strong>Shift employees:</strong>
+                        <span>{{ shift.get_employees_comma_string }}</span>
+                    </p>
+                    {% if manager %}
+                        <hr>
+                        <p>
+                            <strong>remarks: </strong> {{ shift.remarks }}
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="panel-footer">
+                    <span class="hidden-id" style="visibility: hidden">{{ shift.id }}</span>
+                    <strong>Tip:</strong>
+                    <span> {{ shift.calculate_employee_tip }} </span>
+                    {% if manager %}
+                        <strong>Rate:</strong>
+                        <span> {{ shift.rank }} </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}

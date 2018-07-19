@@ -1,0 +1,21 @@
+{% for shift in shifts %}
+    <div class="row" style="margin-top: 10px">
+        <div class="col-xs-5 col-xs-offset-3">
+            <div class="panel panel-default" style="text-align: center">
+                <div class="panel-heading">
+                    <h3 class="panel-title" style="display: inline">
+                        {{ shift.body.name}}
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    {{ shift.body.employees.employees }}
+                    <hr>
+                    {{ shift.body.remarks }}
+                </div>
+                <div class="panel-footer">
+                    Elastic-Search score: <strong>{{ shift.score }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endfor %}

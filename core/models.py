@@ -9,7 +9,7 @@ import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models, IntegrityError, transaction
 from django.db.models import F
-from django.db.models.signals import m2m_changed
+from django.db.models.signals import m2m_changed, post_save
 from django.dispatch import receiver
 
 from Shifty.utils import get_time_from_str
@@ -157,12 +157,12 @@ class ShiftSlot(models.Model):
                 str(self.end_hour), '(Mandatory)' if self.is_mandatory else '')
 
     def save(self, *args, **kwargs):
-        if not self.pk:
+        if not self.pk:  # created
             if self.saved_slot:
                 self._update_saved_slot_upon_creation()
             else:
                 self.name = self.name if self.name else 'Custom'
-        else:
+        else:  # updated
             if self.saved_slot:
                 self._validate_saved_slot_fields_maintained()
             else:
@@ -316,10 +316,10 @@ class Shift(models.Model):
             emp_cnt = self.employees.count()
 
             adding_val = (self.rank - prev_rank) / emp_cnt
-            logger.info('in Shift model pre_save signal, incrementing rates of employees by %s', adding_val)
+            logger.info('in Shift model pre_save signal, incrementing rates of %s employees by %s', emp_cnt, adding_val)
             shift_emps = self.employees.all()
             shift_emps.update(rate=F('rate') + adding_val)
-            logger.info('updating cache leader board by %.3f', adding_val)
+            logger.debug('updating cache leader board by %.3f', adding_val)
             LeaderBoardHandler(self.employees.first().business).update_ranks(shift_emps, adding_val)
         else:
             logger.debug('saving shift without employees(yet)...')
@@ -338,6 +338,12 @@ class Shift(models.Model):
     def get_date(self):
         return self.slot.get_date()
 
+    def get_name(self):
+        return self.slot.name
+
+    def get_datetime(self):
+        return self.slot.get_datetime()
+
     def calculate_employee_tip(self):
         try:
             return self.total_tips / self.employees.count()
@@ -350,6 +356,20 @@ class Shift(models.Model):
 
     def emp_exists(self, emp):
         return emp in self.employees.all()
+
+    def to_search(self):
+        from core.search import ShiftIndex
+        obj = ShiftIndex(
+            meta={'id': self.id},
+            name=self.get_name(),
+            date=self.get_datetime(),
+            employees=dict(employees=[e.user.username for e in self.employees.all()]),
+            rate=self.rank,
+            tips=self.total_tips,
+            remarks=self.remarks
+        )
+        obj.save()
+        return obj.to_dict(include_meta=True)
 
 
 class ShiftSwap(models.Model):
@@ -433,3 +453,10 @@ class ShiftSwap(models.Model):
 def update_employee(sender, **kwargs):
     logger.info('incrementing new message for employees in message')
     kwargs.pop('instance').recipients.all().update(new_messages=F('new_messages') + 1)
+
+
+# pylint: disable=unused-argument,unused-variable
+@receiver(post_save, sender=Shift)
+def flush_prev_shifts(sender, instance, created, **kwargs):
+    if created:
+        instance.slot.business.flush_prev_shifts_cache()
