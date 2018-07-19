@@ -1,5 +1,4 @@
 from django.conf import settings
-from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from elasticsearch_dsl import DocType, Text, Object, Integer, Date, Search
 from elasticsearch_dsl.connections import connections

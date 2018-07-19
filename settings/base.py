@@ -210,3 +210,5 @@ TESTING = len(sys.argv) > 1 and sys.argv[1] == 'test'
 USE_TOOLBAR = False
 
 SHIFT_GENERATION_ALGORITHM_LEVEL = 0
+
+ELASTIC_SEARCH_HOST = 'http://localhost:9200'
