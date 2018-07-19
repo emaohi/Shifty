@@ -3,12 +3,12 @@ import json
 from mock import patch
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from django.test import TestCase
+from django.test import TestCase, override_settings
 
 from core.models import ShiftSlot, SavedSlot
 from core.test.test_helpers import add_fields_to_slot, get_business_of_username, create_new_manager
 from core.utils import SlotConstraintCreator, LanguageValidator, SlotCreator, DurationApiClient, LogoUrlFinder, \
-    NoLogoFoundError, RedisNativeHandler
+    NoLogoFoundError
 patch.object = patch.object
 
 
@@ -53,6 +53,9 @@ class LanguageValidatorTest(TestCase):
         self.assertTrue(self.validator.validate(self.NON_PROFANITY_WORD))
 
 
+@override_settings(CACHES={'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': "redis://127.0.0.1:6379/2"}})
 class SlotCreatorTest(TestCase):
     dummy_slot_data = {
         'day': '3', 'start_hour': '12:00:00', 'end_hour': '14:00:00', 'num_of_waiters': '0',
@@ -82,8 +85,8 @@ class SlotCreatorTest(TestCase):
         constraint_creator = SlotConstraintCreator(self.dummy_slot_data)
         creator = SlotCreator(business=self.manager_business, slot_data=self.dummy_slot_data,
                               constraint_creator=constraint_creator)
-        with patch.object(RedisNativeHandler, 'add_to_set'):
-            creator.create()
+
+        creator.create()
 
         self.assertTrue(SavedSlot.objects.filter(name='new-slot').exists())
         self.assertTrue(ShiftSlot.objects.filter(name='new-slot').exists())
