@@ -4,7 +4,6 @@ from datetime import datetime
 
 from django.test import TestCase, override_settings
 from django.urls import reverse
-from django.core.cache import cache
 from mock import patch
 
 from core.date_utils import get_days_hours_from_delta

@@ -4,6 +4,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost']
 
+ELASTIC_SEARCH_HOST = 'http://localhost:9200'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',

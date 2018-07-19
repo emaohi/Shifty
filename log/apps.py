@@ -4,7 +4,7 @@ import logging
 from django.apps import AppConfig
 from health_check.plugins import plugin_dir
 
-from log.backends import GmailCheckBackend
+from log.backends import GmailCheckBackend, ElasticSearchBackend
 
 logger = logging.getLogger(__name__)
 
@@ -20,3 +20,4 @@ class LogConfig(AppConfig):
         plugin_dir.register(GoogleApiCheckBackend)
         plugin_dir.register(LogoFinderCheckBackend)
         plugin_dir.register(GmailCheckBackend)
+        plugin_dir.register(ElasticSearchBackend)

@@ -1,3 +1,4 @@
+from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch.helpers import bulk
 from elasticsearch_dsl import DocType, Text, Object, Integer, Date, Search
@@ -6,7 +7,7 @@ from elasticsearch_dsl.query import MatchPhrasePrefix
 
 from core.models import Shift
 
-connections.create_connection()
+es_client = connections.create_connection(hosts=[settings.ELASTIC_SEARCH_HOST])
 
 
 class ShiftIndex(DocType):
@@ -23,17 +24,15 @@ class ShiftIndex(DocType):
 
 def bulk_indexing():
     ShiftIndex.init()
-    es = Elasticsearch()
     _, shifts_errors = \
-        bulk(client=es, actions=(b.to_search() for b in Shift.objects.all().iterator()))
+        bulk(client=es_client, actions=(b.to_search() for b in Shift.objects.all().iterator()))
 
     return shifts_errors
 
 
 def search_term(q):
-    client = Elasticsearch()
 
-    s = Search(using=client,) \
+    s = Search(using=es_client,) \
         .query(MatchPhrasePrefix(remarks={"query": q}))
     response = s.execute()
 
