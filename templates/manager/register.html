@@ -12,7 +12,7 @@
         }
 {#        input[name='logo'], label[for='id_logo'] {#}
 {#            display: none;#}
-        }
+{#        }#}
     </style>
 {% endblock %}
 
@@ -91,7 +91,7 @@
                 $("input[name='logo']").hide();
                 $("label[for='id_logo']").hide();
                 var url = res['logo_url'];
-                $('#myImage').attr('src',url);
+                $('#myImage').attr('src', url);
 
                 $('#suggestionModal').modal('show');
             }

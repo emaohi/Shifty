@@ -4,13 +4,15 @@
             <div class="panel panel-default" style="text-align: center">
                 <div class="panel-heading">
                     <h3 class="panel-title" style="display: inline">
-                        {{ shift.body.name}}
+                        {{ shift.body.name}} - {{ shift.body.date }}
                     </h3>
                 </div>
                 <div class="panel-body">
                     {{ shift.body.employees.employees }}
                     <hr>
-                    {{ shift.body.remarks }}
+                    {% autoescape off %}
+                    {{ shift.highlights }}
+                    {% endautoescape %}
                 </div>
                 <div class="panel-footer">
                     Elastic-Search score: <strong>{{ shift.score }}</strong>

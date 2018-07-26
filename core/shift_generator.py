@@ -16,8 +16,6 @@ class AbstractShiftGenerator:
     @abstractmethod
     def __init__(self, slots):
         self.slots = list(slots)
-        logger.info('Going to deliberately wait....')
-        self.wait()
 
     @abstractmethod
     def wait(self):
@@ -28,6 +26,8 @@ class AbstractShiftGenerator:
         pass
 
     def generate(self):
+        logger.info('Going to deliberately wait before shift generation....')
+        self.wait()
         logger.info('Going to make shifts for slots: %s, using %s generator', str(self.slots), type(self))
         try:
             with transaction.atomic():
