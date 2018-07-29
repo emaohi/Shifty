@@ -62,14 +62,9 @@ $(document).ready(function () {
         updateFinishedSlots(false);
     });
 
-    $("#esText").keyup(function () {
-       var searchData = $("#esText").val();
-       if (searchData.length === 0) {
-           getPreviousShifts();
-        } else if (searchData.length > 2) {
-           EsSearch(searchData);
-       }
-    });
+    $("#esText").keyup(populatePrevShifts);
+    $("#searchFrom").change(populatePrevShifts);
+    $("#searchTo").change(populatePrevShifts);
 });
 $(window).on("popstate", function () {
     var anchor = location.hash || $("a[data-toggle='tab']").first().attr("href");
@@ -448,9 +443,20 @@ function getPreviousShifts() {
     });
 }
 
-function EsSearch(data) {
+function populatePrevShifts() {
+   var searchData = $("#esText").val();
+   var searchFrom = $("#searchFrom").val();
+   var searchTo = $("#searchTo").val();
+   if (searchData.length === 0) {
+       getPreviousShifts();
+    } else if (searchData.length > 2) {
+       EsSearch(searchData, searchFrom, searchTo);
+   }
+}
+
+function EsSearch(data, fromDate, toDate) {
     $.ajax({
-        url: text_search_url + "?query=" + data,
+        url: text_search_url + "?query=" + data + "&from=" + fromDate + "&to=" + toDate,
         type: "get",
         success: function (res) {
             $("#shiftList").html(res);

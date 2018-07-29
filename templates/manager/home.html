@@ -208,16 +208,29 @@
             </div>
             <div id="previous" class="tab-pane fade">
                 <div class="container" style="margin-top: 20px">
-                    <div class="row">
-                        <div class="col-md-5 col-md-offset-3">
-                            <h3>Previous Shifts
-                                <a class="btn btn-primary" href="{% url 'shifts_csv' %}">Download CSV file</a>
-                            </h3>
+                    <form>
+                        <div class="form-group row">
+                            <div class="col-md-5 col-md-offset-4">
+                                <h3>Previous Shifts
+                                    <a class="btn btn-primary" href="{% url 'shifts_csv' %}">Download CSV file</a>
+                                </h3>
+                            </div>
                         </div>
-                        <div class="col-md-3">
-                            <input id="esText" class="form-control" type="text" placeholder="Search shifts by remarks">
+                        <div class="form-group row">
+                            <div class="col-md-5 col-md-offset-3">
+                                <input id="esText" class="form-control" type="text"
+                                       placeholder="Search shifts by remarks">
+                            </div>
+                            <div class="col-md-2">
+                                <input id="searchFrom" class="form-control" type="text" onfocus="(this.type='date')"
+                                placeholder="From">
+                            </div>
+                            <div class="col-md-2">
+                                <input id="searchTo" class="form-control" type="text" onfocus="(this.type='date')"
+                                placeholder="To">
+                            </div>
                         </div>
-                    </div>
+                    </form>
                     <div id="shiftList">
                     </div>
                 </div>
