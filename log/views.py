@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login
 from django.core.cache import cache
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponseBadRequest
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.models import Group, User
@@ -18,10 +18,10 @@ from core.date_utils import get_current_week_string, get_current_deadline_date_s
 from core.models import ShiftRequest, ShiftSwap
 from core.utils import get_employee_requests_with_status
 from log.forms import ManagerSignUpForm, BusinessRegistrationForm, BusinessEditForm, AddEmployeesForm, EditProfileForm
-from log.models import EmployeeProfile
+from log.models import EmployeeProfile, Business
 
 from Shifty.utils import must_be_manager_callback, get_curr_profile, get_curr_business, must_be_employee_callback, \
-    get_logo_conf, get_profile_and_business, EmailWaitError, must_be_superuser_callback
+    get_logo_conf, get_profile_and_business, EmailWaitError, must_be_superuser_callback, send_multiple_mails_with_html
 from log.utils import NewEmployeeHandler, send_new_employees_mails
 
 logger = logging.getLogger(__name__)
@@ -303,6 +303,40 @@ def home_or_login(request):
         return redirect("login_success")
     else:
         return redirect("login")
+
+
+def ask_join_business(request):
+
+    if request.user.is_authenticated:
+        return HttpResponseBadRequest('Dude you are already part of the system :)')
+
+    session = request.session
+
+    logger.debug('setting expiry for the anonymous session id %s', session.session_key)
+    session.set_expiry(300)
+
+    if request.session.get('has_asked', False):
+        logger.info('already asked...')
+        return HttpResponse("You've already asked, Try again later...")
+
+    emp_name = request.GET.get('username')
+    business_name = request.GET.get('business')
+    business = Business.objects.filter(business_name=business_name).first()
+
+    if not business:
+        request.session['has_asked'] = True
+        return HttpResponse('No such business....')
+
+    send_multiple_mails_with_html(subject='New message in Shifty app',
+                                  text='you\'ve got new message from %s anonymous user' % emp_name,
+                                  template='html_msgs/ask_join.html',
+                                  r_2_c_dict={business.get_manager().user:
+                                              {'manager_name': business.get_manager().user.username,
+                                               'emp_name': emp_name,
+                                               'business_name': business.business_name}},
+                                  wait_for_results=False)
+    request.session['has_asked'] = True
+    return HttpResponse('Thanks for asking! You will be in touch in case your manager approves')
 
 
 class HealthCheckCustomView(MainView):
