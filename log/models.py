@@ -88,6 +88,9 @@ class Business(models.Model):
     def get_cooks(self):
         return self.get_role_employees('cook')
 
+    def get_manager(self):
+        return self.get_role_employees('manager').first()
+
     def has_deadline_day_passed(self):
         today_weekday = datetime.today().weekday() + 2
         today_weekday = 1 if today_weekday == 8 else today_weekday

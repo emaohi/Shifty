@@ -21,6 +21,7 @@ urlpatterns = [
     url(r'^logout/$', django_views.logout, {'next_page': 'login'}, name='logout'),
     url(r'^edit_profile/$', views.edit_profile, name='edit_profile'),
     url(r'^edit_profile_form/$', views.edit_profile_form, name='edit_profile_form'),
+    url(r'^ask_join/$', views.ask_join_business, name='ask_join_business'),
     # -------------- Manager section ------------------------ #
 
     url(r'^manager/$', views.manager_home, name='manager_home'),

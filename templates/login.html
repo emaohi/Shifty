@@ -1,11 +1,44 @@
 {% extends 'base.html' %}
 
 {% block title %}
-        <title>Shifty Bitch</title>
+    <title>Shifty Bitch</title>
 {% endblock %}
 
 {% block style %}
 
+{% endblock %}
+
+{% block javascript %}
+    <script>
+        $(document).ready(function () {
+            $("#submitEmployee").click(function (e) {
+                e.preventDefault();
+                empAsking();
+            })
+        });
+        function empAsking() {
+            var buissName = $("#businessName").val();
+            var employeeName = $("#empName").val();
+            $.ajax({
+                url: {% url 'ask_join_business' %},
+                data: {
+                  business: buissName,
+                  username: employeeName
+                },
+                type: "get",
+                success: function(res) {
+                    $("#askResponse").html(res);
+                    setTimeout(function () {
+                        $("#askResponse").html("");
+                    }, 3000);
+                },
+                error: function (err) {
+                    console.error("err: " + err);
+                    $("#askResponse").html("");
+                }
+            });
+        }
+    </script>
 {% endblock %}
 
 {% block content %}
@@ -26,22 +59,39 @@
                     </div>
                     <div class="panel-body">
                         <form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
+                            {% csrf_token %}
                             <div class="form-group">
-                            {{ form.username.label_tag }}
-                            {{ form.username }}
-                          </div>
-                           <div class="form-group">
-                            {{ form.password.label_tag }}
-                             <td>{{ form.password }}</td>
-                          </div>
-                        <div class="form-group" style="text-align: center">
-                            <input class="btn btn-info btn-lg" type="submit" value="login" />
-                        </div>
-                            <input type="hidden" name="next" value="{{ next }}" />
+                                {{ form.username.label_tag }}
+                                {{ form.username }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.password.label_tag }}
+                                <td>{{ form.password }}</td>
+                            </div>
+                            <div class="form-group" style="text-align: center">
+                                <input class="btn btn-info btn-lg" type="submit" value="login"/>
+                            </div>
+                            <input type="hidden" name="next" value="{{ next }}"/>
                         </form>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-3">
+                <h4>Employee? Ask to join existing Business</h4>
+                <form class="form-inline">
+                    <div class="form-group">
+                        <label for="empName">Name:</label>
+                        <input type="text" class="form-control" id="empName">
+                    </div>
+                    <div class="form-group">
+                        <label for="businessName">Business name:</label>
+                        <input type="text" class="form-control" id="businessName">
+                    </div>
+                    <button type="submit" class="btn btn-info" id="submitEmployee">Submit</button>
+                    <div id="askResponse"></div>
+                </form>
             </div>
         </div>
     </div>
