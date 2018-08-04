@@ -9,7 +9,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'circle_test',
         'USER': 'ubuntu',
-        'HOST': 'localhost',
+        'HOST': '%',
         'PORT': '3306',
     }
 }
