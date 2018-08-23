@@ -1,7 +1,10 @@
+import datetime
 import logging
 
+import pytz
 from django.contrib import messages
 from django.contrib.auth import authenticate, login
+from django.contrib.sessions.models import Session
 from django.core.cache import cache
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Q
@@ -310,21 +313,25 @@ def ask_join_business(request):
     if request.user.is_authenticated:
         return HttpResponseBadRequest('Dude you are already part of the system :)')
 
+    seconds_to_expiry = None
     session = request.session
+    if Session.objects.filter(pk=session.session_key).exists():
+        session_expire_date = Session.objects.get(pk=session.session_key).expire_date
+        seconds_to_expiry = (session_expire_date.replace(tzinfo=None) - datetime.datetime.utcnow()).seconds
 
-    logger.debug('setting expiry for the anonymous session id %s', session.session_key)
-    session.set_expiry(300)
-
-    if request.session.get('has_asked', False):
-        logger.info('already asked...')
-        return HttpResponse("You've already asked, Try again later...")
+    if session.get('has_asked', False):
+        logger.info('already asked... session id: %s, expire date: %s', session.session_key, seconds_to_expiry)
+        return HttpResponse("You've already asked, Try again in %s seconds..." % seconds_to_expiry)
+    else:
+        logger.debug('setting expiry for the anonymous session id %s', session.session_key)
+        session.set_expiry(300)
 
     emp_name = request.GET.get('username')
     business_name = request.GET.get('business')
     business = Business.objects.filter(business_name=business_name).first()
 
     if not business:
-        request.session['has_asked'] = True
+        session['has_asked'] = True
         return HttpResponse('No such business....')
 
     send_multiple_mails_with_html(subject='New message in Shifty app',
