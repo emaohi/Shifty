@@ -21,7 +21,7 @@ from core.date_utils import get_next_week_string, get_curr_year, get_next_week_n
     get_days_hours_from_delta, get_curr_week_num, get_current_week_range
 from core.forms import BroadcastMessageForm, ShiftSlotForm, SelectSlotsForm, ShiftSummaryForm
 from core.models import EmployeeRequest, ShiftSlot, ShiftRequest, Shift, ShiftSwap, SavedSlot
-from core.search import ShiftSearcher, search_strategy_factory
+from core.search import ShiftSearcher, get_search_strategy
 from core.utils import create_manager_msg, get_holiday, save_shifts_request, \
     NoLogoFoundError, get_employee_requests_with_status, \
     SlotCreator, SlotConstraintCreator, DurationApiClient, LogoUrlFinder, LanguageValidator, get_business_slot_names, \
@@ -631,7 +631,7 @@ def search_text(request):
     to_date = request.GET.get('to', None)
     logger.info('Got search request with query=%s, from=%s, to=%s', query_string, from_date, to_date)
     try:
-        res = ShiftSearcher(search_strategy_factory()).search(q=query_string, date_from=from_date, date_to=to_date)
+        res = ShiftSearcher(get_search_strategy()).search(q=query_string, date_from=from_date, date_to=to_date)
         logger.info('Found %s search results', len(res))
         return render(request, 'manager/es_shifts.html', {'shifts': res})
     except RequestError as e:

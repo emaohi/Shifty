@@ -80,7 +80,7 @@ class MultiMatchSearchStrategy(AbstractSearchStrategy):
         return Q("multi_match", query=q, fields=['name', 'remarks'])
 
 
-def search_strategy_factory():
+def get_search_strategy():
     chosen = random.choice([PrefixSearchStrategy()])
     logger.debug('chosen strategy: %s', type(chosen))
     return chosen
