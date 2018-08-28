@@ -1,3 +1,4 @@
+python-logstash
 elasticsearch
 amqp==2.1.4
 apiclient==1.0.3

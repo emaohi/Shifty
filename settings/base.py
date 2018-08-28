@@ -149,7 +149,17 @@ LOGGING = {
         'sentry': {
             'level': 'WARNING',
             'class': 'raven.contrib.django.raven_compat.handlers.SentryHandler',
-        }
+        },
+        'logstash': {
+            'level': 'INFO',
+            'class': 'logstash.TCPLogstashHandler',
+            'host': 'localhost',
+            'port': 5959,  # Default value: 5959
+            'version': 1,
+            'message_type': 'django',
+            'fqdn': False,  # Fully qualified domain name. Default value: false.
+            'tags': ['django.request'],  # list of tags. Default: None.
+        },
     },
     'loggers': {
         '': {
@@ -212,3 +222,5 @@ USE_TOOLBAR = False
 SHIFT_GENERATION_ALGORITHM_LEVEL = 0
 
 ELASTIC_SEARCH_HOST = 'http://localhost:9200'
+
+LOGSTASH = False
