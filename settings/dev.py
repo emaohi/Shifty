@@ -18,6 +18,7 @@ DATABASES = {
 
 for app in ['log', 'core', 'menu', 'Shifty']:
     LOGGING['loggers'][app]['level'] = 'DEBUG'
+    LOGGING['loggers'][app]['handlers'].append('logstash')
 
 CELERY = True
 CELERY_BROKER_URL = 'pyamqp://guest@localhost//'
@@ -62,3 +63,5 @@ if DEBUG:
         'SHOW_TOOLBAR_CALLBACK': 'ddt_request_history.panels.request_history.allow_ajax',
         'INTERCEPT_REDIRECTS': False,
     }
+
+LOGSTASH = True
