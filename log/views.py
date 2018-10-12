@@ -15,6 +15,7 @@ from django.contrib.auth.models import Group, User
 from django.utils.decorators import method_decorator
 from health_check.views import MainView
 from kombu.exceptions import OperationalError
+from redis import ConnectionError
 
 from core.date_utils import get_current_week_string, get_current_deadline_date_string, \
     get_current_week_range, get_curr_week_sunday, get_next_week_sunday
@@ -261,7 +262,10 @@ def edit_profile_form(request):
             messages.success(request, message='successfully edited %s' %
                                               (edited_profile.user.username if is_edited_other else 'yourself'))
             logger.info('going to delete cached ETA duration...')
-            cache.delete(get_curr_profile(request).get_eta_cache_key())
+            try:
+                cache.delete(get_curr_profile(request).get_eta_cache_key())
+            except ConnectionError as e:
+                logger.warn('NO REDIS CONNECTION: ', e.message)
             return redirect('manage_employees' if is_edited_other else 'edit_profile')
         else:
             logger.error(str(form.errors))
