@@ -110,18 +110,6 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# Email settings
-
-EMAIL_HOST = 'smtp.gmail.com'
-
-EMAIL_HOST_USER = 'shifty.moti'
-
-EMAIL_HOST_PASSWORD = 'Lucky123'
-
-EMAIL_PORT = 587
-
-EMAIL_USE_TLS = True
-
 # Logging
 
 LOGGING = {
