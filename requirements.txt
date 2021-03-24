@@ -83,7 +83,7 @@ queuelib==1.4.2
 raven==6.5.0
 redis==2.10.6
 requests==2.18.1
-rsa==3.4.2
+rsa==4.2
 scandir==1.5
 Scrapy==1.4.0
 scrapyscript==1.0.0
