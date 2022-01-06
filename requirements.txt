@@ -13,7 +13,7 @@ backports.functools-lru-cache==1.4
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.6.0
 billiard==3.5.0.2
-celery==4.0.2
+celery==5.2.2
 certifi==2017.4.17
 cffi==1.11.5
 chardet==3.0.4
