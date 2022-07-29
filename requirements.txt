@@ -85,7 +85,7 @@ redis==2.10.6
 requests==2.18.1
 rsa==3.4.2
 scandir==1.5
-Scrapy==1.4.0
+Scrapy==2.6.2
 scrapyscript==1.0.0
 service-identity==17.0.0
 simplegeneric==0.8.1
