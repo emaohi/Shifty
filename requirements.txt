@@ -14,7 +14,7 @@ backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.6.0
 billiard==3.5.0.2
 celery==4.0.2
-certifi==2017.4.17
+certifi==2022.12.7
 cffi==1.11.5
 chardet==3.0.4
 click==6.7
